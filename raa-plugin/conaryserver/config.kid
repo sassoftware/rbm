@@ -8,7 +8,7 @@
 
 <body>
     <div id="ServerName">
-        <h2>Update Conary Server Hostname</h2>
+        <h2>Update Conary Repository Server Hostname</h2>
         <span py:if="not editable">
             <font color="#FF0000">
             <p>${pageText}</p>
@@ -18,19 +18,19 @@
             <p>${pageText}</p>
         </span>
         <hr />
-        <p><h3>Current Conary Server Hostname:</h3>
+        <p><h3>Current Conary Repository Server Hostname:</h3>
             <i>${data}</i>
         </p>
         <span py:if="editable">
             <form action="chsrvname" method="POST">
                 <div class="label">
-                    <label for="servername"><h3>New Conary Server Hostname:</h3></label>
+                    <label for="servername"><h3>New Conary Repository Server Hostname:</h3></label>
                 </div>
                 <div class="field">
                     <input type="text" id="servername" name="newsrv" size="50"/>
                 </div>
                 <center>
-                <button type="submit" class="img"><img alt="apply" src="/static/images/apply_button.png"/></button>
+                <button type="submit" class="img"><img alt="apply" src="${tg.url('/static/images/apply_button.png')}"/></button>
                 </center>
             </form>
         </span>

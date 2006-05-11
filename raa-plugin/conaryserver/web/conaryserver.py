@@ -3,9 +3,8 @@
 
 from raa.db.schedule import ScheduleImmed
 from raa.db.rpath_error import ItemNotFound, DuplicateItem
-from raa.modules.raaplugin import rAAWebPlugin
-from raa.modules.raaplugin import rAASrvPlugin
-from raa.modules.raaplugin import immedTask
+from raa.modules.raawebplugin import rAAWebPlugin
+from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
@@ -16,12 +15,14 @@ from conary import conarycfg
 from conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.db.lumberjack import *
+from raa.localhostonly import localhostOnly
 
 class SrvChangeTable(DatabaseTable):
     name = 'plugin_rpath_SrvChangeTable'
     createSQL = """CREATE TABLE %s 
                    (newsrv VARCHAR(255))""" % (name)
     fields = ['newsrv']
+    tableVersion = 1
 
     @writeOp
     def setdata(self, cu, srvname):
@@ -40,12 +41,7 @@ class SrvChangeTable(DatabaseTable):
     @readOp
     def getdata(self,cu):
         cu.execute("""SELECT newsrv FROM %s""" % (self.name))
-        results = cu.fetchall()
-        if len(results) == 0:
-            raise ItemNotFound('newsrv')
-        if len(results) > 1:
-            raise DuplicateItem('newsrv')
-        return results[0]
+        return cu.fetchall_dict()
 
 class ConaryServer(rAAWebPlugin):
     '''
@@ -113,8 +109,8 @@ class ConaryServer(rAAWebPlugin):
             errorState = True
         else:
             self.table.setdata(newsrv)
-            self.schedule(ScheduleImmed())
-            self.triggerImmed()
+            schedId = self.schedule(ScheduleImmed())
+            self.triggerImmed(schedId)
         
             # Reload the conary.cnr file to see if the update worked
             try:
@@ -139,32 +135,7 @@ class ConaryServer(rAAWebPlugin):
         db.close()
         return not res
 
-    @cherrypy.expose()
+    @cherrypy.expose
+    @localhostOnly
     def getData(self):
-        return dict(self.table.getdata())
-
-class SrvNameTask(rAASrvPlugin):
-    def doTask(self, taskId, schedId, execId):
-        '''
-            Updates serverName in conaryCNR if no commits have occured in the
-            repository.
-
-        '''
-
-        cnrPath = '/srv/conary/repository.cnr'
-
-        data = self.server.getData()
-
-        try:
-            cfg = ServerConfig()
-            cfg.read(cnrPath)
-            cfg.serverName = data['newsrv']
-        except CfgEnvironmentError:
-            pass
-
-        try:
-            f = open(cnrPath, "w")
-            cfg.display(f)
-            f.close()
-        except IOError:
-            pass
+        return self.table.getdata()
