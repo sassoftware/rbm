@@ -1,7 +1,7 @@
 # Copyright (c) 2006 rPath, Inc
 # All rights reserved
 
-from raa.modules.raaplugin import rAAWebPlugin
+from raa.modules.raawebplugin import rAAWebPlugin
 import turbogears
 import os
 
@@ -12,7 +12,7 @@ class DiskUsage(rAAWebPlugin):
     displayName = _("View Disk Usage")
     tooltip     = _("Disk Usage")
 
-    df_cmd = '/bin/df -h'
+    df_cmd = '/bin/df -ThP'
 
     @turbogears.expose(html="raa.modules.diskusage.disk")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
@@ -20,6 +20,8 @@ class DiskUsage(rAAWebPlugin):
         df = os.popen(self.df_cmd)
         data = []
         for line in df:
-            data.append(line.split())
+	    fstype = line.split()[1]
+            if fstype != 'none':
+            	data.append([x for x in line.split() if x != fstype])
         df.close()
         return dict(data=data[1:])

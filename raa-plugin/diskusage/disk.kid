@@ -8,7 +8,7 @@
         <!--
         div#colHeader {
             float: left;
-            width: 95px;
+            width: 16%;
             font-weight: bold;
             text-decoration: underline;
             text-align: center;
@@ -16,7 +16,7 @@
 
         div#colEntry {
             float: left;
-            width: 95px;
+            width: 16%;
             text-align: center;
         }
         -->
