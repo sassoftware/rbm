@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Copyright (c) 2006 rPath, Inc
+# All rights reserved
+
 import sys
 import os
 import pwd

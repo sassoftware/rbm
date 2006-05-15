@@ -3,6 +3,9 @@
 # description: manages the conary repository schema, either by stocking the \
 # initial contents or simply upgrading the schema to match the current conary \
 # version installed on the system
+# 
+# Copyright (c) 2006 rPath, Inc
+# All rights reserved
 
 lock_name="/srv/conary/init_schema_runonce.lock"
 schema_python="/usr/lib/python2.4/site-packages/rcra_schema.py"
