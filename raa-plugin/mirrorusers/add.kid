@@ -6,7 +6,7 @@
     All Rights Reserved
 -->
 <head>
-  <title>Update Mirroring Privileges"</title>
+  <title>Update Mirroring Privileges</title>
   <style type="text/css">
     p#errMessage {
       text-decoration: italic;

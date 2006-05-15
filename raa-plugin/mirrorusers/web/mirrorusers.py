@@ -7,19 +7,8 @@ from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
-from conary.repository.netrepos.netserver import ServerConfig
-from conary.lib.cfgtypes import CfgEnvironmentError
-from conary.repository import netclient
-from conary import conarycfg
-from conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
-from raa.db.lumberjack import *
 from raa.localhostonly import localhostOnly
-
-from raa.modules.raawebplugin import rAAWebPlugin
-import turbogears
-
-import time
 
 class MirrorTable(DatabaseTable):
     name = 'plugin_rpath_MirrorTable'
@@ -95,13 +84,26 @@ class MirrorUsers(rAAWebPlugin):
             returnMessage = "Passwords do not match. Please try again."
             errorState = True
         else:
-            self.table.setdata(user=username, password=passwd1,
-                               operation='add')
+            # Check to see if the user exists
+            self.table.cleardata()
+            self.table.setdata(operation='list')
             schedId = self.schedule(ScheduleImmed())
             self.triggerImmed(schedId)
-            returnMessage= 'User "%s" added with mirroring privileges.' % \
-                            username
+            userList = self.table.getdata()
+            self.table.cleardata()
             errorState = False
+            for x in userList:
+                if x['user'] == username:
+                    returnMessage = 'User "%s" already exists.  Please choose a different name.' % username
+                    errorState = True
+            # Create the user
+            if not errorState:
+                self.table.setdata(user=username, password=passwd1,
+                                   operation='add')
+                schedId = self.schedule(ScheduleImmed())
+                self.triggerImmed(schedId)
+                returnMessage= 'User "%s" added with mirroring privileges.' % \
+                             username
         return dict(message=_(returnMessage), error=errorState)
 
     @turbogears.expose()

@@ -8,12 +8,13 @@ from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.repository.netrepos.netserver import NetworkRepositoryServer
 from conary.lib.cfgtypes import CfgEnvironmentError
+from conary.repository import errors
 
 class MirrorUsers(rAASrvPlugin):
     def doTask(self, schedId, execId):
         '''
-            Updates serverName in conaryCNR if no commits have occured in the
-            repository.
+            Lists, adds, deletes, changes password, or toggles mirror status
+            for a conary user.
         '''
         cnrPath ='/srv/conary/repository.cnr'
 
@@ -35,10 +36,13 @@ class MirrorUsers(rAASrvPlugin):
                             break
                     self.server.setData(usr, mirrorPerm)
         elif data[0]['operation'] == 'add':
-            nr.auth.addUser(data[0]['user'], data[0]['password'])
-            nr.auth.addAcl(data[0]['user'], None, None, True,
-                                 False, False)
-            nr.auth.setMirror(data[0]['user'], True)
+            try:
+                nr.auth.addUser(data[0]['user'], data[0]['password'])
+                nr.auth.addAcl(data[0]['user'], None, None, True,
+                               False, False)
+                nr.auth.setMirror(data[0]['user'], True)
+            except errors.GroupAlreadyExists:
+                pass
         elif data[0]['operation'] == 'mirror':
             for x in nr.auth.userAuth.getGroupsByUser(data[0]['user']):
                 nr.auth.setMirror(data[0]['user'], 
