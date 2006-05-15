@@ -1,5 +1,7 @@
+#
 # Copyright (c) 2006 rPath, Inc
 # All rights reserved
+#
 
 from raa.modules.raawebplugin import rAAWebPlugin
 import turbogears

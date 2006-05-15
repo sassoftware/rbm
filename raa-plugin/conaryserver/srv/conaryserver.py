@@ -1,3 +1,9 @@
+#
+# Copyright (c) 2005-2006 rPath, Inc.
+#
+# All rights reserved
+#
+
 from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
