@@ -47,6 +47,9 @@ class MirrorUsers(rAASrvPlugin):
             for x in nr.auth.userAuth.getGroupsByUser(data[0]['user']):
                 nr.auth.setMirror(data[0]['user'], 
                                   not nr.auth.groupCanMirror(x))
+                nr.auth.deleteAcl(data[0]['user'], 'ALL', 'ALL') 
+                nr.auth.addAcl(data[0]['user'], None, None, 
+                               nr.auth.groupCanMirror(x), False, False)
         elif data[0]['operation'] == 'delete':
             nr.auth.deleteUserByName(data[0]['user'])
         elif data[0]['operation'] == 'pass':
