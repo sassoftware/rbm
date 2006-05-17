@@ -26,7 +26,7 @@ extra_files = \
 
 dist_files = $(extra_files)
 
-.PHONY: clean dist install subdirs
+.PHONY: clean dist install subdirs $(SUBDIRS)
 
 subdirs: default-subdirs
 
@@ -36,6 +36,17 @@ dist:
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	for d in $(SUBDIRS); do make -C $$d DIR=$$d dist || exit 1; done
+	for f in $(dist_files); do \
+		mkdir -p $(DISTDIR)/`dirname $$f`; \
+		cp -a $$f $(DISTDIR)/$$f; \
+	done; \
+	tar cjf $(DISTDIR).tar.bz2 `basename $(DISTDIR)`
+	rm -rf $(DISTDIR)
+
+$(SUBDIRS):
+	rm -rf $(DISTDIR)
+	mkdir $(DISTDIR)
+	make -C $@ DIR=$@ dist || exit 1
 	for f in $(dist_files); do \
 		mkdir -p $(DISTDIR)/`dirname $$f`; \
 		cp -a $$f $(DISTDIR)/$$f; \
