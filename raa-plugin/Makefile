@@ -16,7 +16,7 @@ export libexecdir = $(prefix)/libexec
 export datadir = $(prefix)/share
 export mandir = $(datadir)/man
 export sitedir = $(libdir)/python$(PYVERSION)/site-packages/
-export pluginsdir = $(libdir)/python$(PYVERSION)/site-packages/raa/modules/
+export pluginsdir = $(libdir)/raa/rPath/
 
 SUBDIRS=conaryserver diskusage mirrorusers
 
