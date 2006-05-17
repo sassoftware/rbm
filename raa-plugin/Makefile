@@ -51,7 +51,9 @@ $(SUBDIRS):
 		mkdir -p $(DISTDIR)/`dirname $$f`; \
 		cp -a $$f $(DISTDIR)/$$f; \
 	done; \
-	tar cjf $(DISTDIR).tar.bz2 `basename $(DISTDIR)`
+	sed -i "s/SUBDIRS\s*=.*/SUBDIRS=$@/" $(DISTDIR)/Makefile
+	sed -i "/\s*sed -i.*/d" $(DISTDIR)/Makefile
+	tar cjf $@.tar.bz2 `basename $(DISTDIR)`
 	rm -rf $(DISTDIR)
 
 clean: clean-subdirs default-clean
