@@ -53,7 +53,7 @@ class MirrorUsers(rAAWebPlugin):
 
     tableClass = MirrorTable
 
-    @turbogears.expose(html="raa.modules.mirrorusers.users")
+    @turbogears.expose(html="rPath.mirrorusers.users")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self):
         self.table.cleardata()
@@ -71,7 +71,7 @@ class MirrorUsers(rAAWebPlugin):
             displayClass = displayClass ^ 1
         return dict(userData=userData, userList=userList)
 
-    @turbogears.expose(html="raa.modules.mirrorusers.add")
+    @turbogears.expose(html="rPath.mirrorusers.add")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def add(self, username=None, passwd1=None, passwd2=None):
         if not username and not passwd1 and not passwd2:
@@ -116,7 +116,7 @@ class MirrorUsers(rAAWebPlugin):
         self.triggerImmed(schedId)
         return self.index()
 
-    @turbogears.expose(html='raa.modules.mirrorusers.delete')
+    @turbogears.expose(html='rPath.mirrorusers.delete')
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def deleteUser(self, username, confirm=False):
         if not confirm:
@@ -127,7 +127,7 @@ class MirrorUsers(rAAWebPlugin):
             self.triggerImmed(schedId)
             return self.index()
 
-    @turbogears.expose(html='raa.modules.mirrorusers.pass')
+    @turbogears.expose(html='rPath.mirrorusers.pass')
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def changePassword(self, username, passwd1='', passwd2=''):
         if not passwd1:

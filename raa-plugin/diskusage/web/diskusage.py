@@ -16,7 +16,7 @@ class DiskUsage(rAAWebPlugin):
 
     df_cmd = '/bin/df -ThP'
 
-    @turbogears.expose(html="raa.modules.diskusage.disk")
+    @turbogears.expose(html="rPath.diskusage.disk")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self):
         df = os.popen(self.df_cmd)

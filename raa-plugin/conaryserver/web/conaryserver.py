@@ -55,7 +55,7 @@ class ConaryServer(rAAWebPlugin):
     
     cnrPath = '/srv/conary/repository.cnr'
 
-    @turbogears.expose(html="raa.modules.conaryserver.config")
+    @turbogears.expose(html="rPath.conaryserver.config")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self):
         try:
@@ -88,7 +88,7 @@ class ConaryServer(rAAWebPlugin):
 
         return dict(data=data, pageText=pageText, editable=editable)
 
-    @turbogears.expose(html="raa.modules.conaryserver.complete",
+    @turbogears.expose(html="rPath.conaryserver.complete",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def chsrvname(self, newsrv=''):
