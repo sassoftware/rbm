@@ -13,7 +13,7 @@ from conary.repository import errors
 class MirrorUsers(rAASrvPlugin):
     def doTask(self, schedId, execId):
         '''
-            Lists, adds, deletes, changes password, or toggles mirror status
+            Lists, adds, deletes, or changes password
             for a conary user.
         '''
         cnrPath ='/srv/conary/repository.cnr'
@@ -28,28 +28,44 @@ class MirrorUsers(rAASrvPlugin):
         if data[0]['operation'] == 'list':
             users =  nr.auth.userAuth.getUserList()
             for usr in users:
-                if usr != 'admin' and usr != 'anonymous':
-                    mirrorPerm = 'No'
-                    for x in nr.auth.userAuth.getGroupsByUser(usr):
-                        if nr.auth.groupCanMirror(x):
-                            mirrorPerm = 'Yes'
+                perm = 'Other'
+                for x in nr.auth.userAuth.getGroupsByUser(usr):
+                    # anonymous user
+                    if x == 'anonymous':
+                        perm = 'Anonymous'
+                        break
+                    perms = nr.auth.iterPermsByGroup(x)
+                    for i in perms:
+                        # admin user
+                        if i == ('ALL', 'ALL', 1, 0, 1):
+                            perm = 'Admin'
                             break
-                    self.server.setData(usr, mirrorPerm)
+                        # mirror user
+                        elif nr.auth.groupCanMirror(x) and \
+                                i == ('ALL', 'ALL', 1, 0, 0):
+                            perm = 'Mirroring'
+                            break
+                self.server.setData(usr, perm)
         elif data[0]['operation'] == 'add':
+            if data[0]['permission'] == 'Mirror':
+                write = True
+                mirror = True
+                admin = False
+            elif data[0]['permission'] == 'Anonymous':
+                write = False
+                mirror = False
+                admin = False
+            elif data[0]['permission'] == 'Admin':
+                write = True
+                mirror = False
+                admin = True
             try:
                 nr.auth.addUser(data[0]['user'], data[0]['password'])
-                nr.auth.addAcl(data[0]['user'], None, None, True,
-                               False, False)
-                nr.auth.setMirror(data[0]['user'], True)
+                nr.auth.addAcl(data[0]['user'], None, None, write,
+                               False, admin)
+                nr.auth.setMirror(data[0]['user'], mirror)
             except errors.GroupAlreadyExists:
                 pass
-        elif data[0]['operation'] == 'mirror':
-            for x in nr.auth.userAuth.getGroupsByUser(data[0]['user']):
-                nr.auth.setMirror(data[0]['user'], 
-                                  not nr.auth.groupCanMirror(x))
-                nr.auth.deleteAcl(data[0]['user'], 'ALL', 'ALL') 
-                nr.auth.addAcl(data[0]['user'], None, None, 
-                               nr.auth.groupCanMirror(x), False, False)
         elif data[0]['operation'] == 'delete':
             nr.auth.deleteUserByName(data[0]['user'])
         elif data[0]['operation'] == 'pass':

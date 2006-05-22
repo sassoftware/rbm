@@ -9,19 +9,8 @@
 <head>
   <title>Delete User</title>
   <style type="text/css">
-    p#warn {
-      text-decoration: italic;
+    h5#warn {
       color: #ff0000;
-    }
-    button#cancelb {
-      position: relative;
-      top: -50px
-      left: -40%;
-    }
-    button#okb {
-      position: relative;
-      top: -50px
-      left: -40%;
     }
   </style>
 </head>
@@ -39,7 +28,7 @@
   </p>
     <div id="del">
       <h3>Confirm:</h3>
-      <p id="warn">Delete the conary user "${username}"?</p>
+      <h5 id="warn">Delete the conary user "${username}"?</h5>
        <form action="deleteUser" method="POST">
          <input type="hidden" name="username" value="${username}"/>
          <input type="hidden" name="confirm" value="True"/>

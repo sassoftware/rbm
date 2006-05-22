@@ -14,23 +14,24 @@ class MirrorTable(DatabaseTable):
     name = 'plugin_rpath_MirrorTable'
     createSQL = """CREATE TABLE %s 
                    (user VARCHAR(255),
-                    mirror VARCHAR(255),
+                    permission VARCHAR(255),
                     password VARCHAR(255),
                     operation VARCHAR(255))""" % (name)
-    fields = ['user', 'mirror', 'password', 'operation']
+    fields = ['user', 'permission', 'password', 'operation']
     tableVersion = 1
 
     @writeOp
-    def setdata(self, cu, user='', mirror='', password='', operation=''):
+    def setdata(self, cu, user='', permission='', password='', operation=''):
         self.db.transaction()
-        cu.execute("""INSERT INTO %s (user, mirror, password, operation) 
-                          VALUES (?, ?, ?, ?)""" % (self.name), user, mirror,
+        cu.execute("""INSERT INTO %s (user, permission, password, operation) 
+                          VALUES (?, ?, ?, ?)""" % (self.name), user, 
+                                                    permission,
                                                     password, operation)
         return True
 
     @readOp
     def getdata(self,cu):
-        cu.execute("""SELECT user, mirror, password, 
+        cu.execute("""SELECT user, permission, password, 
                       operation FROM %s""" % (self.name))
         return cu.fetchall_dict()
 
@@ -49,7 +50,7 @@ class MirrorTable(DatabaseTable):
 class MirrorUsers(rAAWebPlugin):
     ''' 
     '''
-    displayName = _("Manage Mirroring Privileges")
+    displayName = _("Manage Users")
 
     tableClass = MirrorTable
 
@@ -66,22 +67,25 @@ class MirrorUsers(rAAWebPlugin):
 
         displayClass = 0
         for x in userList:
-            userData.append([x['user'], x['mirror'],
+            userData.append([x['user'], x['permission'],
                             displayClass and 'odd' or 'even'])
             displayClass = displayClass ^ 1
         return dict(userData=userData, userList=userList)
 
     @turbogears.expose(html="rPath.mirrorusers.add")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    def add(self, username=None, passwd1=None, passwd2=None):
+    def add(self, username=None, passwd1=None, passwd2=None, perm='Anonymous'):
         if not username and not passwd1 and not passwd2:
-            returnMessage='Add a new conary user with mirroring privileges'
+            returnMessage='Add a new user.  Mirroring permission allows the user to mirror to this repository from an rBuilder instance.'
             errorState = False
         elif not username:
             returnMessage = "Please enter a User Name."
             errorState = True
         elif passwd1 != passwd2 or not passwd1:
             returnMessage = "Passwords do not match. Please try again."
+            errorState = True
+        elif username == 'anonymous' and perm != 'Anonymous':
+            returnMessage = 'The User Name "anonymous" is reserved.  Please choose a different name.'
             errorState = True
         else:
             # Check to see if the user exists
@@ -99,22 +103,12 @@ class MirrorUsers(rAAWebPlugin):
             # Create the user
             if not errorState:
                 self.table.setdata(user=username, password=passwd1,
-                                   operation='add')
+                                   permission=perm, operation='add')
                 schedId = self.schedule(ScheduleImmed())
                 self.triggerImmed(schedId)
-                returnMessage= 'User "%s" added with mirroring privileges.' % \
-                             username
+                returnMessage= 'User "%s" added with %s privileges.' % \
+                             (username, perm)
         return dict(message=_(returnMessage), error=errorState)
-
-    @turbogears.expose()
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    def toggleMirror(self, username):
-        if not self.table.checkdata():
-            return self.index()
-        self.table.setdata(user=username, operation='mirror')
-        schedId = self.schedule(ScheduleImmed())
-        self.triggerImmed(schedId)
-        return self.index()
 
     @turbogears.expose(html='rPath.mirrorusers.delete')
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
@@ -153,8 +147,8 @@ class MirrorUsers(rAAWebPlugin):
 
     @cherrypy.expose()
     @localhostOnly
-    def setData(self, user, mirror):
-        return self.table.setdata(user=user, mirror=mirror)
+    def setData(self, user, permission):
+        return self.table.setdata(user=user, permission=permission)
 
     @cherrypy.expose
     @localhostOnly

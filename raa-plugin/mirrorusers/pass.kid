@@ -9,12 +9,8 @@
 <head>
   <title>Update Mirroring Privileges"</title>
   <style type="text/css">
-    p#errMessage {
-      text-decoration: italic;
+    h5#errMessage {
       color: #ff0000;
-    }
-    p#normMessage {
-      text-decoration: italic;
     }
   </style>
 </head>
@@ -31,8 +27,8 @@
    <hr />
   </p>
     <div id="add">
-      <p py:if="error" id="errMessage"><i>${message}</i></p>
-      <p py:if="not error" id="normMessage"><i>${message}</i></p>
+      <h5 py:if="error" id="errMessage">${message}</h5>
+      <h5 py:if="not error">${message}</h5>
        <form action="changePassword" method="POST">
          <input type="hidden" name="username" value="${username}"/>
            <table>
