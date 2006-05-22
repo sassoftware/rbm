@@ -9,7 +9,6 @@ import pwd
 from conary.server import schema
 from conary.lib import cfgtypes
 from conary.repository.netrepos.netserver import ServerConfig
-from conary.repository.netrepos.netserver import NetworkRepositoryServer
 from conary import dbstore
 
 def usage():
@@ -34,15 +33,6 @@ except cfgtypes.CfgEnvironmentError:
 
 if sys.argv[1] == 'init':
     updateSchema(cfg)
-    netRepos = NetworkRepositoryServer(cfg, 'http://localhost') 
-    # Add admin
-    netRepos.auth.addUser('admin', 'admin')
-    netRepos.auth.addAcl('admin', None, None, True, False, True)
-    netRepos.auth.setMirror('admin', True)
-    # Add anonymous
-    netRepos.auth.addUser('anonymous', 'anonymous')
-    netRepos.auth.addAcl('anonymous', None, None, False, False, False)
-    netRepos.auth.setMirror('anonymous', False)
     os.chown(cfg.repositoryDB[1], pwd.getpwnam('apache')[2], 
              pwd.getpwnam('apache')[3])
 elif sys.argv[1] == 'update':
