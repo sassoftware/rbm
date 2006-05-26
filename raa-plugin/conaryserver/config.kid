@@ -40,7 +40,7 @@
         <hr />
         <form action="setsrvname" method="post">
             <label for="servername"><h4>New Conary Repository Server Hostname:</h4></label>
-            <input type="text" id="servername" name="newsrv" style="width: 75%; float: left;"/>
+            <input type="text" id="servername" name="srvname" style="width: 75%; float: left;"/>
             <button type="submit"  class="img"><img alt="Add" src="${tg.url('/static/images/add_button.png')}"/></button>
         </form>
         <br/><br/><br/>

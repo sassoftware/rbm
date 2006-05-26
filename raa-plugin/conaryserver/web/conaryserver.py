@@ -68,28 +68,24 @@ class ConaryServer(rAAWebPlugin):
             cfg.read(self.cnrPath)
             data = cfg.serverName
         except CfgEnvironmentError:
-            return dict(data='unknown',
-                        pageText="""rPath Conary Repository Appliance could not
-                                    be located.  Please ensure that it is
-                                    properly installed.
-                                 """,
-                        errorState='error')
-
-        pageText = """Use this page to update the hostnames of your Conary 
-                      repository. Note that once any changes have been 
-                      committed to the repository using a specific hostname, 
-                      it will not be possible to delete that hostname."""
-
+            pageText="""rPath Conary Repository Appliance could not
+                        be located.  Please ensure that it is
+                        properly installed."""
+            errorState = 'error'
+        else:
+            pageText = """Use this page to update the hostnames of your Conary 
+                          repository. Note that once any changes have been 
+                          committed to the repository using a specific hostname,
+                          it will not be possible to delete that hostname."""
+            errorState = 'guide'
         
         return dict(data=[(x, self.checkRepository(x)) for x in getdata()], 
-                    pageText=pageText, errorState='guide')
+                    pageText=pageText, errorState=errorState)
 
     @turbogears.expose(html="rPath.conaryserver.config",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def setsrvname(self, srvname=''):
-        errorState = 'success'
-
         try:
             cfg = ServerConfig()
             cfg.read(self.cnrPath)
@@ -115,6 +111,7 @@ class ConaryServer(rAAWebPlugin):
                 errorState = 'error'
             else:
                 pageText = "Conary repository hostname updated."
+                errorState = 'success'
 
         return dict(pageText=pageText, 
                     data=[(x, self.checkRepository(x)) for x in getdata()], 
@@ -132,7 +129,6 @@ class ConaryServer(rAAWebPlugin):
 
         if not self.checkRepository(cfg, srvname):
             errorState = 'error'
-            data = [(x, self.checkRepository(x)) for x in getdata()]
             pageText = """Unable to delete repository hostame because it is 
                           in use"""
         else:
