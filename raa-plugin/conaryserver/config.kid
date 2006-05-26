@@ -11,32 +11,46 @@
     <style type="text/css">
         tr#oddRow {
             background: #c7d7ff;
-            text-decoration: italic;
-            right-padding: 0px;
+            font-style: italic;
         }
         tr#evenRow {
             background: #ffffff;
-            text-decoration: italic;
-            right-padding: 0px;
+            font-style: italic;
+        }
+        p#success {
+            background: #D7FFD4;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #61b75a;
+            padding: 5px;
+        }
+        p#error {
+            background: #FFDFD4;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ff8077;
+            padding: 5px;
         }
     </style>
 </head>
 
 <body>
         <h2>Update Conary Repository Server Hostnames</h2>
-        <p>${pageText}</p>
+        <p id="${errorState}">${pageText}</p>
         <hr />
+        <form action="setsrvname" method="post">
             <label for="servername"><h4>New Conary Repository Server Hostname:</h4></label>
             <input type="text" id="servername" name="newsrv" style="width: 75%; float: left;"/>
             <button type="submit"  class="img"><img alt="Add" src="${tg.url('/static/images/add_button.png')}"/></button>
+        </form>
         <br/><br/><br/>
 
-        <h4>Current Conary Repository Server Hostnames:</h4>
+        <h4 py:if="data">Current Conary Repository Server Hostnames:</h4>
         <table class="list">
             <?python rowType = 1 ?>
             <tr py:for="host in data" id="${rowType and 'oddRow' or 'evenRow'}">
-            <td>${host}</td>
-            <td><a href="delete">Delete</a></td>
+            <td>${host[0]}</td>
+            <td ><form py:if="host[1]" action="delsrvname" method="post"><input type="hidden" name="srvname" value="${host[0]}"/><button class="img" type="submit"><img src="${tg.url('/static/images/close16x16.png')}" value="Delete"/></button></form></td>
             <?python rowType = rowType ^ 1 ?>
             </tr>
         </table>

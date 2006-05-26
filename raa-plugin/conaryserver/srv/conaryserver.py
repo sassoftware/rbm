@@ -18,7 +18,8 @@ class ConaryServer(rAASrvPlugin):
         cnrPath = '/srv/conary/repository.cnr'
 
         data = self.server.getData()
-
+        if not len(data):
+            data = (localhost,)
         try:
             cfg = ServerConfig()
             cfg.read(cnrPath)

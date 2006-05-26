@@ -4,17 +4,13 @@
 from raa.db.schedule import ScheduleImmed
 from raa.db.rpath_error import ItemNotFound, DuplicateItem
 from raa.modules.raawebplugin import rAAWebPlugin
-from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
-from conary.repository import netclient
-from conary import conarycfg
 from conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
-from raa.db.lumberjack import *
 from raa.localhostonly import localhostOnly
 
 class SrvChangeTable(DatabaseTable):
@@ -72,36 +68,27 @@ class ConaryServer(rAAWebPlugin):
             cfg.read(self.cnrPath)
             data = cfg.serverName
         except CfgEnvironmentError:
-            return dict(data='unknown', 
+            return dict(data='unknown',
                         pageText="""rPath Conary Repository Appliance could not
-                                    be located.  Please ensure that it is 
+                                    be located.  Please ensure that it is
                                     properly installed.
                                  """,
-                        editable=False)
+                        errorState='error')
 
-        normalText = """Use this page to update the hostname of your Conary 
-                        repository. Note that once any changes have been 
-                        committed to the repository, it will not be possible 
-                        to change this value."""
-        noEditText = """Changes have already been commited to the repository
-                        hosted on:  %s\n
-                        \n
-                        Changing the hostname at this point is not
-                        permitted.""" % data
+        pageText = """Use this page to update the hostnames of your Conary 
+                      repository. Note that once any changes have been 
+                      committed to the repository using a specific hostname, 
+                      it will not be possible to delete that hostname."""
 
-        editable = self.checkRepository(cfg)
-        if editable:
-            pageText = normalText
-        else:
-            pageText = noEditText
+        
+        return dict(data=[(x, self.checkRepository(x)) for x in getdata()], 
+                    pageText=pageText, errorState='guide')
 
-        return dict(data=data, pageText=pageText, editable=editable)
-
-    @turbogears.expose(html="rPath.conaryserver.complete",
+    @turbogears.expose(html="rPath.conaryserver.config",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    def chsrvname(self, srvname=''):
-        errorState = False
+    def setsrvname(self, srvname=''):
+        errorState = 'success'
 
         try:
             cfg = ServerConfig()
@@ -109,13 +96,9 @@ class ConaryServer(rAAWebPlugin):
         except CfgEnvironmentError:
             return self.index()
 
-        # Revalidate that nothing has been committed
-        if not self.checkRepository(cfg):
-            return self.index()
-
         if not srvname:
             pageText = "Error:  Blank hostname entered."
-            errorState = True
+            errorState = 'error'
         else:
             self.table.setdata(srvname)
             schedId = self.schedule(ScheduleImmed())
@@ -127,15 +110,42 @@ class ConaryServer(rAAWebPlugin):
                 cfg.read(self.cnrPath)
             except CfgEnvironmentError:
                 return self.index()
-            if cfg.serverName != srvname.strip(' '):
+            if srvname.strip() not in cfg.serverName:
                 pageText = "Error:  Unable to update hostname."
-                errorState = True
+                errorState = 'error'
             else:
                 pageText = "Conary repository hostname updated."
 
-        return dict(pageText=pageText, srvname=cfg.serverName, 
+        return dict(pageText=pageText, 
+                    data=[(x, self.checkRepository(x)) for x in getdata()], 
                     errorState=errorState)
 
+    @turbogears.expose(html="rPath.conaryserver.config",
+                       allow_json=True)
+    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    def delsrvname(self, srvname):
+        try:
+            cfg = ServerConfig()
+            cfg.read(self.cnrPath)
+        except CfgEnvironmentError:
+            return self.index()
+
+        if not self.checkRepository(cfg, srvname):
+            errorState = 'error'
+            data = [(x, self.checkRepository(x)) for x in getdata()]
+            pageText = """Unable to delete repository hostame because it is 
+                          in use"""
+        else:
+            self.table.clearserver(srvname)
+            schedId = self.schedule(ScheduleImmed())
+            self.triggerImmed(schedId)
+            errorState='success'
+            pageText = '%s deleted.' % srvname
+
+        return dict(pageText=pageText, 
+                    data=[(x, self.checkRepository(x)) for x in getdata()], 
+                    errorState=errorState)
+        
     def checkRepository(self, cfg, srvname):
         if self.table.countEntries() < 2:
             return False
