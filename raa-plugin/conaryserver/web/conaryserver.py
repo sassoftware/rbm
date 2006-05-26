@@ -19,29 +19,42 @@ from raa.localhostonly import localhostOnly
 
 class SrvChangeTable(DatabaseTable):
     name = 'plugin_rpath_SrvChangeTable'
-    createSQL = """CREATE TABLE %s 
-                   (newsrv VARCHAR(255))""" % (name)
-    fields = ['newsrv']
+    createSQL = """CREATE TABLE %s
+                   (srvname VARCHAR(255))""" % (name)
+    fields = ['srvname']
     tableVersion = 1
 
     @writeOp
-    def setdata(self, cu, srvname):
+    def clearserver(self, cu, srvname):
         self.db.transaction()
-        # Check the table is empty.
-        cu.execute("SELECT COUNT(*) FROM %s" % (self.name))
-        results = cu.fetchone()
-        if results[0]:
-            cu.execute("UPDATE %s SET newsrv=?" % (self.name), srvname)
-            return True
+        try:
+            cu.execute("DELETE FROM %s WHERE srvname=?" % (self.name), srvname)
+        except:
+            self.db.rollback()
         else:
-            cu.execute("""INSERT INTO %s (newsrv) 
-                          VALUES (?)""" % (self.name), srvname)
-            return True
+            self.db.commit()
+        return True
+
+    @writeOp
+    def setserver(self, cu, srvname):
+        self.db.transaction()
+        try:
+            # Check the table is empty.
+            cu.execute("SELECT COUNT(*) FROM %s WHERE srvname=?" % (self.name),
+                       srvname)
+            if not cu.fetchone()[0]:
+                cu.execute("INSERT INTO %s (srvname) VALUES (?)" % \
+                           (self.name), srvname)
+        except:
+            self.db.rollback()
+        else:
+            self.db.commit()
+        return True
 
     @readOp
     def getdata(self,cu):
-        cu.execute("""SELECT newsrv FROM %s""" % (self.name))
-        return cu.fetchall_dict()
+        cu.execute("""SELECT srvname FROM %s""" % (self.name))
+        return [x[0] for x in cu.fetchall()]
 
 class ConaryServer(rAAWebPlugin):
     '''
@@ -91,7 +104,7 @@ class ConaryServer(rAAWebPlugin):
     @turbogears.expose(html="rPath.conaryserver.complete",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    def chsrvname(self, newsrv=''):
+    def chsrvname(self, srvname=''):
         errorState = False
 
         try:
@@ -104,11 +117,11 @@ class ConaryServer(rAAWebPlugin):
         if not self.checkRepository(cfg):
             return self.index()
 
-        if not newsrv:
+        if not srvname:
             pageText = "Error:  Blank hostname entered."
             errorState = True
         else:
-            self.table.setdata(newsrv)
+            self.table.setdata(srvname)
             schedId = self.schedule(ScheduleImmed())
             self.triggerImmed(schedId)
         
@@ -118,7 +131,7 @@ class ConaryServer(rAAWebPlugin):
                 cfg.read(self.cnrPath)
             except CfgEnvironmentError:
                 return self.index()
-            if cfg.serverName != newsrv.strip(' '):
+            if cfg.serverName != srvname.strip(' '):
                 pageText = "Error:  Unable to update hostname."
                 errorState = True
             else:

@@ -16,13 +16,13 @@ class ConaryServer(rAASrvPlugin):
         '''
 
         cnrPath = '/srv/conary/repository.cnr'
-    
-        data = self.server.getData()[0]
+
+        data = self.server.getData()
 
         try:
             cfg = ServerConfig()
             cfg.read(cnrPath)
-            cfg.serverName = data['newsrv']
+            cfg.serverName = data
         except CfgEnvironmentError:
             pass
 
