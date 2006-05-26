@@ -27,32 +27,23 @@ class SrvChangeTable(DatabaseTable):
     @writeOp
     def clearserver(self, cu, srvname):
         self.db.transaction()
-        try:
-            cu.execute("DELETE FROM %s WHERE srvname=?" % (self.name), srvname)
-        except:
-            self.db.rollback()
-        else:
-            self.db.commit()
+        cu.execute("DELETE FROM %s WHERE srvname=?" % (self.name), srvname)
         return True
 
     @writeOp
     def setserver(self, cu, srvname):
         self.db.transaction()
-        try:
-            # Check the table is empty.
-            cu.execute("SELECT COUNT(*) FROM %s WHERE srvname=?" % (self.name),
-                       srvname)
-            if not cu.fetchone()[0]:
-                cu.execute("INSERT INTO %s (srvname) VALUES (?)" % \
-                           (self.name), srvname)
-        except:
-            self.db.rollback()
-        else:
-            self.db.commit()
-        return True
+        # Check the table is empty.
+        cu.execute("SELECT COUNT(*) FROM %s WHERE srvname=?" % (self.name),
+                   srvname)
+        if not cu.fetchone()[0]:
+            cu.execute("INSERT INTO %s (srvname) VALUES (?)" % \
+                       (self.name), srvname)
+            return True
+        return False
 
     @readOp
-    def getdata(self,cu):
+    def getdata(self, cu):
         cu.execute("""SELECT srvname FROM %s""" % (self.name))
         return [x[0] for x in cu.fetchall()]
 
@@ -140,7 +131,7 @@ class ConaryServer(rAAWebPlugin):
         return dict(pageText=pageText, srvname=cfg.serverName, 
                     errorState=errorState)
 
-    def checkRepository(self, cfg):
+    def checkRepository(self, cfg, srvname):
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()
         cu.execute("SELECT COUNT(*) FROM Instances")
