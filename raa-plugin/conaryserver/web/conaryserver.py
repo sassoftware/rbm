@@ -47,6 +47,11 @@ class SrvChangeTable(DatabaseTable):
         cu.execute("""SELECT srvname FROM %s""" % (self.name))
         return [x[0] for x in cu.fetchall()]
 
+    @readOp
+    def countEntries(self, cu):
+        cu.execute("SELECT COUNT(*) FROM %s" % self.name)
+        return cu.fetchone()[0]
+
 class ConaryServer(rAAWebPlugin):
     '''
         This plugin configures the conary repository server name.
@@ -132,6 +137,8 @@ class ConaryServer(rAAWebPlugin):
                     errorState=errorState)
 
     def checkRepository(self, cfg, srvname):
+        if self.table.countEntries() < 2:
+            return False
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()
         cu.execute("""SELECT EXISTS(
