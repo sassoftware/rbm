@@ -1,6 +1,6 @@
 rBuilder Mirror Installation Quick Start Guide
 
-This document describes the steps necessary to install the rBuilder
+This document describes the steps necessary to install the rBuilder Mirror
 software appliance on the hardware you've provided.
 
 Prerequisites
@@ -10,8 +10,8 @@ Before you begin, make sure you have the necessary hardware and network
 connectivity in place, namely:
 
     o A network-connected dedicated x86 server with at least 40GB of local
-      storage, a CD-ROM or DVD-ROM drive.  The server must be configured to
-      boot from the CD-ROM/DVD-ROM.
+      storage, and a CD-ROM or DVD-ROM drive.  The server must be
+      configured to boot from the CD-ROM/DVD-ROM.
 
       NOTE: rBuilder Mirror is packaged as a software appliance.  As such,
       it is configured to run on dedicated hardware, including all
@@ -32,8 +32,8 @@ Installation Procedure
 Now that you have the necessary materials available, it is time to install
 the rBuilder Mirror:
 
-1. Insert the rPath rBuilder Mirror CD-ROM into the server's CD-ROM
-   drive and boot the computer, ensuring that it boots from the CD-ROM.
+1. Insert the rBuilder Mirror CD-ROM into the server's CD-ROM drive and
+   boot the computer, ensuring that it boots from the CD-ROM.
 
     WARNING: PERFORMING THIS INSTALLATION WILL DELETE ALL PRE-EXISTING DATA
     ON THIS SYSTEM!
@@ -52,7 +52,7 @@ the rBuilder Mirror:
       purpose.  Note that the default partitioning settings allocate the
       bulk of the system's local storage to /srv/ for you.  However, should
       you wish to place the Mirror-specific data on network-attached
-      storage that more easily integrates with your organization's IT
+      storage that more directly integrates with your organization's IT
       infrastructure, you can modify the settings so that /srv/ is an
       NFS-mounted filesystem.
 
@@ -91,16 +91,16 @@ created by a recognized Certificate Authority; this is normal.
    the rAA Wizard to perform the necessary first-time configuration.  Click
    on the "OK" button.
 
-4. Next, the rAA Wizard steps your through the following configuration
+4. Next, the rAA Wizard steps you through the following configuration
    dialogs:
 
     o Change Password -- Enter the current rAA administrator password and
       the new password.  Click on the "Change Password" button.
 
     o Email Configuration -- Enter the FQDN of the system that accepts
-      email sent within your organization, and an email address should be
-      used as the "from" address for all email sent by rAA.  Click on the
-      "OK" button.
+      email sent within your organization, and an email address that should
+      be used as the "from" address for all email sent by rAA.  Click on
+      the "OK" button.
 
     o Email Notification Addresses -- Follow the on-screen instructions to
       add one or more email addresses that should receive email
@@ -123,8 +123,8 @@ Adding Users
 ------ -----
 
 Now that the overall rBuilder Mirror has been installed and configured, it
-is time to set up the user account(s) appropriate for your intended use of
-the Mirror:
+is time to set up the user account(s) appropriate for your Mirror's
+intended use:
 
 1. Click on the "Manage Users" link in the rAA menu.
 
@@ -140,12 +140,12 @@ the Mirror:
       the rBuilder Mirror, or to read mirror image copies from the rBuilder
       Mirror into other Conary repositories.
 
-    o Anonymous -- A user with the Anonymous permission has read-only
-      access to the contents of the rBuilder Mirror's repository without
-      any kind of authentication.  NOTE: Selecting this permission causes
-      the username and password to be automatically filled in.
+    o Anonymous -- A user with Anonymous permission has read-only access to
+      the contents of the rBuilder Mirror's repository without any kind of
+      authentication.  NOTE: Selecting this permission causes the username
+      and password to be automatically filled in.
 
-    o Admin -- A user with the Admin permission has the ability to perform
+    o Admin -- A user with Admin permission has the ability to perform
       administrative tasks on the rBuilder Mirror's underlying Conary
       repository.
 
