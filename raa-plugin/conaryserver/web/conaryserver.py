@@ -78,8 +78,8 @@ class ConaryServer(rAAWebPlugin):
                           committed to the repository using a specific hostname,
                           it will not be possible to delete that hostname."""
             errorState = 'guide'
-
-        return dict(data=[(x, self.checkRepository(x)) for x in getdata()],
+        
+        return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     pageText=pageText, errorState=errorState)
 
     @turbogears.expose(html="rPath.conaryserver.config",
@@ -96,7 +96,7 @@ class ConaryServer(rAAWebPlugin):
             pageText = "Error:  Blank hostname entered."
             errorState = 'error'
         else:
-            self.table.setdata(srvname)
+            self.table.setserver(srvname)
             schedId = self.schedule(ScheduleImmed())
             self.triggerImmed(schedId)
 
@@ -113,8 +113,8 @@ class ConaryServer(rAAWebPlugin):
                 pageText = "Conary repository hostname updated."
                 errorState = 'success'
 
-        return dict(pageText=pageText,
-                    data=[(x, self.checkRepository(x)) for x in getdata()],
+        return dict(pageText=pageText, 
+                    data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     errorState=errorState)
 
     @turbogears.expose(html="rPath.conaryserver.config",
@@ -129,7 +129,7 @@ class ConaryServer(rAAWebPlugin):
 
         if not self.checkRepository(cfg, srvname):
             errorState = 'error'
-            pageText = "Unable to delete repository hostame because it is " \
+            pageText = "Unable to delete repository hostname because it is " \
                        "in use"
         else:
             self.table.clearserver(srvname)
@@ -138,22 +138,23 @@ class ConaryServer(rAAWebPlugin):
             errorState='success'
             pageText = '%s deleted.' % srvname
 
-        return dict(pageText=pageText,
-                    data=[(x, self.checkRepository(x)) for x in getdata()],
+        return dict(pageText=pageText, 
+                    data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     errorState=errorState)
-
+        
     def checkRepository(self, cfg, srvname):
         if self.table.countEntries() < 2:
             return False
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()
+        subStr = '%/' + srvname + '@%'
         cu.execute("""SELECT * FROM Versions
                           LEFT JOIN Instances
                           ON Versions.versionId=Instances.versionId
-                          WHERE version LIKE '%/?@%' LIMIT 1""", srvname)
-        res = cu.fetchall()
+                          WHERE version LIKE ? LIMIT 1""", subStr)
+        res = not cu.fetchall()
         db.close()
-        return bool(res)
+        return res
 
     @cherrypy.expose
     @localhostOnly
