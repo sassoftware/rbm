@@ -147,14 +147,13 @@ class ConaryServer(rAAWebPlugin):
             return False
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()
-        cu.execute("""SELECT EXISTS(
-                          SELECT * FROM Versions
+        cu.execute("""SELECT * FROM Versions
                           LEFT JOIN Instances
-                              ON Versions.versionId=Instances.versionId
-                          WHERE version LIKE '%/?@%' LIMIT 1);""", srvname)
-        res = cu.fetchone()[0]
+                          ON Versions.versionId=Instances.versionId
+                          WHERE version LIKE '%/?@%' LIMIT 1""", srvname)
+        res = cu.fetchall()
         db.close()
-        return not res
+        return bool(res)
 
     @cherrypy.expose
     @localhostOnly
