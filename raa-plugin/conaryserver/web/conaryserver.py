@@ -50,14 +50,14 @@ class SrvChangeTable(DatabaseTable):
 
 class ConaryServer(rAAWebPlugin):
     '''
-        This plugin configures the conary repository server name.
+        This plugin configures the conary repository server names.
     '''
 
     displayName = _("Conary Repository Server")
     tooltip = _("Update the server name of your Conary repository")
 
     tableClass = SrvChangeTable
-    
+
     cnrPath = '/srv/conary/repository.cnr'
 
     @turbogears.expose(html="rPath.conaryserver.config")
@@ -73,13 +73,13 @@ class ConaryServer(rAAWebPlugin):
                         properly installed."""
             errorState = 'error'
         else:
-            pageText = """Use this page to update the hostnames of your Conary 
-                          repository. Note that once any changes have been 
+            pageText = """Use this page to update the hostnames of your Conary
+                          repository. Note that once any changes have been
                           committed to the repository using a specific hostname,
                           it will not be possible to delete that hostname."""
             errorState = 'guide'
-        
-        return dict(data=[(x, self.checkRepository(x)) for x in getdata()], 
+
+        return dict(data=[(x, self.checkRepository(x)) for x in getdata()],
                     pageText=pageText, errorState=errorState)
 
     @turbogears.expose(html="rPath.conaryserver.config",
@@ -99,7 +99,7 @@ class ConaryServer(rAAWebPlugin):
             self.table.setdata(srvname)
             schedId = self.schedule(ScheduleImmed())
             self.triggerImmed(schedId)
-        
+
             # Reload the conary.cnr file to see if the update worked
             try:
                 cfg = ServerConfig()
@@ -113,8 +113,8 @@ class ConaryServer(rAAWebPlugin):
                 pageText = "Conary repository hostname updated."
                 errorState = 'success'
 
-        return dict(pageText=pageText, 
-                    data=[(x, self.checkRepository(x)) for x in getdata()], 
+        return dict(pageText=pageText,
+                    data=[(x, self.checkRepository(x)) for x in getdata()],
                     errorState=errorState)
 
     @turbogears.expose(html="rPath.conaryserver.config",
@@ -129,8 +129,8 @@ class ConaryServer(rAAWebPlugin):
 
         if not self.checkRepository(cfg, srvname):
             errorState = 'error'
-            pageText = """Unable to delete repository hostame because it is 
-                          in use"""
+            pageText = "Unable to delete repository hostame because it is " \
+                       "in use"
         else:
             self.table.clearserver(srvname)
             schedId = self.schedule(ScheduleImmed())
@@ -138,10 +138,10 @@ class ConaryServer(rAAWebPlugin):
             errorState='success'
             pageText = '%s deleted.' % srvname
 
-        return dict(pageText=pageText, 
-                    data=[(x, self.checkRepository(x)) for x in getdata()], 
+        return dict(pageText=pageText,
+                    data=[(x, self.checkRepository(x)) for x in getdata()],
                     errorState=errorState)
-        
+
     def checkRepository(self, cfg, srvname):
         if self.table.countEntries() < 2:
             return False
