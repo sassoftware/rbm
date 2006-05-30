@@ -77,10 +77,9 @@ system-level tasks:
 *** FIXME -- SSL is not currently used, but it probably should be, meaning
     the warning message text will need to be kept ***
 
-You may see warning messages about the certificate being used not being
-created by a recognized Certificate Authority; this is normal.
-
-2. The rAA "sign in" box appears in the new window.  Sign in using the
+2. The rAA "sign in" box appears in the new window.  (You may see warning
+   messages about the certificate being used not being created by a
+   recognized Certificate Authority; this is normal.)  Sign in using the
    following information (you will be changing the password in a moment):
 
     o Username: admin
@@ -116,8 +115,11 @@ created by a recognized Certificate Authority; this is normal.
 Configuring *** FIXME -- What's the term? ***
 ----------- --- ----- -- ------ --- ----- ---
 
-*** FIXME -- Describing the new "Conary repository server hostname" goes
-    here ***
+With the system-level configuration completed, it is now time to prepare
+your rBuilder Mirror's repository to receive software from one or more
+rBuilder Appliances:
+
+1. 
 
 Adding Users
 ------ -----
