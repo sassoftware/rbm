@@ -23,7 +23,7 @@ class ConaryServer(rAASrvPlugin):
         try:
             cfg = ServerConfig()
             cfg.read(cnrPath)
-            cfg.serverName = data
+            cfg.serverName = ' '.join(data)
         except CfgEnvironmentError:
             pass
 
