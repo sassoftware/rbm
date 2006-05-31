@@ -2,7 +2,6 @@
 # All rights reserved
 
 from raa.db.schedule import ScheduleImmed
-from raa.db.rpath_error import ItemNotFound, DuplicateItem
 from raa.modules.raawebplugin import rAAWebPlugin
 import turbogears
 import cherrypy
