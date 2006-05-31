@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-  <title>Update Mirroring Privileges</title>
+  <title>Manage Repository Users</title>
 </head>
 <body>
   <div class="tabs">
@@ -21,7 +21,8 @@
    <hr />
   </p>
     <div id="users" py:if="userData">
-    <h5>The following users have permission to access this repository.  Users with the "Mirroring" permission are allowed to mirrror to this repository.</h5>
+    <h5>Repository users provide access to various aspects of rBuilder Mirror, including mirroring, anonymous, and administrative access.  Click on the "Add User" tab to create a new repository user, or use the "Delete" or "Password" links below to delete a user or change their password.
+</h5>
     <table class="list" cellspacing="0">
     <thead>
       <tr>
@@ -39,7 +40,7 @@
     </tbody>
     </table>
     </div>
-    <div py:if="not userData"><h5>There are currently no conary users on this system.  Click the "Add User" tab to create one.  To mirror to this repository, a user must have Mirroring permission.</h5></div> 
+    <div py:if="not userData"><h5><p>Repository users provide access to various aspects of rBuilder Mirror, including mirroring, anonymous, and administrative operations.  Click on the "Add User" tab to create a repository user.</p><p>There are currently no repository users.</p></h5></div> 
 </body>
 </html>
 <!-- vim: set ts=2 sw=2 sts=2 expandtab autoindent: -->

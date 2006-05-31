@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-  <title>Update Mirroring Privileges</title>
+  <title>Manage Repository Users</title>
   <style type="text/css">
     h5#warnText {
       color: #ff0000;
@@ -28,40 +28,35 @@
               pass2.value = '';
             }
             if (textType == 'anon') {
-              text = 'Creating the Anonymous User provides read-only access to the entire repository and makes its contents available to anyone with network access to this mirror.  Use caution when creating this user.';
+              var text = 'Anonymous -- Creating a user with anonymous permission makes the contents of your rBuilder Mirror repository available -- on a read-only basis -- to anyone with network access.';
+              var warningText = 'Caution: Creating an anonymous user bypasses all username and entitlement-based authentication!';
               user.readOnly = true;
               user.value = 'anonymous';
               pass1.readOnly = true;
               pass1.value = 'anonymous';
               pass2.readOnly = true;
               pass2.value = 'anonymous';
-              textStyle = 'warnText';
             }
             else if (textType == 'mirror') {
-              text = 'A user with Mirroring permission can mirror and write to the repository.  Create a user of this type if you wish to mirror to this repository.';
-              textStyle = 'guideText';
+              text = 'Mirroring -- Creating a user with mirroring permission allows the user to mirror the contents of an rBuilder Appliance to this repository, or to mirror the contents of this repository to another repository.';
+              warningText = '';
             }
             else if (textType = 'admin') {
-              text = 'An admin user is used to access the Conary web interface directly.  A user with admin permission has the ability to create, delete, and modify other users.  The admin user can fine-tune a users\' access permissions to individual troves.  Create an admin user only if you wish to access the Conary web interface directly.  Admin privileges are not needed for mirroring.';
-              textStyle = 'warnText';
+              var text = 'Admin Access -- Creating a user with admin permission makes it possible to perform low-level operations on your rBuilder Mirror repository.  A user with admin permission has the ability to create, delete, and modify other users, and fine-tune access permissions across the repository.';
+              var warningText = 'Caution: Admin users have the ability to disrupt the operation of your rBuilder Mirror repository.  Create an admin user only if you have a specific need to do so!';
             }
-            var e = document.getElementsByTagName("h5");
-            for (var i = 0; e.length > i; i++) {
-              if (e[i].id == 'guideText') {
-                var nodeId = 'guideText';
-                break;
-              }
-              else if (e[i].id == 'warnText') {
-                var nodeId = 'warnText';
-                break;
-              }
-            }
-            var oldNode = document.getElementById(nodeId);
+            var oldNode = document.getElementById('guideText');
             var newNode = document.createElement("h5");
-            newNode.id = textStyle;
             var txtNode = document.createTextNode(text);
+            newNode.id = 'guideText';
             newNode.appendChild(txtNode);
             oldNode.parentNode.replaceChild(newNode, oldNode);
+            var oldWNode = document.getElementById('warnText');
+            var newWNode = document.createElement("h5");
+            newWNode.id = 'warnText';
+            var txtWNode = document.createTextNode(warningText);
+            newWNode.appendChild(txtWNode);
+            oldWNode.parentNode.replaceChild(newWNode, oldWNode);
         }
   </script>
 </head>
@@ -77,8 +72,8 @@
    <hr />
   </p>
     <div id="add">
-      <h5 py:if="error" id="warnText">${message}</h5>
-      <h5 py:if="not error" id="guideText">${message}</h5>
+      <h5 id="guideText">${message}</h5>
+      <h5 id="warnText"></h5>
        <form action="add" method="POST">
            <table>
                 <tr>

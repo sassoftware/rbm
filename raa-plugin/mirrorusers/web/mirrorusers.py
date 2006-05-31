@@ -50,7 +50,7 @@ class MirrorTable(DatabaseTable):
 class MirrorUsers(rAAWebPlugin):
     ''' 
     '''
-    displayName = _("Manage Users")
+    displayName = _("Manage Repository Users")
 
     tableClass = MirrorTable
 
@@ -76,16 +76,18 @@ class MirrorUsers(rAAWebPlugin):
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def add(self, username=None, passwd1=None, passwd2=None, perm='Anonymous'):
         if not username and not passwd1 and not passwd2:
-            returnMessage='Add a new user.  Mirroring permission allows the user to mirror to this repository from an rBuilder instance.'
+            returnMessage="""Enter the following information, select the 
+                             desired permission, and click on the "Apply" 
+                             button to create a repository user."""
             errorState = False
         elif not username:
-            returnMessage = "Please enter a User Name."
+            returnMessage = "Please enter a user uame."
             errorState = True
         elif passwd1 != passwd2 or not passwd1:
             returnMessage = "Passwords do not match. Please try again."
             errorState = True
         elif username == 'anonymous' and perm != 'Anonymous':
-            returnMessage = 'The User Name "anonymous" is reserved.  Please choose a different name.'
+            returnMessage = 'The user name "anonymous" is reserved.  Please choose a different user name.'
             errorState = True
         else:
             # Check to see if the user exists
@@ -98,7 +100,7 @@ class MirrorUsers(rAAWebPlugin):
             errorState = False
             for x in userList:
                 if x['user'] == username:
-                    returnMessage = 'User "%s" already exists.  Please choose a different name.' % username
+                    returnMessage = 'User "%s" already exists.  Please choose a different user name.' % username
                     errorState = True
             # Create the user
             if not errorState:
@@ -106,7 +108,7 @@ class MirrorUsers(rAAWebPlugin):
                                    permission=perm, operation='add')
                 schedId = self.schedule(ScheduleImmed())
                 self.triggerImmed(schedId)
-                returnMessage= 'User "%s" added with %s privileges.' % \
+                returnMessage= 'User "%s" added with %s permission.' % \
                              (username, perm)
         return dict(message=_(returnMessage), error=errorState)
 
@@ -126,7 +128,7 @@ class MirrorUsers(rAAWebPlugin):
     def changePassword(self, username, passwd1='', passwd2=''):
         if not passwd1:
             errorState=False
-            message = 'Enter a new password for the conary user "%s":'\
+            message = 'Enter a new password for the repository user "%s":'\
                                                                % username
         elif passwd1 != passwd2: 
             message = "Passwords do not match. Please try again."

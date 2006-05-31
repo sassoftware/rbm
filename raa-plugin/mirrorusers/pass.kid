@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-  <title>Update Mirroring Privileges"</title>
+  <title>Manage Repository Users</title>
   <style type="text/css">
     h5#errMessage {
       color: #ff0000;

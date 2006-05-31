@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-  <title>Delete User</title>
+  <title>Manage Repository Users</title>
   <style type="text/css">
     h5#warn {
       color: #ff0000;
@@ -28,7 +28,7 @@
   </p>
     <div id="del">
       <h3>Confirm:</h3>
-      <h5 id="warn">Delete the conary user "${username}"?</h5>
+      <h5 id="warn">Delete the repository user "${username}"?</h5>
        <form action="deleteUser" method="POST">
          <input type="hidden" name="username" value="${username}"/>
          <input type="hidden" name="confirm" value="True"/>
