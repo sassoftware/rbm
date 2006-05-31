@@ -142,8 +142,6 @@ class ConaryServer(rAAWebPlugin):
                     errorState=errorState)
         
     def checkRepository(self, cfg, srvname):
-        if self.table.countEntries() < 2:
-            return False
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()
         subStr = '%/' + srvname + '@%'
