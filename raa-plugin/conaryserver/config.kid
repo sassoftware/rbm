@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-    <title>Set the Conary Server Hostname</title>
+    <title>Update Repository Server Names</title>
     <style type="text/css">
         tr#oddRow {
             background: #c7d7ff;
@@ -17,14 +17,14 @@
             background: #ffffff;
             font-style: italic;
         }
-        p#success {
+        h5#success {
             background: #D7FFD4;
             border-width: 1px;
             border-style: solid;
             border-color: #61b75a;
             padding: 5px;
         }
-        p#error {
+        h5#error {
             background: #FFDFD4;
             border-width: 1px;
             border-style: solid;
@@ -35,17 +35,17 @@
 </head>
 
 <body>
-        <h2>Update Conary Repository Server Hostnames</h2>
-        <p id="${errorState}">${pageText}</p>
+        <h2>Update Repository Server Names</h2>
+        <h5 id="${errorState}">${XML(pageText)}</h5>
         <hr />
         <form action="setsrvname" method="post">
-            <label for="servername"><h4>New Conary Repository Server Hostname:</h4></label>
+            <label for="servername"><h4>New Repository Server Name:</h4></label>
             <input type="text" id="servername" name="srvname" style="width: 75%; float: left;"/>
             <button type="submit"  class="img"><img alt="Add" src="${tg.url('/static/images/add_button.png')}"/></button>
         </form>
         <br/><br/><br/>
 
-        <h4 py:if="data">Current Conary Repository Server Hostnames:</h4>
+        <h4 py:if="data">Current Repository Server Names:</h4>
         <table class="list">
             <?python rowType = 1 ?>
             <tr py:for="host in data" id="${rowType and 'oddRow' or 'evenRow'}">

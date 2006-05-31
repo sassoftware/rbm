@@ -19,7 +19,7 @@ class ConaryServer(rAASrvPlugin):
 
         data = self.server.getData()
         if not len(data):
-            data = (localhost,)
+            data = ('localhost',)
         try:
             cfg = ServerConfig()
             cfg.read(cnrPath)

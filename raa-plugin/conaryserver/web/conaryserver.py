@@ -52,8 +52,7 @@ class ConaryServer(rAAWebPlugin):
         This plugin configures the conary repository server names.
     '''
 
-    displayName = _("Conary Repository Server")
-    tooltip = _("Update the server name of your Conary repository")
+    displayName = _("Update Repository Server Names")
 
     tableClass = SrvChangeTable
 
@@ -67,15 +66,29 @@ class ConaryServer(rAAWebPlugin):
             cfg.read(self.cnrPath)
             data = cfg.serverName
         except CfgEnvironmentError:
-            pageText="""rPath Conary Repository Appliance could not
-                        be located.  Please ensure that it is
-                        properly installed."""
+            pageText="""rBuilder Mirror could not read the configuration 
+                        file "%s".  Please ensure rBuilder Mirror is
+                        properly installed.""" % self.cnrPath
             errorState = 'error'
         else:
-            pageText = """Use this page to update the hostnames of your Conary
-                          repository. Note that once any changes have been
-                          committed to the repository using a specific hostname,
-                          it will not be possible to delete that hostname."""
+            pageText = """<p>To use rBuilder Mirror, you must specify one or 
+                          more server names reflecting the server name 
+                          portion(s) of the label(s) you wish to mirror.</p>
+
+                          <p>For example, given a repository containing software
+                          under the <tt>repo.example.com@org:prod-1</tt> label,
+                          the server name <tt>repo.example.com</tt> should be 
+                          entered here.</p>
+
+                          <p>Enter the desired server name, and click on the 
+                          "Add" button.  Incorrectly-entered server names can 
+                          be deleted by clicking on the corresponding [X] icon;
+                          however, once software has been committed to the
+                          repository under a given label, its server name may 
+                          no longer be deleted.</p>
+
+                          <p>NOTE: You <em>must</em> specify at least one 
+                          server name here.</p>"""
             errorState = 'guide'
         
         return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
@@ -92,7 +105,7 @@ class ConaryServer(rAAWebPlugin):
             return self.index()
 
         if not srvname:
-            pageText = "Error:  Blank hostname entered."
+            pageText = "Blank hostname entered."
             errorState = 'error'
         else:
             self.table.setserver(srvname)
@@ -109,7 +122,7 @@ class ConaryServer(rAAWebPlugin):
                 pageText = "Error:  Unable to update hostname."
                 errorState = 'error'
             else:
-                pageText = "Conary repository hostname updated."
+                pageText = "Repository name updated."
                 errorState = 'success'
 
         return dict(pageText=pageText, 
@@ -128,14 +141,14 @@ class ConaryServer(rAAWebPlugin):
 
         if not self.checkRepository(cfg, srvname):
             errorState = 'error'
-            pageText = "Unable to delete repository hostname because it is " \
-                       "in use"
+            pageText = "Unable to delete repository name because it is " \
+                       "in use."
         else:
             self.table.clearserver(srvname)
             schedId = self.schedule(ScheduleImmed())
             self.triggerImmed(schedId)
             errorState='success'
-            pageText = '%s deleted.' % srvname
+            pageText = 'Repository name "%s" deleted.' % srvname
 
         return dict(pageText=pageText, 
                     data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
