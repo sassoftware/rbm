@@ -50,11 +50,7 @@ the rBuilder Mirror:
     o The rBuilder Mirror stores all its data under /srv/; a dedicated
       filesystem with sufficient storage must be allocated for this
       purpose.  Note that the default partitioning settings allocate the
-      bulk of the system's local storage to /srv/ for you.  However, should
-      you wish to place the Mirror-specific data on network-attached
-      storage that more directly integrates with your organization's IT
-      infrastructure, you can modify the settings so that /srv/ is an
-      NFS-mounted filesystem.
+      bulk of the system's local storage to /srv/ for you.
 
 3. When the installation finishes, reboot (making sure to configure the
    system to boot from its primary disk drive).
@@ -62,10 +58,10 @@ the rBuilder Mirror:
 rAA Configuration
 --- -------------
 
-Now that the rBuilder Mirror is up and running, it is time to configure
-it from a system-level perspective.  For that, it is necessary to use the
-Mirror's rAA (rPath Appliance Agent) interface.  rAA makes it possible
-for your rBuilder Mirror to receive updated software, and perform other
+Now that your rBuilder Mirror is up and running, it is time to configure it
+from a system-level perspective.  For that, it is necessary to use the
+Mirror's rAA (rPath Appliance Agent) interface.  rAA makes it possible for
+your rBuilder Mirror to receive updated software, and perform other
 system-level tasks:
 
 1. Use a Web browser to access the server.  Use a URL in the form
@@ -73,9 +69,6 @@ system-level tasks:
    server's fully-qualified domain name.
 
    NOTE: you MUST use the fully-qualified domain name to access the server!
-
-*** FIXME -- SSL is not currently used, but it probably should be, meaning
-    the warning message text will need to be kept ***
 
 2. The rAA "sign in" box appears in the new window.  (You may see warning
    messages about the certificate being used not being created by a
@@ -112,14 +105,22 @@ system-level tasks:
 5. Once the rAA Wizard has gone through each dialog, the full rAA menu
    appears to the left.
 
-Configuring *** FIXME -- What's the term? ***
------------ --- ----- -- ------ --- ----- ---
+Configuring Repository Server Name(s)
+----------- ---------- ------ -------
 
 With the system-level configuration completed, it is now time to prepare
 your rBuilder Mirror's repository to receive software from one or more
 rBuilder Appliances:
 
-1. 
+1. Click on the "Update Repository Server Names" link in the rAA menu.
+
+2. Enter the desired server name, and click on the Add button, repeating
+   this process until every desired server name has been added.
+
+   NOTE: Server names that have been incorrectly entered can be deleted by
+   clicking on the corresponding "[X]" icon and re-entered.  However, once
+   software has been committed to the repository under a given label, that
+   label cannot be deleted.
 
 Adding Users
 ------ -----
@@ -135,8 +136,6 @@ intended use:
 3. Enter the username and password for the new user.  Under "Permission",
    you have the following options:
 
-*** FIXME -- Need a Conary expert to vet this part ***
-
     o Mirroring -- A user with Mirroring permission has the ability to
       either write mirror image copies of other Conary repositories into
       the rBuilder Mirror, or to read mirror image copies from the rBuilder
@@ -144,14 +143,19 @@ intended use:
 
     o Anonymous -- A user with Anonymous permission has read-only access to
       the contents of the rBuilder Mirror's repository without any kind of
-      authentication.  NOTE: Selecting this permission causes the username
-      and password to be automatically filled in.
+      authentication.  Selecting this permission causes the username and
+      password to be automatically filled in.
+
+      CAUTION: Creating an anonymous user bypasses all username and
+      entitlement-based authentication!
 
     o Admin -- A user with Admin permission has the ability to perform
       administrative tasks on the rBuilder Mirror's underlying Conary
       repository.
 
-    Click on the "Apply" button to create the user.
+   Click on the "Apply" button to create the user.  To remove a user or
+   change their password, click on the "Users" tab, and use the "Delete"
+   and "Password" links.
 
 4. Your rBuilder Mirror requires no further configuration at this time.
    Click on the "logout" link on the right side of the upper navigation
