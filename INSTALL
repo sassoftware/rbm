@@ -136,10 +136,11 @@ intended use:
 3. Enter the username and password for the new user.  Under "Permission",
    you have the following options:
 
-    o Mirroring -- A user with Mirroring permission has the ability to
-      either write mirror image copies of other Conary repositories into
-      the rBuilder Mirror, or to read mirror image copies from the rBuilder
-      Mirror into other Conary repositories.
+    o Mirroring -- A user with Mirroring permission has the ability (when
+      combined with the necessary write permission) to either: 1. write
+      mirror image copies of other Conary repositories into the rBuilder
+      Mirror, or: 2. read mirror image copies from the rBuilder Mirror into
+      other Conary repositories.
 
     o Anonymous -- A user with Anonymous permission has read-only access to
       the contents of the rBuilder Mirror's repository without any kind of
