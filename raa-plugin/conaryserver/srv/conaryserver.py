@@ -4,6 +4,7 @@
 # All rights reserved
 #
 
+import os
 from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
@@ -16,7 +17,7 @@ class ConaryServer(rAASrvPlugin):
         '''
 
         cnrPath = '/srv/conary/repository.cnr'
-
+        apacheRestart = '/usr/bin/killall -USR1 httpd'
         data = self.server.getData()
         if not len(data):
             data = ('localhost',)
@@ -32,4 +33,9 @@ class ConaryServer(rAASrvPlugin):
             cfg.display(f)
             f.close()
         except IOError:
+            pass
+
+        try:
+            os.system(apacheRestart)
+        except:
             pass

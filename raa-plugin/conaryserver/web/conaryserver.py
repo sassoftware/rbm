@@ -88,7 +88,12 @@ class ConaryServer(rAAWebPlugin):
                           no longer be deleted.</p>
 
                           <p>NOTE: You <em>must</em> specify at least one 
-                          server name here.</p>"""
+                          server name here.</p>
+                          <p>NOTE: httpd will automatically be restarted after
+                          each new hostname is added or deleted (This is 
+                          necessary for the server name changes to take effect).
+                          This may cause a slight disruption to your service 
+                          while the restart is in progress.</p>"""
             errorState = 'guide'
         
         return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
@@ -166,7 +171,7 @@ class ConaryServer(rAAWebPlugin):
         db.close()
         return res
 
-    @cherrypy.expose
-    @localhostOnly
+    @cherrypy.expose()
+    @localhostOnly()
     def getData(self):
         return self.table.getdata()
