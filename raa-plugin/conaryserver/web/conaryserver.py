@@ -125,6 +125,7 @@ class ConaryServer(rAAWebPlugin):
                 return self.index()
             if srvname.strip() not in cfg.serverName:
                 pageText = "Error:  Unable to update hostname."
+                self.table.clearserver(srvname)
                 errorState = 'error'
             else:
                 pageText = "Repository name updated."
