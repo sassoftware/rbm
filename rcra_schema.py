@@ -11,6 +11,11 @@ from conary.lib import cfgtypes
 from conary.repository.netrepos.netserver import ServerConfig
 from conary import dbstore
 
+cnrPath = '/srv/conary/repository.cnr'
+configVersionFile = '/srv/conary/config_version'
+INITIAL_CONFIG_VERSION = 0
+CURRENT_CONFIG_VERSION = 1
+
 def usage():
     print 'usage: %s {init|update}' % sys.argv[0]
     sys.exit(0)
@@ -19,10 +24,30 @@ def updateSchema(cfg):
     db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
     schema.loadSchema(db)
 
+def updateRepositoryCnr():
+    try:
+        f = open(configVersionFile)
+        configVersion = int(f.read())
+        f.close()
+    except IOError:
+        f = open(configVersionFile, 'w')
+        f.write(str(INITIAL_CONFIG_VERSION))
+        f.close()
+        configVersion = INITIAL_CONFIG_VERSION
+
+    if configVersion != CURRENT_CONFIG_VERSION:
+        cfg.forceSSL = True
+
+        f = open(cnrPath, 'w')
+        cfg.display(f)
+        f.close()
+
+        f = open(configVersionFile, 'w')
+        f.write(str(CURRENT_CONFIG_VERSION))
+        f.close()
+
 if len(sys.argv) != 2:
     usage()
-
-cnrPath = '/srv/conary/repository.cnr'
 
 cfg = ServerConfig()
 try:
@@ -39,3 +64,5 @@ elif sys.argv[1] == 'update':
     updateSchema(cfg)
 else:
     usage()
+
+updateRepositoryCnr()
