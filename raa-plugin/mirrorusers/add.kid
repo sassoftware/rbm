@@ -105,9 +105,9 @@
                         <label>Permission</label>
                     </td>
                     <td class="field">
-                        <input  onclick="displayGuide('mirror')" checked="true" type="radio" name="perm" value="Mirror"/>Mirroring
-                        <input onclick="displayGuide('anon')" type="radio" name="perm" value="Anonymous"/>Annonymous
-                        <input onclick="displayGuide('admin')" type="radio" name="perm" value="Admin"/>Admin<br/>
+                        <input  onclick="displayGuide('mirror')" checked="true" type="radio" name="perm" style="width: auto;" value="Mirror"/>Mirroring
+                        <input onclick="displayGuide('anon')" type="radio" name="perm" value="Anonymous" style="width: auto;"/>Annonymous
+                        <input onclick="displayGuide('admin')" type="radio" name="perm" value="Admin" style="width: auto;"/>Admin<br/>
                     </td>
                 </tr>
                 <tr>
