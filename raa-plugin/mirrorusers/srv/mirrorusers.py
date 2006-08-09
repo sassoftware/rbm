@@ -37,12 +37,12 @@ class MirrorUsers(rAASrvPlugin):
                     perms = nr.auth.iterPermsByGroup(x)
                     for i in perms:
                         # admin user
-                        if i == ('ALL', 'ALL', 1, 0, 1):
+                        if i == ('ALL', 'ALL', 1, 0, 1, 0):
                             perm = 'Admin'
                             break
                         # mirror user
                         elif nr.auth.groupCanMirror(x) and \
-                                i == ('ALL', 'ALL', 1, 0, 0):
+                                i == ('ALL', 'ALL', 1, 0, 0, 0):
                             perm = 'Mirroring'
                             break
                 self.server.setData(usr, perm)
