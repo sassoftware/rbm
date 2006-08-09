@@ -65,7 +65,7 @@ your rBuilder Mirror to receive updated software, and perform other
 system-level tasks:
 
 1. Use a Web browser to access the server.  Use a URL in the form
-   "http://mirror.example.com/", replacing "mirror.example.com" with your
+   "https://mirror.example.com:8003/", replacing "mirror.example.com" with your
    server's fully-qualified domain name.
 
    NOTE: you MUST use the fully-qualified domain name to access the server!
