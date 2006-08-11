@@ -25,18 +25,21 @@
 </head>
 
 <body>
-    <h3>rEA Entitlement Management</h3>
-    <h5><p>Add a new rEA entitlement key, or modify the existing key by entering
-        a valid key value into the Entitlement key text input field, and
-        clicking OK to save.  If you do not already have a key, you can 
-        create one by clicking Generate.</p>
-        <p py:if="key">Your current rEA key is: <em>${key}</em></p></h5>
+    <h3>Manage rEA Entitlement</h3>
+        <h5><u>First installation</u>
+        <p>Click <u>Generate</u> to create a new entitlement for an rPath
+        Entitlement Appliance.</p><br/>
+        <u>Restoring from a failure</u>
+        <p>Type or paste the previously generated entitlement in the text
+        box and click <u>OK</u>.</p><br/>
+        <u py:if="key">Current rEA Entitlement</u>
+        <p py:if="key">${key}</p></h5>
     <form action="setkey" method="POST">
         <table>
             <tr>
                 <td></td>
                 <td style="text-align: right;">
-                    <a onclick="genKey();" href="javascript:void(0);">Generate</a>
+                    <a onclick="genKey();" href="javascript:void(0);"><button class="img"><img src="${tg.url('/static/images/generate.png')}" alt="Generate" /></button></a>
                 </td>
             </tr>
             <tr>
