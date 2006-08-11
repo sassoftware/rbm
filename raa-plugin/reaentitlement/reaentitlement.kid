@@ -28,7 +28,7 @@
     <h3>Manage rEA Entitlement</h3>
         <h5><u>First installation</u>
         <p>Click <u>Generate</u> to create a new entitlement for an rPath
-        Entitlement Appliance.</p><br/>
+        Entitlement Appliance, and then click <u>OK</u> to save it.</p><br/>
         <u>Restoring from a failure</u>
         <p>Type or paste the previously generated entitlement in the text
         box and click <u>OK</u>.</p><br/>
