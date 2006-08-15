@@ -48,11 +48,6 @@ esac
 # update conary (the old school way)
 echo "Updating Conary to 1.0.27"
 conary update {conary,conary-repository,conary-build}=1.0.27 conary-policy --resolve
-if [ $? -ne 0 ]; then
-    echo "WARNING: Conary not updated, you'll have to do this again manually."
-    echo "Current version of conary is $(conary --version)"
-    exit 1
-fi
 
 # backup the configuration files, as Conary may not keep them around
 echo "Backing up configuration files to $BACKUPDIR"
@@ -69,13 +64,22 @@ if [ $? -ne 0 ]; then
 fi
 
 # backup the configuration files, as Conary may not keep them around
-echo "Restoring configuratin files to $RM_DIR"
+echo "Restoring configuratin files to ${RM_ROOT}"
 cp ${BACKUPDIR}/repository.cnr ${RM_ROOT}
 
 # Update the schema
 service httpd stop
+echo "Updating repository schema.  This may take a while for large repositories..."
+# Wait for apache to shutdown
+while [ "`ps -A | grep httpd`" != "" ]; do
+  sleep 0.5
+done
 service rcra_schema.sh start
 service httpd start
+
+# start raa
+service raa-lighttpd start
+service raa start
 
 echo "rM 2.0.0 Migration complete."
 exit 0
