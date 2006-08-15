@@ -26,7 +26,7 @@ if [ ! -d ${RM_ROOT} ]; then
     exit 1
 fi
 
-# Check to see if the installed group-rbm-dist is indeed == 1.6.3
+# Check to see if the installed group-rbm-dist is indeed == 1.0
 curr_ver=`conary q group-rbm-dist | cut -d'=' -f2 | cut -d'-' -f1`
 case $curr_ver in
     1.0)
@@ -54,6 +54,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# backup the configuration files, as Conary may not keep them around
+echo "Backing up configuration files to $BACKUPDIR"
+[ ! -d $BACKUPDIR ] && mkdir $BACKUPDIR
+cp ${RM_ROOT}/repository.cnr ${BACKUPDIR}
+
 # update using conary 
 # use conary migrate to break branch affinity and start fresh
 echo "Migrating to group-rbm-dist=$INSTALL_LABEL_PATH"
@@ -62,6 +67,10 @@ if [ $? -ne 0 ]; then
     echo "Problems occurred when updating rM via Conary; exiting"
     exit 1
 fi
+
+# backup the configuration files, as Conary may not keep them around
+echo "Restoring configuratin files to $RM_DIR"
+cp ${BACKUPDIR}/repository.cnr ${RM_ROOT}
 
 # Update the schema
 service httpd stop
