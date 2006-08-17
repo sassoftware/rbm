@@ -32,8 +32,41 @@
         <u>Restoring from a failure</u>
         <p>Type or paste the previously generated entitlement in the text
         box and click <u>OK</u>.</p><br/>
-        <u py:if="key">Current rEA Entitlement</u>
-        <p py:if="key">${key}</p></h5>
+            <?python 
+                # Get server names
+                from conary.repository.netrepos.netserver import ServerConfig
+                cfg = ServerConfig()
+                cfg.read('/srv/conary/repository.cnr')
+                serverNames = cfg.serverName
+            ?>
+        <div py:strip="True" py:if="key">
+            <p>Please provide the following information to your rEA 
+            administrator. <span py:if="len(serverNames) > 1">Note that 
+            a separate service must be created for each Server Name.</span></p>
+            <table class="list" cellspacing="0" py:for="serverName in serverNames">
+                <tr>
+                    <td>Resource Type:</td>
+                    <td>rBuilder Mirror</td>
+                </tr>
+                <tr>
+                    <td>Server Name:</td>
+                    <td>${serverName}</td>
+                </tr>
+                <tr>
+                    <td>Server URL:</td>
+                    <td>https://${serverName}/conary/</td>
+                </tr>
+                <tr>
+                    <td>Entitlement Class:</td>
+                    <td>management</td>
+                </tr>
+                <tr>
+                    <td>Entitlement:</td>
+                    <td>${key}</td>
+                </tr>
+            </table>
+        </div></h5>
+
     <form action="setkey" method="POST">
         <table>
             <tr>
