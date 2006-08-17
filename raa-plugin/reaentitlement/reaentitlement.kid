@@ -9,7 +9,7 @@
 -->
 
 <head>
-    <title>rEA Entitlement</title>
+    <title>Manage Administrative Entitlement</title>
     <script type="text/javascript">
         function genKey() {
             var allowed = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -25,13 +25,15 @@
 </head>
 
 <body>
-    <h3>Manage rEA Entitlement</h3>
-        <h5><u>First installation</u>
-        <p>Click <u>Generate</u> to create a new entitlement for an rPath
-        Entitlement Appliance, and then click <u>OK</u> to save it.</p><br/>
-        <u>Restoring from a failure</u>
-        <p>Type or paste the previously generated entitlement in the text
-        box and click <u>OK</u>.</p><br/>
+    <h3>Manage Administrative Entitlement</h3>
+        <h5>Use this page to create a new administrative entitlement for an
+        rPath Entitlement Appliance (rEA).<br/><br/>
+        <u>First installation</u><br/>
+        Click <u>Generate</u> to create a new entitlement for an rPath
+        Entitlement Appliance, and then click <u>OK</u> to save it.<br/><br/>
+        <u>Restoring from a failure</u><br/>
+        Type or paste the previously generated entitlement in the text
+        box and click <u>OK</u>.<br/>
             <?python 
                 # Get server names
                 from conary.repository.netrepos.netserver import ServerConfig
@@ -40,6 +42,7 @@
                 serverNames = cfg.serverName
             ?>
         <div py:strip="True" py:if="key">
+            <br/>
             <p>Please provide the following information to your rEA 
             administrator. <span py:if="len(serverNames) > 1">Note that 
             a separate service must be created for each Server Name.</span></p>
@@ -76,8 +79,8 @@
                 </td>
             </tr>
             <tr>
-                <td class="label" style="width: 35%;">
-                    <label>rEA Entitlement key:</label>
+                <td class="label">
+                    <label>Entitlement:</label>
                 </td>
                 <td class="field">
                     <input id="key_field" type="text" name="key" size="40" value="${key}" />

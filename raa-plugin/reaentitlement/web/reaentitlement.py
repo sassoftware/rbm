@@ -39,7 +39,7 @@ class rEAEntitlement(rAAWebPlugin):
         This plugin configures an rEA entitlement.
     '''
 
-    displayName = _("Manage rEA Entitlement")
+    displayName = _("Manage Administrative Entitlement")
 
     tableClass = KeyChangeTable
 
