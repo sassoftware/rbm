@@ -12,7 +12,7 @@ schema_python="/usr/lib/python2.4/site-packages/rcra_schema.py"
 
 case "$1" in
 start)
-  if [ "`ps -A | grep httpd`" != "" ]
+  if [ "`ps -ef | grep apache`" != "" ]
   then
     echo "httpd is running. Please stop that service before running this script" > /dev/stderr
     exit 1
