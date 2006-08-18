@@ -69,13 +69,17 @@ cp ${BACKUPDIR}/repository.cnr ${RM_ROOT}
 
 # Update the schema
 service httpd stop
-echo "Updating repository schema.  This may take a while for large repositories..."
+echo "Updating repository schema.  This may take a while for large repositories."
 # Wait for apache to shutdown
 while [ "`ps -A | grep httpd`" != "" ]; do
   sleep 0.5
 done
 service rcra_schema.sh start
 service httpd start
+
+# Update repo perms
+echo "Updating repository user permissions."
+python migrate_users.py
 
 # start raa
 service raa-lighttpd start
