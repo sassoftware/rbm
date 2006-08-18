@@ -4,7 +4,7 @@
 # to version 2.0.0
 
 # Full install label to builds repository
-INSTALL_LABEL_PATH="products.rpath.com@rpath:rm-devel"
+INSTALL_LABEL_PATH="products.rpath.com@rpath:rm-2"
 
 RM_ROOT="/srv/conary"
 BACKUPDIR="/tmp/rM-2.0-migration.$$"
