@@ -102,6 +102,14 @@ class ConaryServer(rAAWebPlugin):
     @turbogears.expose(html="rPath.conaryserver.config",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    def refreshConaryrc(self):
+        schedId = self.schedule(ScheduleImmed())
+        self.triggerImmed(schedId)
+        return self.index()
+
+    @turbogears.expose(html="rPath.conaryserver.config",
+                       allow_json=True)
+    @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def setsrvname(self, srvname=''):
         try:
             cfg = ServerConfig()

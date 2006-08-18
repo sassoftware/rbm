@@ -47,12 +47,32 @@
 
         <h4 py:if="data">Current Repository Server Names:</h4>
         <table class="list">
-            <?python rowType = 1 ?>
-            <tr py:for="host in data" id="${rowType and 'oddRow' or 'evenRow'}">
+            <tr py:for="rowType, host in [(x[0] % 2, x[1]) for x in enumerate(data)]" id="${rowType and 'oddRow' or 'evenRow'}">
             <td>${host[0]}</td>
             <td ><form py:if="host[1]" action="delsrvname" method="post"><input type="hidden" name="srvname" value="${host[0]}"/><button class="img" type="submit"><img src="${tg.url('/static/images/close16x16.png')}" value="Delete"/></button></form></td>
-            <?python rowType = rowType ^ 1 ?>
             </tr>
         </table>
+        <hr/>
+        <h4>Conaryrc File</h4>
+        <h5>
+            <?python
+                import os
+                pipeCmd = os.popen('hostname --fqdn')
+                try:
+                    hostname = pipeCmd.read().strip()
+                finally:
+                    pipeCmd.close()
+            ?>
+            A list of Conary <tt>repositoryMap</tt> settings is automatically maintained by adding or deleting servernames using the interface above. This list is made available via the following URL:
+
+            <ul><li>http://${hostname}/conaryrc</li></ul>
+
+            If changes in system configuration (for example, modifying the system's hostname) require the list to be regenerated, click on the Generate button.
+        </h5>
+        <form action="refreshConaryrc" method="post">
+
+            <button type="submit" class="img"><img alt="Generate" src="${tg.url('/static/images/generate.png')}"/></button>
+        </form>
+
 </body>
 </html>

@@ -30,10 +30,26 @@ class ConaryServer(rAASrvPlugin):
 
         try:
             f = open(cnrPath, "w")
-            cfg.display(f)
-            f.close()
+            try:
+                cfg.display(f)
+            finally:
+                f.close()
         except IOError:
             pass
+
+        pipeCmd = os.popen('hostname --fqdn')
+        try:
+            srvName = pipeCmd.read().strip()
+        finally:
+            pipeCmd.close()
+
+        cfgData = '\n'.join(['repositoryMap %s http://%s/conary/' % (x, srvName) for x in data if x != 'localhost'])
+        cfgData = cfgData and (cfgData + '\n') or cfgData
+        f = open('/srv/www/html/conaryrc', 'w')
+        try:
+            f.write(cfgData)
+        finally:
+            f.close()
 
         try:
             os.system(apacheRestart)
