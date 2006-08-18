@@ -42,7 +42,7 @@ class MirrorUsers(rAASrvPlugin):
                             break
                         # mirror user
                         elif nr.auth.groupCanMirror(x) and \
-                                i == ('ALL', 'ALL', 1, 0, 0, 0):
+                                i == ('ALL', 'ALL', 1, 0, 0, 1):
                             perm = 'Mirroring'
                             break
                 self.server.setData(usr, perm)
@@ -51,18 +51,21 @@ class MirrorUsers(rAASrvPlugin):
                 write = True
                 mirror = True
                 admin = False
+                remove = True
             elif data[0]['permission'] == 'Anonymous':
                 write = False
                 mirror = False
                 admin = False
+                remove = False
             elif data[0]['permission'] == 'Admin':
                 write = True
                 mirror = False
                 admin = True
+                remove = False
             try:
                 nr.auth.addUser(data[0]['user'], data[0]['password'])
                 nr.auth.addAcl(data[0]['user'], None, None, write,
-                               False, admin)
+                               False, admin, remove)
                 nr.auth.setMirror(data[0]['user'], mirror)
             except errors.GroupAlreadyExists:
                 pass
