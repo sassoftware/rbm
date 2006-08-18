@@ -35,11 +35,13 @@
         Type or paste the previously generated entitlement in the text
         box and click <u>OK</u>.<br/>
             <?python 
-                # Get server names
+                # Get server names and hostname
                 from conary.repository.netrepos.netserver import ServerConfig
+                import os
                 cfg = ServerConfig()
                 cfg.read('/srv/conary/repository.cnr')
                 serverNames = cfg.serverName
+                hostName = os.uname()[1]
             ?>
         <div py:strip="True" py:if="key">
             <br/>
@@ -57,7 +59,7 @@
                 </tr>
                 <tr>
                     <td>Server URL:</td>
-                    <td>https://${serverName}/conary/</td>
+                    <td>https://${hostName}/conary/</td>
                 </tr>
                 <tr>
                     <td>Entitlement Class:</td>
