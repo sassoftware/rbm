@@ -75,11 +75,12 @@ while [ "`ps -A | grep httpd`" != "" ]; do
   sleep 0.5
 done
 service rcra_schema.sh start
-service httpd start
 
 # Update repo perms
 echo "Updating repository user permissions."
 python migrate_users.py
+
+service httpd start
 
 # start raa
 service raa-lighttpd start
