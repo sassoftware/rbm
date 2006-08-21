@@ -80,6 +80,9 @@ service rcra_schema.sh start
 echo "Updating repository user permissions."
 python migrate_users.py
 
+# Update iptables
+system-config-securitylevel-tui -q -p 22:tcp -p 80:tcp -p 443:tcp -p 8003:tcp
+
 service httpd start
 
 # start raa
