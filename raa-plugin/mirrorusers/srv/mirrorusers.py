@@ -18,8 +18,7 @@ class MirrorUsers(rAASrvPlugin):
         '''
         cnrPath ='/srv/conary/repository.cnr'
 
-        data = self.server.getData()
-        self.server.clearData()
+        data = self.server.getData(schedId)
 
         cfg = ServerConfig()
         cfg.read(cnrPath)
@@ -45,7 +44,7 @@ class MirrorUsers(rAASrvPlugin):
                                 i == ('ALL', 'ALL', 1, 0, 0, 1):
                             perm = 'Mirroring'
                             break
-                self.server.setData(usr, perm)
+                self.server.setData(schedId, usr, perm)
         elif data[0]['operation'] == 'add':
             if data[0]['permission'] == 'Mirror':
                 write = True

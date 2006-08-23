@@ -13,39 +13,37 @@ from raa.localhostonly import localhostOnly
 class MirrorTable(DatabaseTable):
     name = 'plugin_rpath_MirrorTable'
     createSQL = """CREATE TABLE %s 
-                   (user VARCHAR(255),
+                   (schedId VARCHAR(255),
+                    user VARCHAR(255),
                     permission VARCHAR(255),
                     password VARCHAR(255),
                     operation VARCHAR(255))""" % (name)
-    fields = ['user', 'permission', 'password', 'operation']
-    tableVersion = 1
+    fields = ['schedId', 'user', 'permission', 'password', 'operation']
+    tableVersion = 2
 
     @writeOp
-    def setdata(self, cu, user='', permission='', password='', operation=''):
+    def setdata(self, cu, schedId, user='', permission='', password='', 
+                operation=''):
         self.db.transaction()
-        cu.execute("""INSERT INTO %s (user, permission, password, operation) 
-                          VALUES (?, ?, ?, ?)""" % (self.name), user, 
-                                                    permission,
-                                                    password, operation)
+        cu.execute("""INSERT INTO %s (schedId, user, permission, password, 
+                      operation) VALUES (?, ?, ?, ?, ?)""" % (self.name), schedId, user, 
+                                                          permission,
+                                                          password, operation)
         return True
 
     @readOp
-    def getdata(self,cu):
+    def getdata(self,cu, schedId):
         cu.execute("""SELECT user, permission, password, 
-                      operation FROM %s""" % (self.name))
+                      operation FROM %s WHERE schedId=?""" % (self.name),
+                                                               schedId)
         return cu.fetchall_dict()
 
-    @writeOp
-    def cleardata(self, cu):
-        self.db.transaction()
-        cu.execute("DELETE FROM %s" % (self.name))
+    def versionCheck(self, cu):
+        if self.getVersion(cu) == 1:
+            cu.execute("DELETE FROM %s" % (self.name))
+            cu.execute("ALTER TABLE %s ADD COLUMN schedId VARCHAR(255)" % self.name)
+            return False
         return True
-
-    @readOp
-    def checkdata(self, cu):
-        cu.execute("SELECT COUNT(*) FROM %s" % self.name)
-        results = cu.fetchone()
-        return not results[0]
 
 class MirrorUsers(rAAWebPlugin):
     ''' 
@@ -57,12 +55,11 @@ class MirrorUsers(rAAWebPlugin):
     @turbogears.expose(html="rPath.mirrorusers.users")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self):
-        self.table.cleardata()
-        self.table.setdata(operation='list')
         schedId = self.schedule(ScheduleImmed())
+        self.table.setdata(schedId=str(schedId), operation='list')
         self.triggerImmed(schedId)
-        userList = self.table.getdata()
-        self.table.cleardata()
+        userList = self.table.getdata(schedId)
+        userList = [x for x in userList if x['user'] and x['permission']]
         userData = []
 
         displayClass = 0
@@ -91,12 +88,10 @@ class MirrorUsers(rAAWebPlugin):
             errorState = True
         else:
             # Check to see if the user exists
-            self.table.cleardata()
-            self.table.setdata(operation='list')
             schedId = self.schedule(ScheduleImmed())
+            self.table.setdata(schedId=schedId, operation='list')
             self.triggerImmed(schedId)
-            userList = self.table.getdata()
-            self.table.cleardata()
+            userList = self.table.getdata(schedId)
             errorState = False
             for x in userList:
                 if x['user'] == username:
@@ -104,9 +99,10 @@ class MirrorUsers(rAAWebPlugin):
                     errorState = True
             # Create the user
             if not errorState:
-                self.table.setdata(user=username, password=passwd1,
-                                   permission=perm, operation='add')
                 schedId = self.schedule(ScheduleImmed())
+                self.table.setdata(schedId=schedId, user=username, 
+                                   password=passwd1,
+                                   permission=perm, operation='add')
                 self.triggerImmed(schedId)
                 returnMessage= 'User "%s" added with %s permission.' % \
                              (username, perm)
@@ -118,8 +114,9 @@ class MirrorUsers(rAAWebPlugin):
         if not confirm:
             return dict(username=username)
         else:
-            self.table.setdata(user=username, operation='delete')
             schedId = self.schedule(ScheduleImmed())
+            self.table.setdata(schedId=schedId, user=username, 
+                               operation='delete')
             self.triggerImmed(schedId)
             return self.index()
 
@@ -134,9 +131,9 @@ class MirrorUsers(rAAWebPlugin):
             message = "Passwords do not match. Please try again."
             errorState = True
         else:
-            self.table.setdata(user=username, password=passwd1, 
-                               operation='pass')
             schedId = self.schedule(ScheduleImmed())
+            self.table.setdata(schedId=schedId, user=username, 
+                               password=passwd1, operation='pass')
             self.triggerImmed(schedId)
             return self.index()
 
@@ -144,15 +141,10 @@ class MirrorUsers(rAAWebPlugin):
 
     @cherrypy.expose()
     @localhostOnly()
-    def getData(self):
-        return self.table.getdata()
+    def getData(self, schedId):
+        return self.table.getdata(schedId)
 
     @cherrypy.expose()
     @localhostOnly()
-    def setData(self, user, permission):
-        return self.table.setdata(user=user, permission=permission)
-
-    @cherrypy.expose()
-    @localhostOnly()
-    def clearData(self):
-        return self.table.cleardata()
+    def setData(self, schedId, user, permission):
+        return self.table.setdata(schedId=schedId, user=user, permission=permission)
