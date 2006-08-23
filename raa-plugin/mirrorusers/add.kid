@@ -106,7 +106,7 @@
                     </td>
                     <td class="field">
                         <input  onclick="displayGuide('mirror')" checked="true" type="radio" name="perm" style="width: auto;" value="Mirror"/>Mirroring
-                        <input onclick="displayGuide('anon')" type="radio" name="perm" value="Anonymous" style="width: auto;"/>Annonymous
+                        <input onclick="displayGuide('anon')" type="radio" name="perm" value="Anonymous" style="width: auto;"/>Anonymous
                         <input onclick="displayGuide('admin')" type="radio" name="perm" value="Admin" style="width: auto;"/>Admin<br/>
                     </td>
                 </tr>
