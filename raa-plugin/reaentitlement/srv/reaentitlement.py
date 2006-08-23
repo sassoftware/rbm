@@ -40,21 +40,27 @@ class rEAEntitlement(rAASrvPlugin):
             nr.auth.addUser(adminUser, passwd)
             nr.auth.addAcl(adminUser, None, None, True, False, True)
 
+            # remove the old entitlement group if it exists
             try:
-                nr.auth.addGroup(entGroup)
-                nr.auth.addAcl(entGroup, None, None, True, False, True)
-            except errors.GroupAlreadyExists:
-                for x in nr.auth.iterEntitlements(authToken, entGroup):
-                    nr.auth.deleteEntitlement(authToken, entGroup, x)
-                nr.auth.addEntitlement(authToken, entClass, key)
-            else:
-                try:
-                    nr.auth.addEntitlementGroup(authToken, entClass, entGroup)
-                except errors.GroupAlreadyExists:
-                    nr.auth.deleteEntitlementGroup(authToken, entGroup)
-                    nr.auth.addEntitlementGroup(authToken, entClass, entGroup)
-                    for x in nr.auth.iterEntitlements(authToken, entGroup):
-                        nr.auth.deleteEntitlement(authToken, entGroup, x)
-                nr.auth.addEntitlement(authToken, entClass, key)
+                nr.auth.deleteEntitlementGroup(authToken, entGroup)
+            except:
+                pass
+
+            # clean out old entitlements
+            for x in nr.auth.iterEntitlements(authToken, entGroup):
+                nr.auth.deleteEntitlement(authToken, entGroup, x)
+
+            # remove the old group if it exists
+            try:
+                nr.auth.deleteGroup(entGroup)
+            except:
+                pass
+
+            # add the management group and give it the proper ACLs
+            nr.auth.addGroup(entGroup)
+            nr.auth.addAcl(entGroup, None, None, True, False, True)
+            nr.auth.addEntitlementGroup(authToken, entClass, entGroup)
+            nr.auth.addEntitlement(authToken, entClass, key)
+
         finally:
             nr.auth.deleteUserByName(adminUser)
