@@ -3,7 +3,6 @@
 # All rights reserved.
 #
 import cherrypy
-import raapluginstest
 import raatest
 
 from tests import webPluginTest
