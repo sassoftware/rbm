@@ -24,6 +24,4 @@ class MirroUsersTest(raatest.rAATest):
 
     def test_indextitle(self):
         self.requestWithIdent("/mirrorusers/MirrorUsers/")
-        print cherrypy.response.body[0]
-        assert "<title>disk usage</title>" in cherrypy.response.body[0].lower()
-
+        assert "<title>manage repository users</title>" in cherrypy.response.body[0].lower()

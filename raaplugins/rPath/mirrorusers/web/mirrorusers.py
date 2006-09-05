@@ -54,10 +54,10 @@ class MirrorUsers(rAAWebPlugin):
 
     @turbogears.expose(html="rPath.mirrorusers.users")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    def index(self):
+    @immedTask
+    def index(self, *args, **kwargs):
         schedId = self.schedule(ScheduleImmed())
         self.table.setdata(schedId=str(schedId), operation='list')
-        self.triggerImmed(schedId)
         userList = self.table.getdata(schedId)
         userList = [x for x in userList if x['user'] and x['permission']]
         userData = []
