@@ -38,12 +38,13 @@ class MirrorUsersTest(raatest.rAATest):
             [{'operation': 'test', 'password': 'password', 'user': 'testuser', 'permission': 'permission'}]
 
     def test_indexTitle(self):
-        oldGetUserList = raaFramework.pseudoroot._getUserList
-        raaFramework.pseudoroot._getUserList = lambda *args: 0
-        self.table.setdata(0, 'existinguser', 'permission', '', '')
+        oldGetdata = raaFramework.pseudoroot.table.getdata
+        raaFramework.pseudoroot.table.getdata = lambda *args: [{'user': 'existinguser', 'permission': 'foo'}]
         self.requestWithIdent("/mirrorusers/MirrorUsers/")
         assert "<title>manage repository users</title>" in cherrypy.response.body[0].lower()
-        raaFramework.pseudoroot._getUserList = oldGetUserList
+        raaFramework.pseudoroot.table.getdata = oldGetdata
+        self.table.clear()
+
 
     def test_addUser(self):
         # test for prompt
@@ -69,14 +70,13 @@ class MirrorUsersTest(raatest.rAATest):
             'Please choose a different user name.', 'error': True}
 
         # test for duplicate user
-        oldGetUserList = raaFramework.pseudoroot._getUserList
-        raaFramework.pseudoroot._getUserList = lambda *args: 0
-        self.table.setdata(0, 'existinguser', '', '', '')
+        oldGetdata = raaFramework.pseudoroot.table.getdata
+        raaFramework.pseudoroot.table.getdata = lambda *args: [{'user': 'existinguser', 'permission': 'foo'}]
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'existinguser', passwd1 = 'pass', passwd2 = 'pass')
         assert result == {'message': 'User "existinguser" already exists. '
             ' Please choose a different user name.', 'error': True}
-        raaFramework.pseudoroot._getUserList = oldGetUserList
+        raaFramework.pseudoroot.table.getdata = oldGetdata
         self.table.clear()
 
         # test for success

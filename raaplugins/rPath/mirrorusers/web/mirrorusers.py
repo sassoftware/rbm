@@ -61,8 +61,8 @@ class MirrorUsers(rAAWebPlugin):
     @turbogears.expose(html="rPath.mirrorusers.users")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self, *args, **kwargs):
-        schedId = self._getUserList()
-        userList = self.table.getdata(schedId)
+        ret = self._getUserList()
+        userList = self.table.getdata(ret['schedId'])
         userList = [x for x in userList if x['user'] and x['permission']]
         userData = []
 
@@ -99,8 +99,8 @@ class MirrorUsers(rAAWebPlugin):
             errorState = True
         else:
             # Check to see if the user exists
-            schedId = self._getUserList()
-            userList = self.table.getdata(schedId)
+            ret = self._getUserList()
+            userList = self.table.getdata(ret['schedId'])
             errorState = False
             for x in userList:
                 if x['user'] == username:
