@@ -46,18 +46,22 @@ class MirrorTable(DatabaseTable):
         return True
 
 class MirrorUsers(rAAWebPlugin):
-    ''' 
+    '''
     '''
     displayName = _("Manage Repository Users")
 
     tableClass = MirrorTable
 
+    @immedTask
+    def _getUserList(self):
+        def callback(schedId):
+            self.table.setdata(schedId = str(schedId), operation = 'list')
+        return dict(callback = callback)
+
     @turbogears.expose(html="rPath.mirrorusers.users")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
-    @immedTask
     def index(self, *args, **kwargs):
-        schedId = self.schedule(ScheduleImmed())
-        self.table.setdata(schedId=str(schedId), operation='list')
+        schedId = self._getUserList()
         userList = self.table.getdata(schedId)
         userList = [x for x in userList if x['user'] and x['permission']]
         userData = []
@@ -68,6 +72,13 @@ class MirrorUsers(rAAWebPlugin):
                             displayClass and 'odd' or 'even'])
             displayClass = displayClass ^ 1
         return dict(userData=userData, userList=userList)
+
+    @immedTask
+    def _addUser(self, username, password, permission):
+        def callback(schedId):
+            self.table.setdata(schedId=schedId, user=username,
+                password=password, permission=permission, operation='add')
+        return dict(callback = callback)
 
     @turbogears.expose(html="rPath.mirrorusers.add")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
@@ -88,9 +99,7 @@ class MirrorUsers(rAAWebPlugin):
             errorState = True
         else:
             # Check to see if the user exists
-            schedId = self.schedule(ScheduleImmed())
-            self.table.setdata(schedId=schedId, operation='list')
-            self.triggerImmed(schedId)
+            schedId = self._getUserList()
             userList = self.table.getdata(schedId)
             errorState = False
             for x in userList:
@@ -99,14 +108,17 @@ class MirrorUsers(rAAWebPlugin):
                     errorState = True
             # Create the user
             if not errorState:
-                schedId = self.schedule(ScheduleImmed())
-                self.table.setdata(schedId=schedId, user=username, 
-                                   password=passwd1,
-                                   permission=perm, operation='add')
-                self.triggerImmed(schedId)
+                self._addUser(username, passwd1, perm)
                 returnMessage= 'User "%s" added with %s permission.' % \
                              (username, perm)
         return dict(message=_(returnMessage), error=errorState)
+
+    @immedTask
+    def _deleteUser(self, username):
+        def callback(schedId):
+            self.table.setdata(schedId = schedId, user = username,
+                operation = 'delete')
+        return dict(callback = callback)
 
     @turbogears.expose(html='rPath.mirrorusers.delete')
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
@@ -114,11 +126,15 @@ class MirrorUsers(rAAWebPlugin):
         if not confirm:
             return dict(username=username)
         else:
-            schedId = self.schedule(ScheduleImmed())
-            self.table.setdata(schedId=schedId, user=username, 
-                               operation='delete')
-            self.triggerImmed(schedId)
+            self._deleteUser(username)
             return self.index()
+
+    @immedTask
+    def _changePassword(self, username, password):
+        def callback(schedId):
+            self.table.setdata(schedId = schedId, user = username,
+                password = password, operation = 'pass')
+        return dict(callback = callback)
 
     @turbogears.expose(html='rPath.mirrorusers.pass')
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
@@ -131,20 +147,7 @@ class MirrorUsers(rAAWebPlugin):
             message = "Passwords do not match. Please try again."
             errorState = True
         else:
-            schedId = self.schedule(ScheduleImmed())
-            self.table.setdata(schedId=schedId, user=username, 
-                               password=passwd1, operation='pass')
-            self.triggerImmed(schedId)
+            self._changePassword(username, passwd1)
             return self.index()
 
         return dict(username=username, error=errorState, message=message)
-
-    @cherrypy.expose()
-    @localhostOnly()
-    def getData(self, schedId):
-        return self.table.getdata(schedId)
-
-    @cherrypy.expose()
-    @localhostOnly()
-    def setData(self, schedId, user, permission):
-        return self.table.setdata(schedId=schedId, user=user, permission=permission)
