@@ -8,7 +8,7 @@ import raa.crypto
 
 import raa.service.lib
 import raatest.service.tests.fakeclasses
-from tests import webPluginTest
+from tests import webPluginTest, setupCnr
 from rPath.conaryserver.srv.conaryserver import ConaryServer
 
 key = raa.crypto.RSA.generate(1024, raa.crypto.prandFunc)
@@ -17,18 +17,6 @@ raaFramework = webPluginTest(
     preInit=lambda rt: setattr(rt, "serviceKey", key.publickey()))
 
 raaFramework.pseudoroot = cherrypy.root.conaryserver.ConaryServer
-
-def setupCnr():
-    import tempfile
-    import os
-
-    fd, fn = tempfile.mkstemp()
-    f = os.fdopen(fd, "w")
-
-    f.write("serverName localhost")
-    f.close()
-
-    return fn
 
 class ConaryServerTest(raatest.rAATest):
     def __init__(self, *args, **kwargs):
@@ -48,6 +36,12 @@ class ConaryServerTest(raatest.rAATest):
         self.conaryServer.rootserver = cherrypy.root
         self.conaryServer.taskId = cherrypy.root.conaryserver.ConaryServer.taskId
 
+    def tearDown(self):
+        try:
+            os.unlink(raaFramework.pseudoroot.cnrPath)
+        except:
+            pass
+        raatest.rAATest.tearDown(self)
 
     def test_method(self):
         "the index method should return a string called now"

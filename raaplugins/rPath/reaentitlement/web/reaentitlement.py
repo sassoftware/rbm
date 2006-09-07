@@ -42,22 +42,34 @@ class rEAEntitlement(rAAWebPlugin):
     displayName = _("Manage Administrative Entitlement")
 
     tableClass = KeyChangeTable
+    cnrPath = "/srv/conary/repository.cnr"
+
+    def _getReposCfg(self):
+        # Get server names and hostname
+        from conary.repository.netrepos.netserver import ServerConfig
+        import os
+        cfg = ServerConfig()
+        cfg.read(self.cnrPath)
+        serverNames = cfg.serverName
+        hostName = os.uname()[1]
+        return serverNames, hostName
 
     @turbogears.expose(html="rPath.reaentitlement.reaentitlement")
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def index(self):
-        return dict(key=self.table.getkey())
+        serverNames, hostName = self._getReposCfg()
+        return dict(key=self.table.getkey(),
+            serverNames = serverNames, hostName = hostName)
+
+    @immedTask
+    def _setkey(self, key):
+        def callback(schedId):
+            self.table.setkey(key)
+        return dict(callback = callback)
 
     @turbogears.expose(html="rPath.reaentitlement.reaentitlement",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def setkey(self, key=''):
-        self.table.setkey(key)
-        schedId = self.schedule(ScheduleImmed())
-        self.triggerImmed(schedId)
+        self._setkey(key)
         return dict(key=key)
-
-    @cherrypy.expose()
-    @localhostOnly()
-    def getKey(self):
-        return self.table.getkey()
