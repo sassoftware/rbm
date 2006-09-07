@@ -3,13 +3,14 @@
 # All rights reserved.
 #
 import cherrypy
-import raatest
-import raa.crypto
+import tempfile
 import os
 
 from conary.repository.netrepos.netserver import ServerConfig
 from conary import dbstore
 
+import raatest
+import raa.crypto
 import raa.service.lib
 import raatest.service.tests.fakeclasses
 from tests import webPluginTest, setupCnr
@@ -45,13 +46,21 @@ class ConaryServerTest(raatest.rAATest):
         self.conaryServer.server = cherrypy.root.conaryserver.ConaryServer
         self.conaryServer.rootserver = cherrypy.root
         self.conaryServer.taskId = cherrypy.root.conaryserver.ConaryServer.taskId
+        self.conaryServer.cnrPath = raaFramework.pseudoroot.cnrPath
+        _, self.conaryServer.conaryrcPath = tempfile.mkstemp()
+        self.conaryServer.apacheRestart = '/bin/false'
 
     def tearDown(self):
         try:
             os.unlink(raaFramework.pseudoroot.cnrPath)
+            os.unlink(self.conaryServer.conaryrcPath)
         except:
             pass
         raatest.rAATest.tearDown(self)
+
+    def test_backend(self):
+        r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+        assert os.path.exists(self.conaryServer.conaryrcPath)
 
     def test_method(self):
         "the index method should return a string called now"

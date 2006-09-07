@@ -10,31 +10,33 @@ from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
 
 class ConaryServer(rAASrvPlugin):
+    cnrPath = '/srv/conary/repository.cnr'
+    conaryrcPath = '/srv/www/html/conaryrc'
+    apacheRestart = '/usr/bin/killall -USR1 httpd'
+
     def doTask(self, schedId, execId):
         '''
-            Updates serverName in conaryCNR if no commits have occured in the
+            Updates serverName in repository.cnr if no commits have occured in the
             repository.
         '''
 
-        cnrPath = '/srv/conary/repository.cnr'
-        apacheRestart = '/usr/bin/killall -USR1 httpd'
         data = self.server.getData()
         if not len(data):
             data = ('localhost',)
         try:
             cfg = ServerConfig()
-            cfg.read(cnrPath)
+            cfg.read(self.cnrPath)
             cfg.serverName = data
         except CfgEnvironmentError:
             pass
 
         try:
-            f = open(cnrPath, "w")
+            f = open(self.cnrPath, "w")
             try:
                 cfg.display(f)
             finally:
                 f.close()
-        except IOError:
+        except IOError, e:
             pass
 
         pipeCmd = os.popen('hostname --fqdn')
@@ -45,13 +47,13 @@ class ConaryServer(rAASrvPlugin):
 
         cfgData = '\n'.join(['repositoryMap %s http://%s/conary/' % (x, srvName) for x in data if x != 'localhost'])
         cfgData = cfgData and (cfgData + '\n') or cfgData
-        f = open('/srv/www/html/conaryrc', 'w')
+        f = open(self.conaryrcPath, 'w')
         try:
             f.write(cfgData)
         finally:
             f.close()
 
         try:
-            os.system(apacheRestart)
+            os.system(self.apacheRestart)
         except:
             pass
