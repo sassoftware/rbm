@@ -110,3 +110,8 @@ class MirrorUsersTest(raatest.rAATest):
         assert result == {'username': 'thisDoesntMatter',
             'message': 'Enter a new password for the repository user "thisDoesntMatter":',
             'error': False}
+
+    def test_getSetData(self):
+        self.callWithIdent(raaFramework.pseudoroot.setData, 0, 'user', 'perm')
+        r = self.callWithIdent(raaFramework.pseudoroot.getData, 0)
+        assert r == [{'operation': '', 'password': '', 'user': 'user', 'permission': 'perm'}]

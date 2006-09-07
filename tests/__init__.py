@@ -2,19 +2,27 @@ import cherrypy
 import os
 import raatest
 
+from conary import dbstore
+from conary.server import schema
+
 def setupCnr():
     """Write a fake repository.cnr file and return the filename"""
     import tempfile
     import os
-    import sys
 
     fd, fn = tempfile.mkstemp()
-    print >> sys.stderr, fn
-    sys.stderr.flush()
     f = os.fdopen(fd, "w")
 
-    f.write("serverName localhost")
+    fd, dbFn = tempfile.mkstemp()
+    os.close(fd)
+
+    f.write("serverName localhost\n")
+    f.write("repositoryDB sqlite %s" % dbFn)
     f.close()
+
+    db = dbstore.connect(dbFn, "sqlite")
+    schema.loadSchema(db)
+    db.close()
 
     return fn
 

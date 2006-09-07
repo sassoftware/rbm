@@ -1,8 +1,8 @@
 # Copyright (c) 2006 rPath, Inc
 # All rights reserved
 
-from raa.db.schedule import ScheduleImmed
 from raa.modules.raawebplugin import rAAWebPlugin
+from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
@@ -99,12 +99,16 @@ class ConaryServer(rAAWebPlugin):
         return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     pageText=pageText, errorState=errorState)
 
+    # this is strange-looking, but it triggers the doTask on the backend anyway
+    @immedTask
+    def _update(self):
+        return dict()
+
     @turbogears.expose(html="rPath.conaryserver.config",
                        allow_json=True)
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def refreshConaryrc(self):
-        schedId = self.schedule(ScheduleImmed())
-        self.triggerImmed(schedId)
+        self._update()
         return self.index()
 
     @turbogears.expose(html="rPath.conaryserver.config",
@@ -122,8 +126,7 @@ class ConaryServer(rAAWebPlugin):
             errorState = 'error'
         else:
             self.table.setserver(srvname)
-            schedId = self.schedule(ScheduleImmed())
-            self.triggerImmed(schedId)
+            self._update()
 
             # Reload the conary.cnr file to see if the update worked
             try:
@@ -159,15 +162,14 @@ class ConaryServer(rAAWebPlugin):
                        "in use."
         else:
             self.table.clearserver(srvname)
-            schedId = self.schedule(ScheduleImmed())
-            self.triggerImmed(schedId)
+            self._update()
             errorState='success'
             pageText = 'Repository name "%s" deleted.' % srvname
 
         return dict(pageText=pageText, 
-                    data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
+                    data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()],
                     errorState=errorState)
-        
+
     def checkRepository(self, cfg, srvname):
         db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
         cu = db.cursor()

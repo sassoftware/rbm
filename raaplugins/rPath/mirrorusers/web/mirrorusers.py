@@ -151,3 +151,13 @@ class MirrorUsers(rAAWebPlugin):
             return self.index()
 
         return dict(username=username, error=errorState, message=message)
+
+    @cherrypy.expose()
+    @localhostOnly()
+    def getData(self, schedId):
+        return self.table.getdata(schedId)
+
+    @cherrypy.expose()
+    @localhostOnly()
+    def setData(self, schedId, user, permission):
+        return self.table.setdata(schedId=schedId, user=user, permission=permission)
