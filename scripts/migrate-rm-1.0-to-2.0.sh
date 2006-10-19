@@ -5,7 +5,7 @@
 
 # Full install label to builds repository
 INSTALL_LABEL_PATH="products.rpath.com@rpath:rm-2"
-TROVES_FOR_UPDATE="group-rbm-dist=products.rpath.com@rpath:rbm-1 group-rbm-dist=products.rpath.com@rpath:rm-2 conary=products.rpath.com@rpath:conary-1.1 raaplugins=products.rpath.com@rpath:raa-1 raa=products.rpath.com@rpath:raa-1-beta"
+TROVES_FOR_UPDATE="group-rbm-dist=products.rpath.com@rpath:rbm-1 group-rbm-dist=products.rpath.com@rpath:rm-2 conary=products.rpath.com@rpath:conary-1.1 raaplugins=products.rpath.com@rpath:raa-1"
 
 RM_ROOT="/srv/conary"
 BACKUPDIR="/tmp/rM-2.0-migration.$$"
