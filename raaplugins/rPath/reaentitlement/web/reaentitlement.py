@@ -72,4 +72,7 @@ class rEAEntitlement(rAAWebPlugin):
     @turbogears.identity.require( turbogears.identity.not_anonymous() )
     def setkey(self, key=''):
         self._setkey(key)
-        return dict(key=key)
+        
+        serverNames, hostName = self._getReposCfg()
+        return dict(key=self.table.getkey(),
+            serverNames = serverNames, hostName = hostName)
