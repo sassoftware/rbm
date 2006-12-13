@@ -36,4 +36,6 @@ class rEAEntitlementTest(raatest.rAATest):
 
     def test_setkey(self):
         r = self.callWithIdent(raaFramework.pseudoroot.setkey, key = "thisismykey")
-        assert r == {'key': 'thisismykey'}
+        assert r['key'] == 'thisismykey'
+        assert r.has_key('serverNames')
+        assert r.has_key('hostName')
