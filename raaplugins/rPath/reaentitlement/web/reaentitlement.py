@@ -78,6 +78,6 @@ class rEAEntitlement(rAAWebPlugin):
             serverNames = serverNames, hostName = hostName)
 
     @cherrypy.expose()
-    @localhostOnly
+    @localhostOnly()
     def getKey(self):
         return self.table.getkey()
