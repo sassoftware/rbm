@@ -76,3 +76,8 @@ class rEAEntitlement(rAAWebPlugin):
         serverNames, hostName = self._getReposCfg()
         return dict(key=self.table.getkey(),
             serverNames = serverNames, hostName = hostName)
+
+    @cherrypy.expose()
+    @localhostOnly
+    def getKey(self):
+        return self.table.getkey()
