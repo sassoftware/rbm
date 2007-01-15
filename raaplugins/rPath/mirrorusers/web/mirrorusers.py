@@ -6,6 +6,9 @@ from raa.modules.raawebplugin import rAAWebPlugin
 from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
+import random
+from raa import identity
+import raa
 
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.localhostonly import localhostOnly
@@ -161,3 +164,27 @@ class MirrorUsers(rAAWebPlugin):
     @localhostOnly()
     def setData(self, schedId, user, permission):
         return self.table.setdata(schedId=schedId, user=user, permission=permission)
+    def _genString(self):
+        allowed = "abcdefghijklmnopqrstuvwxyz0123456789"
+        len = 128
+        chars = ''
+        for x in range(len):
+            chars += random.choice(allowed)
+        return chars
+
+    @raa.expose(allow_xmlrpc=True)
+    def addRandomUser(self, user):
+        ret = self._getUserList()
+        userList = self.table.getdata(ret['schedId'])
+        
+        if user in userList:
+            self._deleteUser(user)
+        
+	passwd = self._genString()
+        self._addUser(user, passwd, 'Mirror')
+        return  passwd
+
+    @raa.expose(allow_xmlrpc=True)
+    def deleteRandomUser(self, username):
+        self._deleteUser(username)
+        return True

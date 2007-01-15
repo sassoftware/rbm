@@ -7,6 +7,7 @@ import raatest
 
 import rPath
 from rPath.mirrorusers.web.mirrorusers import MirrorTable
+import re
 
 from tests import webPluginTest
 raaFramework = webPluginTest()
@@ -115,3 +116,13 @@ class MirrorUsersTest(raatest.rAATest):
         self.callWithIdent(raaFramework.pseudoroot.setData, 0, 'user', 'perm')
         r = self.callWithIdent(raaFramework.pseudoroot.getData, 0)
         assert r == [{'operation': '', 'password': '', 'user': 'user', 'permission': 'perm'}]
+
+    def test_addRandomness(self):
+        r = self.callXmlrpc(raaFramework.pseudoroot.addRandomUser, 
+                               'testuser')
+        value = re.compile('[0-9a-z]{128}')
+        assert value.search(r)
+
+        r = self.callXmlrpc(raaFramework.pseudoroot.deleteRandomUser, 
+                               'testuser')
+        assert r

@@ -152,3 +152,45 @@ class ConaryServerTest(raatest.rAATest):
         r = self.callWithIdent(raaFramework.pseudoroot.delsrvname, 'localhost2')
         assert r == {'data': [], 'errorState': 'error',
             'pageText': 'Unable to delete repository name because it is in use.'}
+
+    def test_addServerName(self):
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver')
+        
+        res = self.table.getdata()
+        assert 'testserver' in res 
+        assert res.count('testserver') == 1
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver')
+        assert r
+        res = self.table.getdata()
+        assert 'testserver' in res 
+        assert res.count('testserver') == 1
+
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver2')
+        res = self.table.getdata()
+        assert 'testserver' in res 
+        assert res.count('testserver') == 1
+        assert 'testserver2' in res 
+        assert res.count('testserver2') == 1
+
+    def test_delServerName(self):
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver')
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver2')
+        res = self.table.getdata()
+        assert 'testserver' in res 
+        r = self.callXmlrpc(raaFramework.pseudoroot.delServerName, 'testserver')
+        res = self.table.getdata()
+        assert 'testserver' not in res
+        assert 'testserver2' in res
+
+        cfg = ServerConfig()
+        cfg.read(raaFramework.pseudoroot.cnrPath)
+
+        db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
+        cu = db.cursor()
+        cu.execute("INSERT INTO Versions VALUES(1, '/testserver2@rpl:1')")
+        cu.execute("INSERT INTO Instances VALUES(0, 0, 1, 0, 0, 0, 0, 0)")
+        db.commit()
+        db.close()
+
+        r = self.callXmlrpc(raaFramework.pseudoroot.delServerName, 'testserver')
+        assert r
