@@ -11,6 +11,7 @@ from conary.lib.cfgtypes import CfgEnvironmentError
 
 class ConaryServer(rAASrvPlugin):
     cnrPath = '/srv/conary/repository.cnr'
+    generatedFile = '/srv/conary/repository-generated.cnr'
     conaryrcPath = '/srv/www/html/conaryrc'
     apacheRestart = '/usr/bin/killall -USR1 httpd'
 
@@ -25,17 +26,16 @@ class ConaryServer(rAASrvPlugin):
             data = ('localhost',)
         try:
             cfg = ServerConfig()
-            cfg.read(self.cnrPath)
             cfg.serverName = data
         except CfgEnvironmentError:
             pass
 
         try:
-            f = open(self.cnrPath, "w")
+            genFile = open(self.generatedFile, 'w')
             try:
-                cfg.display(f)
+                cfg.displayKey('serverName', out=genFile)
             finally:
-                f.close()
+                genFile.close()
         except IOError, e:
             pass
 
