@@ -5,12 +5,14 @@ from raa.modules.raawebplugin import rAAWebPlugin
 from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
+import raa
 
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
 from conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.localhostonly import localhostOnly
+from conary.repository.netrepos import netauth
 
 class SrvChangeTable(DatabaseTable):
     name = 'plugin_rpath_SrvChangeTable'
@@ -186,3 +188,50 @@ class ConaryServer(rAAWebPlugin):
     @localhostOnly()
     def getData(self):
         return self.table.getdata()
+
+    @raa.expose(allow_xmlrpc=True)
+    def addServerName(self, servername):
+        try:
+            cfg = ServerConfig()
+            cfg.read(self.cnrPath)
+        except CfgEnvironmentError:
+            return False
+
+        serverNames = self.table.getdata()
+        if servername in serverNames:
+            return True
+        else:
+            self.table.setserver(servername)
+            self._update()
+            try:
+                cfg = ServerConfig()
+                cfg.read(self.cnrPath)
+            except CfgEnvironmentError:
+                return False
+            if servername not in cfg.serverName:
+                return False
+            else:
+                return True
+
+    @raa.expose(allow_xmlrpc=True)
+    def delServerName(self, servername):
+        try:
+            cfg = ServerConfig()
+            cfg.read(self.cnrPath)
+        except CfgEnvironmentError:
+            return False
+
+        serverNames = self.table.getdata()
+        if servername in serverNames:
+            if not self.checkRepository(cfg, servername):
+                return True
+        self.table.clearserver(servername)
+        self._update()
+        try:
+            cfg.read(self.cnrPath)
+        except CfgEnvironmentError:
+            return False
+        if servername in cfg.serverName:
+            return False
+        else:
+            return True
