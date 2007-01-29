@@ -7,68 +7,79 @@
 from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.repository.netrepos.netserver import NetworkRepositoryServer
-from conary.lib.cfgtypes import CfgEnvironmentError
 from conary.repository import errors
 
 class MirrorUsers(rAASrvPlugin):
-    def doTask(self, schedId, execId):
-        '''
-            Lists, adds, deletes, or changes password
-            for a conary user.
-        '''
-        cnrPath ='/srv/conary/repository.cnr'
-
-        data = self.server.getData(schedId)
-
+    cnrPath ='/srv/conary/repository.cnr'
+    def _getNetworkRepo(self):
         cfg = ServerConfig()
-        cfg.read(cnrPath)
+        cfg.read(self.cnrPath)
         nr = NetworkRepositoryServer(cfg, 'localhost')
+        return nr
 
-        if data[0]['operation'] == 'list':
-            users =  nr.auth.userAuth.getUserList()
-            for usr in users:
-                perm = 'Other'
-                for x in nr.auth.userAuth.getGroupsByUser(usr):
-                    # anonymous user
-                    if x == 'anonymous':
-                        perm = 'Anonymous'
+    def getUserList(self):
+        nr = self._getNetworkRepo()
+        users =  nr.auth.userAuth.getUserList()
+        ret = []
+        for usr in users:
+            perm = 'Other'
+            for x in nr.auth.userAuth.getGroupsByUser(usr):
+                # anonymous user
+                if x == 'anonymous':
+                    perm = 'Anonymous'
+                    break
+                perms = nr.auth.iterPermsByGroup(x)
+                for i in perms:
+                    # admin user
+                    if i == ('ALL', 'ALL', 1, 0, 1, 0):
+                        perm = 'Admin'
                         break
-                    perms = nr.auth.iterPermsByGroup(x)
-                    for i in perms:
-                        # admin user
-                        if i == ('ALL', 'ALL', 1, 0, 1, 0):
-                            perm = 'Admin'
-                            break
-                        # mirror user
-                        elif nr.auth.groupCanMirror(x) and \
-                                i == ('ALL', 'ALL', 1, 0, 0, 1):
-                            perm = 'Mirroring'
-                            break
-                self.server.setData(schedId, usr, perm)
-        elif data[0]['operation'] == 'add':
-            if data[0]['permission'] == 'Mirror':
-                write = True
-                mirror = True
-                admin = False
-                remove = True
-            elif data[0]['permission'] == 'Anonymous':
-                write = False
-                mirror = False
-                admin = False
-                remove = False
-            elif data[0]['permission'] == 'Admin':
-                write = True
-                mirror = False
-                admin = True
-                remove = False
-            try:
-                nr.auth.addUser(data[0]['user'], data[0]['password'])
-                nr.auth.addAcl(data[0]['user'], None, None, write,
-                               False, admin, remove)
-                nr.auth.setMirror(data[0]['user'], mirror)
-            except errors.GroupAlreadyExists:
-                pass
-        elif data[0]['operation'] == 'delete':
-            nr.auth.deleteUserByName(data[0]['user'])
-        elif data[0]['operation'] == 'pass':
-            nr.auth.changePassword(data[0]['user'], data[0]['password'])
+                    # mirror user
+                    elif nr.auth.groupCanMirror(x) and \
+                            i == ('ALL', 'ALL', 1, 0, 0, 1):
+                        perm = 'Mirroring'
+                        break
+            ret.append({'user' : usr, 'permission' : perm})
+        return ret
+    
+    def addUser(self, user, password, permission):
+        nr = self._getNetworkRepo()
+        if permission == 'Mirror':
+            write = True
+            mirror = True
+            admin = False
+            remove = True
+        elif permission == 'Anonymous':
+            write = False
+            mirror = False
+            admin = False
+            remove = False
+        elif permission == 'Admin':
+            write = True
+            mirror = False
+            admin = True
+            remove = False
+        try:
+            nr.auth.addUser(user, password)
+            nr.auth.addAcl(user, None, None, write,
+                           False, admin, remove)
+            nr.auth.setMirror(user, mirror)
+        except errors.GroupAlreadyExists:
+            return False
+        return True
+
+    def deleteUser(self, user):
+        nr = self._getNetworkRepo()
+        nr.auth.deleteUserByName(user)
+        return True
+
+    def changePassword(self, user, newPass):
+        nr = self._getNetworkRepo()
+        nr.auth.changePassword(user, newPass)
+        return True
+
+    def doTask(self, schedId, execId):
+        """
+        Nothing to be done for the main task.
+        """
+        pass

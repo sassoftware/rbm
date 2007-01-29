@@ -6,7 +6,6 @@ import cherrypy
 import raatest
 
 import rPath
-from rPath.mirrorusers.web.mirrorusers import MirrorTable
 import re
 
 from tests import webPluginTest
@@ -14,38 +13,24 @@ raaFramework = webPluginTest()
 raaFramework.pseudoroot = cherrypy.root.mirrorusers.MirrorUsers
 
 
-# XXX: not used yet, rAA freaks out when I substitute this for the new table object
-class OldMirrorTable(MirrorTable):
-    name = 'plugin_rpath_MirrorTable'
-    createSQL = """CREATE TABLE %s (
-        user VARCHAR(255),
-        permission VARCHAR(255),
-        password VARCHAR(255),
-        operation VARCHAR(255))""" % (name)
-    fields = ['schedId', 'user', 'permission', 'password', 'operation']
-    tableVersion = 1
-
-
 class MirrorUsersTest(raatest.rAATest):
     def setUp(self):
-        raatest.rAATest.setUp(self)
-        self.table = cherrypy.root.mirrorusers.MirrorUsers.table
-        self.table.clear()
+        #raatest.rAATest.setUp(self)
+        self._getUserList = raaFramework.pseudoroot._getUserList
+        self._addUser = raaFramework.pseudoroot._addUser
+        self._deleteUser = raaFramework.pseudoroot._deleteUser
+        self._changePassword = raaFramework.pseudoroot._changePassword
 
-    def test_setdata(self):
-        self.table.setdata(0, 'testuser', 'permission', 'password', 'test')
-
-        assert self.table.getdata(0) == \
-            [{'operation': 'test', 'password': 'password', 'user': 'testuser', 'permission': 'permission'}]
+    def tearDown(self):
+        raaFramework.pseudoroot._getUserList = self._getUserList 
+        raaFramework.pseudoroot._addUser = self._addUser
+        raaFramework.pseudoroot._deleteUser = self._deleteUser
+        raaFramework.pseudoroot._changePassword = self._changePassword
 
     def test_indexTitle(self):
-        oldGetdata = raaFramework.pseudoroot.table.getdata
-        raaFramework.pseudoroot.table.getdata = lambda *args: [{'user': 'existinguser', 'permission': 'foo'}]
+        raaFramework.pseudoroot._getUserList = lambda *args: [{'user': 'testguy', 'permission':'blah'}]
         self.requestWithIdent("/mirrorusers/MirrorUsers/")
         assert "<title>manage repository users</title>" in cherrypy.response.body[0].lower()
-        raaFramework.pseudoroot.table.getdata = oldGetdata
-        self.table.clear()
-
 
     def test_addUser(self):
         # test for prompt
@@ -71,30 +56,31 @@ class MirrorUsersTest(raatest.rAATest):
             'Please choose a different user name.', 'error': True}
 
         # test for duplicate user
-        oldGetdata = raaFramework.pseudoroot.table.getdata
-        raaFramework.pseudoroot.table.getdata = lambda *args: [{'user': 'existinguser', 'permission': 'foo'}]
+        raaFramework.pseudoroot._addUser = lambda *args: False
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'existinguser', passwd1 = 'pass', passwd2 = 'pass')
         assert result == {'message': 'User "existinguser" already exists. '
             ' Please choose a different user name.', 'error': True}
-        raaFramework.pseudoroot.table.getdata = oldGetdata
-        self.table.clear()
 
         # test for success
+        raaFramework.pseudoroot._addUser = lambda *args: True
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'newuser', passwd1 = 'pass', passwd2 = 'pass')
         assert result == {'message': 'User "newuser" added with Anonymous permission.', 'error': False}
 
     def test_deleteUser(self):
-        result = self.callWithIdent(raaFramework.pseudoroot.deleteUser,
-            username = 'newuser')
+        raaFramework.pseudoroot._deleteUser = lambda *args: True
+        result = self.callWithIdent(raaFramework.pseudoroot.deleteUser, 'newuser')
         assert result == {'username': 'newuser'}
 
+        raaFramework.pseudoroot._getUserList = lambda *args: []
         result = self.callWithIdent(raaFramework.pseudoroot.deleteUser,
             username = 'newuser', confirm = True)
         assert result == {'userList': [], 'userData': []}
 
     def test_changePassword(self):
+        raaFramework.pseudoroot._getUserList = lambda *args: []
+        raaFramework.pseudoroot._changePassword = lambda *args: True
         result = self.callWithIdent(raaFramework.pseudoroot.changePassword,
             username = 'thisDoesntMatter', passwd1 = 'neitherDoesThis!',
             passwd2 = 'neitherDoesThis!')
@@ -112,12 +98,9 @@ class MirrorUsersTest(raatest.rAATest):
             'message': 'Enter a new password for the repository user "thisDoesntMatter":',
             'error': False}
 
-    def test_getSetData(self):
-        self.callWithIdent(raaFramework.pseudoroot.setData, 0, 'user', 'perm')
-        r = self.callWithIdent(raaFramework.pseudoroot.getData, 0)
-        assert r == [{'operation': '', 'password': '', 'user': 'user', 'permission': 'perm'}]
-
     def test_addRandomness(self):
+        raaFramework.pseudoroot._addUser = lambda *args: True
+        raaFramework.pseudoroot._deleteUser = lambda *args: True
         r = self.callXmlrpc(raaFramework.pseudoroot.addRandomUser, 
                                'testuser')
         value = re.compile('[0-9a-z]{128}')
