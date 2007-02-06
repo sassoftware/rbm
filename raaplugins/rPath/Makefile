@@ -6,7 +6,7 @@
 
 all: subdirs
 
-export VERSION = 2.1.0
+export VERSION = 3.0.0
 export TOPDIR = $(shell pwd)
 export DISTDIR = $(TOPDIR)/raa-plugin-$(VERSION)
 export prefix = /usr
