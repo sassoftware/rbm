@@ -22,8 +22,9 @@ class DiskUsage(rAAWebPlugin):
         df = os.popen(self.df_cmd)
         data = []
         for line in df:
-	    fstype = line.split()[1]
+            splitLine = line.split()
+            fstype = splitLine.pop(1)
             if fstype != 'none':
-            	data.append([x for x in line.split() if x != fstype])
+            	data.append(splitLine)
         df.close()
         return dict(data=data[1:])

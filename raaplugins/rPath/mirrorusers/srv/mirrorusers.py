@@ -17,7 +17,7 @@ class MirrorUsers(rAASrvPlugin):
         nr = NetworkRepositoryServer(cfg, 'localhost')
         return nr
 
-    def getUserList(self):
+    def getUserList(self, schedId, execId):
         nr = self._getNetworkRepo()
         users =  nr.auth.userAuth.getUserList()
         ret = []
@@ -42,7 +42,7 @@ class MirrorUsers(rAASrvPlugin):
             ret.append({'user' : usr, 'permission' : perm})
         return ret
     
-    def addUser(self, user, password, permission):
+    def addUser(self, schedId, execId, user, password, permission):
         nr = self._getNetworkRepo()
         if permission == 'Mirror':
             write = True
@@ -68,12 +68,12 @@ class MirrorUsers(rAASrvPlugin):
             return False
         return True
 
-    def deleteUser(self, user):
+    def deleteUser(self, schedId, execId, user):
         nr = self._getNetworkRepo()
         nr.auth.deleteUserByName(user)
         return True
 
-    def changePassword(self, user, newPass):
+    def changePassword(self, schedId, execId, user, newPass):
         nr = self._getNetworkRepo()
         nr.auth.changePassword(user, newPass)
         return True
