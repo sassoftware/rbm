@@ -28,7 +28,7 @@
               pass2.value = '';
             }
             if (textType == 'anon') {
-              var text = 'Anonymous -- Creating a user with anonymous permission makes the contents of your rBuilder Mirror repository available -- on a read-only basis -- to anyone with network access.';
+              var text = 'Anonymous -- Creating a user with anonymous permission makes the contents of your Update Service repository available -- on a read-only basis -- to anyone with network access.';
               var warningText = 'Caution: Creating an anonymous user bypasses all username and entitlement-based authentication!';
               user.readOnly = true;
               user.value = 'anonymous';
@@ -42,8 +42,8 @@
               warningText = '';
             }
             else if (textType = 'admin') {
-              var text = 'Admin Access -- Creating a user with admin permission makes it possible to perform low-level operations on your rBuilder Mirror repository.  A user with admin permission has the ability to create, delete, and modify other users, and fine-tune access permissions across the repository.';
-              var warningText = 'Caution: Admin users have the ability to disrupt the operation of your rBuilder Mirror repository.  Create an admin user only if you have a specific need to do so!';
+              var text = 'Admin Access -- Creating a user with admin permission makes it possible to perform low-level operations on your Update Service repository.  A user with admin permission has the ability to create, delete, and modify other users, and fine-tune access permissions across the repository.';
+              var warningText = 'Caution: Admin users have the ability to disrupt the operation of your Update Service repository.  Create an admin user only if you have a specific need to do so!';
             }
             var oldNode = document.getElementById('guideText');
             var newNode = document.createElement("h5");
