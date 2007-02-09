@@ -68,34 +68,19 @@ class ConaryServer(rAAWebPlugin):
             cfg.read(self.cnrPath)
             data = cfg.serverName
         except CfgEnvironmentError:
-            pageText="""rBuilder Mirror could not read the configuration 
-                        file "%s".  Please ensure rBuilder Mirror is
-                        properly installed.""" % self.cnrPath
+            pageText="""rPath Appliance Platform Update Server could
+                        not read the configuration file "%s".  Please ensure
+                        Update Server is properly installed.""" % self.cnrPath
             errorState = 'error'
         else:
-            pageText = """<p>To use rBuilder Mirror, you must specify one or 
-                          more server names reflecting the server name 
-                          portion(s) of the label(s) you wish to mirror.</p>
+            pageText = """<p>NOTE: In normal operation, you should not have to
+                          make any changes using this interface.  The outbound
+                          mirror configuration process will communicate the
+                          necessary information to Update Server, which will
+                          automatically configure itself.</p>
 
-                          <p>For example, given a repository containing software
-                          under the <tt>repo.example.com@org:prod-1</tt> label,
-                          the server name <tt>repo.example.com</tt> should be 
-                          entered here.</p>
-
-                          <p>Enter the desired server name, and click on the 
-                          "Add" button.  Incorrectly-entered server names can 
-                          be deleted by clicking on the corresponding [X] icon;
-                          however, once software has been committed to the
-                          repository under a given label, its server name may 
-                          no longer be deleted.</p>
-
-                          <p>NOTE: You <em>must</em> specify at least one 
-                          server name here.</p>
-                          <p>NOTE: httpd will automatically be restarted after
-                          each new hostname is added or deleted (This is 
-                          necessary for the server name changes to take effect).
-                          This may cause a slight disruption to your service 
-                          while the restart is in progress.</p>"""
+                          <p>This interface is provided for support purposes
+                          only.</p>"""
             errorState = 'guide'
         
         return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
