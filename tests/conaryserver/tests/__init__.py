@@ -59,8 +59,30 @@ class ConaryServerTest(raatest.rAATest):
         raatest.rAATest.tearDown(self)
 
     def test_backend(self):
+        cfg = ServerConfig()
+        cfg.forceSSL = True
+        fd = open(raaFramework.pseudoroot.cnrPath, 'w')
+        cfg.display(fd)
+        fd.close()
+        self.table.setserver('localhost2')
         r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
         assert os.path.exists(self.conaryServer.conaryrcPath)
+        fd = open(self.conaryServer.conaryrcPath)
+        data = fd.read()
+        fd.close()
+        assert 'https' in data
+        cfg.forceSSL = False
+        fd = open(raaFramework.pseudoroot.cnrPath, 'w')
+        cfg.display(fd)
+        fd.close()
+        self.table.setserver('localhost3')
+        r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+        fd = open(self.conaryServer.conaryrcPath)
+        data = fd.read()
+        fd.close()
+        assert 'https' not in data
+        assert 'http' in data
+
 
     def test_method(self):
         "the index method should return a string called now"
@@ -71,7 +93,6 @@ class ConaryServerTest(raatest.rAATest):
     def test_indextitle(self):
         "The mainpage should have the right title"
         self.requestWithIdent("/conaryserver/ConaryServer/")
-        print cherrypy.response.body[0]
         assert "<title>update repository server names</title>" in cherrypy.response.body[0].lower()
 
         try:
@@ -80,7 +101,7 @@ class ConaryServerTest(raatest.rAATest):
             pass
         r = self.callWithIdent(raaFramework.pseudoroot.index)
         assert r['errorState'] == 'error' and \
-            'could not read the configuration' in r['pageText']
+            'not read the configuration' in r['pageText']
 
     def test_setserver(self):
         self.table.setserver('localhost2')
@@ -114,7 +135,7 @@ class ConaryServerTest(raatest.rAATest):
         self.hideCnr()
         r = self.callWithIdent(raaFramework.pseudoroot.delsrvname, 'localhost2')
         assert r['errorState'] == 'error' and \
-            'could not read the configuration' in r['pageText']
+            'not read the configuration' in r['pageText']
         self.showCnr()
 
     def test_setsrvname(self):
@@ -130,7 +151,7 @@ class ConaryServerTest(raatest.rAATest):
         self.hideCnr()
         r = self.callWithIdent(raaFramework.pseudoroot.setsrvname, 'localhost2')
         assert r['errorState'] == 'error' and \
-            'could not read the configuration' in r['pageText']
+            'not read the configuration' in r['pageText']
         self.showCnr()
 
     def test_getData(self):
