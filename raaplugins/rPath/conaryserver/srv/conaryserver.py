@@ -45,7 +45,14 @@ class ConaryServer(rAASrvPlugin):
         finally:
             pipeCmd.close()
 
-        cfgData = '\n'.join(['repositoryMap %s http://%s/conary/' % (x, srvName) for x in data if x != 'localhost'])
+        cfg = ServerConfig()
+        cfg.read(self.cnrPath)
+        if cfg.forceSSL:
+            protocol = 'https'
+        else:
+            protocol = 'http'
+
+        cfgData = '\n'.join(['repositoryMap %s %s://%s/conary/' % (x, protocol, srvName) for x in data if x != 'localhost'])
         cfgData = cfgData and (cfgData + '\n') or cfgData
         f = open(self.conaryrcPath, 'w')
         try:
