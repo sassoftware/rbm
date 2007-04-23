@@ -64,24 +64,46 @@ class ConaryServerTest(raatest.rAATest):
         fd = open(raaFramework.pseudoroot.cnrPath, 'w')
         cfg.display(fd)
         fd.close()
-        self.table.setserver('localhost2')
-        r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
-        assert os.path.exists(self.conaryServer.conaryrcPath)
-        fd = open(self.conaryServer.conaryrcPath)
-        data = fd.read()
-        fd.close()
-        assert 'https' in data
-        cfg.forceSSL = False
-        fd = open(raaFramework.pseudoroot.cnrPath, 'w')
-        cfg.display(fd)
-        fd.close()
-        self.table.setserver('localhost3')
-        r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
-        fd = open(self.conaryServer.conaryrcPath)
-        data = fd.read()
-        fd.close()
-        assert 'https' not in data
-        assert 'http' in data
+        try:
+            oldGenFile = self.conaryServer.generatedFile
+            tmpFd, tmpFile = tempfile.mkstemp()
+            os.close(tmpFd)
+            self.conaryServer.generatedFile = tmpFile
+            genCfg = ServerConfig()
+            genCfg.read(self.conaryServer.generatedFile)
+            genCfg.logFile = 'this is a test'
+            genCfg.repositoryDB = ('testdb', 'testpath')
+            fd = open(self.conaryServer.generatedFile, 'w')
+            genCfg.displayKey('logFile', out=fd)
+            genCfg.displayKey('repositoryDB', out=fd)
+            fd.close()
+            self.table.setserver('localhost2')
+            r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+            fd = open(tmpFile)
+            cfgLines = fd.readlines()
+            fd.close()
+            genCfg.read(tmpFile)
+            assert len(cfgLines) == 3
+            assert genCfg.repositoryDB == ('testdb', 'testpath')
+            assert 'this is a test' in genCfg.logFile
+            assert os.path.exists(self.conaryServer.conaryrcPath)
+            fd = open(self.conaryServer.conaryrcPath)
+            data = fd.read()
+            fd.close()
+            assert 'https' in data
+            cfg.forceSSL = False
+            fd = open(raaFramework.pseudoroot.cnrPath, 'w')
+            cfg.display(fd)
+            fd.close()
+            self.table.setserver('localhost3')
+            r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+            fd = open(self.conaryServer.conaryrcPath)
+            data = fd.read()
+            fd.close()
+            assert 'https' not in data
+            assert 'http' in data
+        finally:
+            self.conaryServer.generatedFile = oldGenFile
 
 
     def test_method(self):
