@@ -26,6 +26,7 @@ class ConaryServer(rAASrvPlugin):
             data = ('localhost',)
         try:
             cfg = ServerConfig()
+            cfg.read(self.generatedFile, exception=False)
             cfg.serverName = data
         except CfgEnvironmentError:
             pass
@@ -33,7 +34,9 @@ class ConaryServer(rAASrvPlugin):
         try:
             genFile = open(self.generatedFile, 'w')
             try:
-                cfg.displayKey('serverName', out=genFile)
+                displayKeys = [x for x in cfg.keys() if x == 'serverName' or not cfg.isDefault(x)]
+                for x in displayKeys:
+                    cfg.displayKey(x, out=genFile)
             finally:
                 genFile.close()
         except IOError, e:
