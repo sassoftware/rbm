@@ -5,6 +5,7 @@
 #
 
 import os
+import re
 import socket
 import tempfile
 
@@ -33,6 +34,8 @@ def catchExceptions(func):
     wrapper.__dict__ = func.__dict__
     return wrapper
 
+def scrubInput(regex, input, errMessage):
+    assert re.match(regex, input), errMessage % input
 
 class NasMount(rAASrvPlugin):
     def mkFstabEntry(self, server, remoteMount, mountPoint):
@@ -63,6 +66,13 @@ class NasMount(rAASrvPlugin):
         assert not isMounted(mountPoint), "%s is already mounted" % mountPoint
         assert not isMounted(remoteMount), "%s is already mounted" % remoteMount
         assert not os.listdir(mountPoint), "%s is not empty" % mountPoint
+
+        scrubInput('[A-Za-z0-9\.-]*$', server, "'%s' must be a FQDN")
+
+        scrubInput('[^\'";<>&|!$]*$', remoteMount,
+                   "'%s' cannot contain string or shell delimiters")
+
+
 
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect((server, NFS_PROTO))
