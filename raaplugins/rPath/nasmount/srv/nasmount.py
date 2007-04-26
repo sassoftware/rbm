@@ -22,7 +22,8 @@ def isMounted(mnt):
     return not res
 
 SEEK_SET, SEEK_CUR, SEEK_END = range(0, 3)
-NFS_PROTO = 2049
+
+FSTAB = '/etc/fstab'
 
 def catchExceptions(func):
     def wrapper(*args, **kwargs):
@@ -39,20 +40,21 @@ def scrubInput(regex, input, errMessage):
 
 class NasMount(rAASrvPlugin):
     def mkFstabEntry(self, server, remoteMount, mountPoint):
-        assert os.path.exists('/etc/fstab'), "/etc/fstab does not exist"
+        assert os.path.exists(FSTAB), "/etc/fstab does not exist"
 
         entry = "%s:%s %s nfs defaults 0 0\n" % \
             (server, remoteMount, mountPoint)
 
-        f = open('/etc/fstab', 'r+')
+        f = open(FSTAB, 'r+')
         data = f.read()
 
         assert '%s:%s' % (server, remoteMount) not in data, \
             "Remote Mount: %s:%s is already present in /etc/fstab" % \
             (server, remoteMount)
-        assert mountPoint not in data, "Local Mount: %s already in /etc/fstab"
+        assert mountPoint not in data, \
+            "Local Mount: %s already in /etc/fstab" % mountPoint
 
-        if data[-1] != '\n':
+        if data and data[-1] != '\n':
             entry = '\n' + entry
 
         f.seek(0, SEEK_END)
@@ -63,20 +65,14 @@ class NasMount(rAASrvPlugin):
     def setMount(self, schedId, execId, server, remoteMount, mountPoint):
         assert os.path.exists(mountPoint), \
             "Mount Point: %s does not exist" % mountPoint
-        assert not isMounted(mountPoint), "%s is already mounted" % mountPoint
         assert not isMounted(remoteMount), "%s is already mounted" % remoteMount
+        assert not isMounted(mountPoint), "%s is already mounted" % mountPoint
         assert not os.listdir(mountPoint), "%s is not empty" % mountPoint
 
         scrubInput('[A-Za-z0-9\.-]*$', server, "'%s' must be a FQDN")
 
         scrubInput('[^\'";<>&|!$]*$', remoteMount,
                    "'%s' cannot contain string or shell delimiters")
-
-
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect((server, NFS_PROTO))
-        s.close()
 
         # a colon in a mount point implies NFS
         mount.mount('%s:%s' % (server, remoteMount), mountPoint)
@@ -93,7 +89,7 @@ class NasMount(rAASrvPlugin):
 
     @catchExceptions
     def getMount(self, schedId, execId, mountPoint):
-        f = open('/etc/fstab')
+        f = open(FSTAB)
         data = f.readlines()
         mountLines = [x for x in data if mountPoint in x]
         if not mountLines:
