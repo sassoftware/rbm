@@ -69,9 +69,10 @@ class NasMount(rAAWebPlugin):
     @marshallMessages
     def setMount(self, *args, **kwargs):
         for param in ('server', 'remoteMount'):
-            if param not in kwargs:
-                self.errors.append('Parameter Error: %s not in arguments' % \
+            if not kwargs.get(param):
+                self.errors.append('Parameter Error: %s is missing' % \
                                        param)
+
         success = False
         if not self.errors:
             self._setMount(server = kwargs['server'],
