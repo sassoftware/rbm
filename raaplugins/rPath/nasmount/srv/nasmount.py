@@ -42,7 +42,7 @@ class NasMount(rAASrvPlugin):
     def mkFstabEntry(self, server, remoteMount, mountPoint):
         assert os.path.exists(FSTAB), "/etc/fstab does not exist"
 
-        entry = "%s:%s %s nfs defaults 0 0\n" % \
+        entry = "%s:%s %s nfs tcp,rw,hard,intr 0 0\n" % \
             (server, remoteMount, mountPoint)
 
         f = open(FSTAB, 'r+')
