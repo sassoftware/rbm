@@ -158,7 +158,7 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab, 'w')
         f.write('/dev/proc /proc proc defaults 0 0\n')
-        f.write('testSrv:testMnt /mountPoint nfs defaults 0 0\n')
+        f.write('testSrv:testMnt /mountPoint nfs tcp,rw,hard,intr 0 0\n')
         f.close()
 
         res = nas.getMount(0, 0, '/mountPoint')
@@ -170,7 +170,7 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab, 'w')
         f.write('/dev/proc /proc proc defaults 0 0\n')
-        f.write('testMnt /mountPoint nfs defaults 0 0\n')
+        f.write('testMnt /mountPoint nfs tcp,rw,hard,intr 0 0\n')
         f.close()
 
         res = nas.getMount(0,0, '/mountPoint')
@@ -200,7 +200,7 @@ class NasTest(raatest.rAATest):
         f = open(self.fstab)
 
         assert f.read() == '/dev/proc /proc proc defaults 0 0\n' \
-            'testSrv:testMnt %s nfs defaults 0 0\n' % tmpDir
+            'testSrv:testMnt %s nfs tcp,rw,hard,intr 0 0\n' % tmpDir
         f.close()
 
     def testEmptyFsTab(self):
@@ -215,7 +215,7 @@ class NasTest(raatest.rAATest):
         assert res == (False, '')
 
         f = open(self.fstab)
-        assert f.read() == 'testSrv:testMnt %s nfs defaults 0 0\n' % tmpDir
+        assert f.read() == 'testSrv:testMnt %s nfs tcp,rw,hard,intr 0 0\n' % tmpDir
         f.close()
 
     def testRemoteMounted(self):
@@ -299,7 +299,7 @@ class NasTest(raatest.rAATest):
     def testRemotePresent(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
         f = open(self.fstab, 'w')
-        f.write('testSrv:testMnt somemount nfs defaults 0 0\n')
+        f.write('testSrv:testMnt somemount nfs tcp,rw,hard,intr 0 0\n')
         f.close()
 
         try:
@@ -311,7 +311,7 @@ class NasTest(raatest.rAATest):
     def testLocalPresent(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
         f = open(self.fstab, 'w')
-        f.write('testSrv:testRemMnt localMnt nfs defaults 0 0\n')
+        f.write('testSrv:testRemMnt localMnt nfs tcp,rw,hard,intr 0 0\n')
         f.close()
 
         try:
@@ -331,4 +331,4 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab)
         assert f.read() == '/dev/proc /proc proc defaults 0 0\n' \
-            'testSrv:testMnt localMnt nfs defaults 0 0\n'
+            'testSrv:testMnt localMnt nfs tcp,rw,hard,intr 0 0\n'
