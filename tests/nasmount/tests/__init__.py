@@ -4,6 +4,7 @@
 #
 import cherrypy
 import os
+import pwd
 import raatest
 import tempfile
 
@@ -21,7 +22,7 @@ rPath.nasmount.srv.nasmount.NasMount.__init__ = lambda *args, **kwargs: None
 
 from raa.lib import mount
 mount.mount = lambda *args, **kwargs: None
-
+mount.umount_point = lambda *args, **kwargs: None
 
 class NasTest(raatest.rAATest):
     def __init__(self, *args, **kwargs):
@@ -158,7 +159,7 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab, 'w')
         f.write('/dev/proc /proc proc defaults 0 0\n')
-        f.write('testSrv:testMnt /mountPoint nfs tcp,rw,hard,intr 0 0\n')
+        f.write('testSrv:testMnt /mountPoint nfs tcp,rw,hard,intr,user 0 0\n')
         f.close()
 
         res = nas.getMount(0, 0, '/mountPoint')
@@ -170,7 +171,7 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab, 'w')
         f.write('/dev/proc /proc proc defaults 0 0\n')
-        f.write('testMnt /mountPoint nfs tcp,rw,hard,intr 0 0\n')
+        f.write('testMnt /mountPoint nfs tcp,rw,hard,intr,user 0 0\n')
         f.close()
 
         res = nas.getMount(0,0, '/mountPoint')
@@ -191,31 +192,89 @@ class NasTest(raatest.rAATest):
         f.write('/dev/proc /proc proc defaults 0 0\n')
         f.close()
 
+        testTouchFile = rPath.nasmount.srv.nasmount.testTouchFile
+        rPath.nasmount.srv.nasmount.testTouchFile = \
+            lambda *args, **kwargs: (False, '')
         try:
             res = nas.setMount(0, 0, 'testSrv', 'testMnt', tmpDir)
         finally:
+            rPath.nasmount.srv.nasmount.testTouchFile = testTouchFile
             util.rmtree(tmpDir)
 
         assert res == (False, '')
         f = open(self.fstab)
 
         assert f.read() == '/dev/proc /proc proc defaults 0 0\n' \
-            'testSrv:testMnt %s nfs tcp,rw,hard,intr 0 0\n' % tmpDir
+            'testSrv:testMnt %s nfs %s 0 0\n' % \
+            (tmpDir, ','.join(rPath.nasmount.srv.nasmount.mountOptions))
         f.close()
+
+    def testSetMountRootSquash(self):
+        nas = rPath.nasmount.srv.nasmount.NasMount()
+        tmpDir = tempfile.mkdtemp()
+
+        f = open(self.fstab, 'w')
+        f.write('/dev/proc /proc proc defaults 0 0\n')
+        f.close()
+
+        testTouchFile = rPath.nasmount.srv.nasmount.testTouchFile
+        rPath.nasmount.srv.nasmount.testTouchFile = \
+            lambda *args, **kwargs: (True, 'SENTINEL')
+        try:
+            res = nas.setMount(0, 0, 'testSrv', 'testMnt', tmpDir)
+        finally:
+            rPath.nasmount.srv.nasmount.testTouchFile = testTouchFile
+            util.rmtree(tmpDir)
+
+        assert res == (True, 'SENTINEL\n')
+
+
+    def testSetMountNoRootSquash(self):
+        nas = rPath.nasmount.srv.nasmount.NasMount()
+        tmpDir = tempfile.mkdtemp()
+
+        f = open(self.fstab, 'w')
+        f.write('/dev/proc /proc proc defaults 0 0\n')
+        f.close()
+
+        chown = os.chown
+        def DummyChown(*args, **kwargs):
+            # set up next call to change return code
+            rPath.nasmount.srv.nasmount.testTouchFile = \
+            lambda *args, **kwargs: (True, 'SENTINEL2')
+
+        os.chown = DummyChown
+        testTouchFile = rPath.nasmount.srv.nasmount.testTouchFile
+        rPath.nasmount.srv.nasmount.testTouchFile = \
+            lambda *args, **kwargs: (True, 'SENTINEL')
+        try:
+            res = nas.setMount(0, 0, 'testSrv', 'testMnt', tmpDir)
+        finally:
+            rPath.nasmount.srv.nasmount.testTouchFile = testTouchFile
+            util.rmtree(tmpDir)
+            os.chown = chown
+
+        assert res == (True, 'SENTINEL2\n')
+
 
     def testEmptyFsTab(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
         tmpDir = tempfile.mkdtemp()
 
+        testTouchFile = rPath.nasmount.srv.nasmount.testTouchFile
+        rPath.nasmount.srv.nasmount.testTouchFile = \
+            lambda *args, **kwargs: (False, '')
         try:
             res = nas.setMount(0, 0, 'testSrv', 'testMnt', tmpDir)
         finally:
+            rPath.nasmount.srv.nasmount.testTouchFile = testTouchFile
             util.rmtree(tmpDir)
 
         assert res == (False, '')
 
         f = open(self.fstab)
-        assert f.read() == 'testSrv:testMnt %s nfs tcp,rw,hard,intr 0 0\n' % tmpDir
+        assert f.read() == 'testSrv:testMnt %s nfs %s 0 0\n' % \
+            (tmpDir, ','.join(rPath.nasmount.srv.nasmount.mountOptions))
         f.close()
 
     def testRemoteMounted(self):
@@ -299,7 +358,7 @@ class NasTest(raatest.rAATest):
     def testRemotePresent(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
         f = open(self.fstab, 'w')
-        f.write('testSrv:testMnt somemount nfs tcp,rw,hard,intr 0 0\n')
+        f.write('testSrv:testMnt somemount nfs tcp,rw,hard,intr,user 0 0\n')
         f.close()
 
         try:
@@ -311,7 +370,7 @@ class NasTest(raatest.rAATest):
     def testLocalPresent(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
         f = open(self.fstab, 'w')
-        f.write('testSrv:testRemMnt localMnt nfs tcp,rw,hard,intr 0 0\n')
+        f.write('testSrv:testRemMnt localMnt nfs tcp,rw,hard,intr,user 0 0\n')
         f.close()
 
         try:
@@ -331,4 +390,191 @@ class NasTest(raatest.rAATest):
 
         f = open(self.fstab)
         assert f.read() == '/dev/proc /proc proc defaults 0 0\n' \
-            'testSrv:testMnt localMnt nfs tcp,rw,hard,intr 0 0\n'
+            'testSrv:testMnt localMnt nfs %s 0 0\n' % \
+            ','.join(rPath.nasmount.srv.nasmount.mountOptions)
+
+    # test file creation routine
+    def testTouchFile(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        setuid = os.setuid
+        setgid = os.setgid
+        _exit = os._exit
+        waitpid = os.waitpid
+
+        os.fork = lambda: 0
+        os.setuid = lambda *args: None
+        os.setgid = lambda *args: None
+        os._exit = lambda *args: None
+        os.waitpid = lambda *args: (0, 0)
+
+        try:
+            res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+        finally:
+            os.fork = fork
+            os.setuid = setuid
+            os.setgid = setgid
+            os._exit = _exit
+            os.waitpid = waitpid
+            util.rmtree(tmpDir, ignore_errors = True)
+
+        assert res == (False, '')
+
+    def testCantCreateFileCode(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        waitpid = os.waitpid
+
+        os.fork = lambda: 1
+        os.waitpid = lambda *args: \
+            (0, 256 * rPath.nasmount.srv.nasmount.E_CANT_CREATE)
+        try:
+            res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+        finally:
+            os.fork = fork
+            os.waitpid = waitpid
+            util.rmtree(tmpDir, ignore_errors = True)
+
+        assert res == (True, 'Apache user cannot create files')
+
+    def testCantDeleteFileCode(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        waitpid = os.waitpid
+
+        os.fork = lambda: 1
+        os.waitpid = lambda *args: \
+            (0, 256 * rPath.nasmount.srv.nasmount.E_CANT_DELETE)
+        try:
+            res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+        finally:
+            os.fork = fork
+            os.waitpid = waitpid
+            util.rmtree(tmpDir, ignore_errors = True)
+
+        assert res == (True, 'Apache user cannot delete files')
+
+    def testNoApacheUserCode(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        waitpid = os.waitpid
+
+        os.fork = lambda: 1
+        os.waitpid = lambda *args: \
+            (0, 256 * rPath.nasmount.srv.nasmount.E_NO_USER)
+        try:
+            res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+        finally:
+            os.fork = fork
+            os.waitpid = waitpid
+            util.rmtree(tmpDir, ignore_errors = True)
+
+        assert res == (True, "Apache user doesn't exist")
+
+    def testCantCreateFile(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        setuid = os.setuid
+        setgid = os.setgid
+        _exit = os._exit
+        waitpid = os.waitpid
+        mkstemp = tempfile.mkstemp
+
+        def DummyMkstemp(*args, **kwargs):
+            raise AssertionError
+
+        def DummyExit(code):
+            assert False, str(code)
+
+        os.fork = lambda: 0
+        os.setuid = lambda *args: None
+        os.setgid = lambda *args: None
+        os._exit = DummyExit
+        os.waitpid = lambda *args: (0, 0)
+        tempfile.mkstemp = DummyMkstemp
+
+        try:
+            try:
+                res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+            finally:
+                os.fork = fork
+                os.setuid = setuid
+                os.setgid = setgid
+                os._exit = _exit
+                os.waitpid = waitpid
+                tempfile.mkstemp = mkstemp
+                util.rmtree(tmpDir, ignore_errors = True)
+        except AssertionError, e:
+            assert str(e) == '%d\n' % rPath.nasmount.srv.nasmount.E_CANT_CREATE
+        else:
+            self.fail('Expected Error code')
+
+    def testCantDeleteFile(self):
+        tmpDir = tempfile.mkdtemp()
+        fork = os.fork
+        setuid = os.setuid
+        setgid = os.setgid
+        _exit = os._exit
+        waitpid = os.waitpid
+        mkstemp = tempfile.mkstemp
+        close = os.close
+        unlink = os.unlink
+
+        def DummyUnlink(*args, **kwargs):
+            raise AssertionError
+
+        def DummyExit(code):
+            assert False, str(code)
+
+        os.fork = lambda: 0
+        os.setuid = lambda *args: None
+        os.setgid = lambda *args: None
+        os._exit = DummyExit
+        os.waitpid = lambda *args: (0, 0)
+        tempfile.mkstemp = lambda dir: (0, dir + '/junk')
+        os.close = lambda *args, **kwargs: None
+        os.unlink = DummyUnlink
+
+        try:
+            try:
+                res = rPath.nasmount.srv.nasmount.testTouchFile(tmpDir)
+            finally:
+                os.fork = fork
+                os.setuid = setuid
+                os.setgid = setgid
+                os._exit = _exit
+                os.waitpid = waitpid
+                tempfile.mkstemp = mkstemp
+                util.rmtree(tmpDir, ignore_errors = True)
+                os.close = close
+                os.unlink = unlink
+        except AssertionError, e:
+            assert str(e) == '%d\n' % rPath.nasmount.srv.nasmount.E_CANT_DELETE
+        else:
+            self.fail('Expected Error code')
+
+    def testNoApacheUser(self):
+        fork = os.fork
+        _exit = os._exit
+        getpwnam = pwd.getpwnam
+
+        def DummyExit(code):
+            assert False, str(code)
+
+        def DummyPwNam(*args):
+            raise KeyError('name not found')
+
+        os.fork = lambda: 0
+        os._exit = DummyExit
+        pwd.getpwnam = DummyPwNam
+        try:
+            try:
+                res = rPath.nasmount.srv.nasmount.testTouchFile('')
+            finally:
+                os.fork = fork
+                os._exit = _exit
+                pwd.getpwnam = getpwnam
+        except AssertionError, e:
+            assert str(e) == '%d\n' % rPath.nasmount.srv.nasmount.E_NO_USER
+        else:
+            self.fail('Expected Error code')
