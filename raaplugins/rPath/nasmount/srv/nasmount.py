@@ -5,6 +5,7 @@
 #
 
 import os
+import pwd
 import re
 import socket
 import tempfile
@@ -15,6 +16,9 @@ from raa.lib import mount
 
 from conary.lib import util
 
+import logging
+log = logging.getLogger('raa.nasmount')
+
 def isMounted(mnt):
     p = os.popen('mount | grep "%s"' % mnt)
     p.read()
@@ -24,6 +28,8 @@ def isMounted(mnt):
 SEEK_SET, SEEK_CUR, SEEK_END = range(0, 3)
 
 FSTAB = '/etc/fstab'
+
+mountOptions = ['tcp', 'rw', 'hard', 'intr', 'rsize=32768', 'wsize=32768']
 
 def catchExceptions(func):
     def wrapper(*args, **kwargs):
@@ -38,12 +44,56 @@ def catchExceptions(func):
 def scrubInput(regex, input, errMessage):
     assert re.match(regex, input), errMessage % input
 
+E_CANT_CREATE, E_CANT_DELETE, E_NO_USER = range(1, 4)
+
+def testTouchFile(path):
+    pid = os.fork()
+    if not pid:
+        try:
+            log.info("switching to apache user")
+            apacheUid, apacheGid = pwd.getpwnam('apache')[2:4]
+            os.setgid(apacheGid)
+            os.setuid(apacheUid)
+            try:
+                log.info("attempting to create test file")
+                fd, filePath = tempfile.mkstemp(dir = path)
+            except:
+                log.error("could not create test file")
+                os._exit(E_CANT_CREATE)
+            else:
+                log.info("created test file. attempting to delete")
+                os.close(fd)
+                try:
+                    os.unlink(filePath)
+                except:
+                    log.error("couldn't delete test file")
+                    os._exit(E_CANT_DELETE)
+        except KeyError, e:
+            if 'name not found' in str(e):
+                log.error("apache user doesn't exist")
+                os._exit(E_NO_USER)
+            else:
+                raise
+        else:
+            log.info("file creation test passed")
+            os._exit(0)
+    pid, exitStatus = os.waitpid(pid, 0)
+    exitCode = os.WEXITSTATUS(exitStatus)
+    exitMessages = {0: (False, ''),
+                    E_CANT_CREATE: (True, 'Apache user cannot create files'),
+                    E_CANT_DELETE: (True, 'Apache user cannot delete files'),
+                    E_NO_USER: (True, "Apache user doesn't exist")}
+    return exitMessages.get( \
+        exitCode,
+        (True, 'Unknown Error occured while testing remote file access'))
+
+
 class NasMount(rAASrvPlugin):
     def mkFstabEntry(self, server, remoteMount, mountPoint):
         assert os.path.exists(FSTAB), "/etc/fstab does not exist"
 
-        entry = "%s:%s %s nfs tcp,rw,hard,intr 0 0\n" % \
-            (server, remoteMount, mountPoint)
+        entry = "%s:%s %s nfs %s 0 0\n" % \
+            (server, remoteMount, mountPoint, ','.join(mountOptions))
 
         f = open(FSTAB, 'r+')
         data = f.read()
@@ -57,35 +107,50 @@ class NasMount(rAASrvPlugin):
         if data and data[-1] != '\n':
             entry = '\n' + entry
 
+        log.info('modifying /etc/fstab')
         f.seek(0, SEEK_END)
         f.write(entry)
         f.close()
+        log.info('/etc/fstab written')
 
     @catchExceptions
     def setMount(self, schedId, execId, server, remoteMount, mountPoint):
+        scrubInput('[A-Za-z0-9\.-]*$', server, "'%s' must be a FQDN")
+
+        scrubInput('[^\'";<>&|!$]*$', remoteMount,
+                   "'%s' cannot contain string or shell delimiters")
+
         assert os.path.exists(mountPoint), \
             "Mount Point: %s does not exist" % mountPoint
         assert not isMounted(remoteMount), "%s is already mounted" % remoteMount
         assert not isMounted(mountPoint), "%s is already mounted" % mountPoint
         assert not os.listdir(mountPoint), "%s is not empty" % mountPoint
 
-        scrubInput('[A-Za-z0-9\.-]*$', server, "'%s' must be a FQDN")
-
-        scrubInput('[^\'";<>&|!$]*$', remoteMount,
-                   "'%s' cannot contain string or shell delimiters")
-
+        log.info('attempting to mount %s' % mountPoint)
         # a colon in a mount point implies NFS
-        mount.mount('%s:%s' % (server, remoteMount), mountPoint)
+        mount.mount('%s:%s' % (server, remoteMount), mountPoint,
+                    options = mountOptions)
 
         try:
-            fd, tmpFile = tempfile.mkstemp(dir = mountPoint)
-        finally:
-            if 'fd' in locals():
-                os.close(fd)
-                os.unlink(tmpFile)
+            errState, msg = testTouchFile(mountPoint)
+            if errState:
+                try:
+                    apacheUid, apacheGid = pwd.getpwnam('apache')[2:4]
+                    os.chown(mountPoint, apacheUid, apacheGid)
+                except:
+                    # already an error state, so nothing's being masked
+                    pass
+                else:
+                    errState, msg = testTouchFile(mountPoint)
+
+            assert not errState, msg
+
         # make fstab entry
-        self.mkFstabEntry(server, remoteMount, mountPoint)
-        return ''
+            self.mkFstabEntry(server, remoteMount, mountPoint)
+            return ''
+        except:
+            mount.umount_point(mountPoint)
+            raise
 
     @catchExceptions
     def getMount(self, schedId, execId, mountPoint):
