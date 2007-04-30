@@ -28,15 +28,14 @@
                 </table>
                 <input class="button" type="submit" value="Save"/>
             </form>
+            <p style="clear: right; padding-top: 1em;">
+                IMPORTANT NOTE: Skipping this setting causes Conary repository contents to be stored locally.
+                This setting cannot be changed after contents have been committed to the repository.
+            </p>
+            <form action="cancel" method="POST">
+                <input class="button" type="submit" value="Skip"/>
+            </form>
         </div>
-
-        <p style="clear: right; padding-top: 1em;">
-            IMPORTANT NOTE: Skipping this setting causes Conary repository contents to be stored locally.
-            This setting cannot be changed after contents have been committed to the repository.
-        </p>
-        <form action="cancel" method="POST">
-            <input class="button" type="submit" value="Skip"/>
-        </form>
 
         <div py:if="server or remoteMount">
             <h5>It is not possible to change the remote storage settings for the Conary repository contents on the rPath Update Service appliance. The current settings are:</h5>
