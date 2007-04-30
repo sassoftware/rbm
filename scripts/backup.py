@@ -25,9 +25,10 @@ def clean():
         os.unlink(tmpDbPath)
 
 def backup(out = sys.stdout):
+    print >> out, os.path.join(os.path.sep, 'etc', 'fstab')
     for bkpFile in ('conaryver', 'repository.cnr', 'repository-custom.cnr',
                     'repository-generated.cnr', 'logs'):
-        print os.path.join(os.path.sep, 'srv', 'conary', bkpFile)
+        print >> out, os.path.join(os.path.sep, 'srv', 'conary', bkpFile)
 
     # now back up the sqldb
     dbLock = DBLock(dbPath)
@@ -36,7 +37,7 @@ def backup(out = sys.stdout):
         shutil.copy(dbPath, tmpDbPath)
     finally:
         dbLock.release()
-    print tmpDbPath
+    print >> out, tmpDbPath
 
 def restore():
     shutil.move(tmpDbPath, dbPath)
