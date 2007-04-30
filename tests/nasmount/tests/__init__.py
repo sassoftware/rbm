@@ -103,7 +103,7 @@ class NasTest(raatest.rAATest):
     def testBackendGood(self):
         self.mock('callBackend', lambda *args, **kwargs: (False, ''))
 
-        raaFramework.pseudoroot._setMount('test', '/test', '/moutnPoint')
+        raaFramework.pseudoroot._setMount('test', '/test', '/mountPoint')
 
         assert raaFramework.pseudoroot.messages == \
             ['Sucessfully set remote contents store']
@@ -111,7 +111,7 @@ class NasTest(raatest.rAATest):
     def testBackendBad(self):
         self.mock('callBackend', lambda *args, **kwargs: (True, 'SENTINEL'))
 
-        raaFramework.pseudoroot._setMount('test', '/test', '/moutnPoint')
+        raaFramework.pseudoroot._setMount('test', '/test', '/mountPoint')
 
         assert raaFramework.pseudoroot.errors == ['SENTINEL']
 
