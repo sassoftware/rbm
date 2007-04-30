@@ -97,6 +97,9 @@ class NasTest(raatest.rAATest):
 
         assert raaFramework.pseudoroot.errors == [], "no errors expecte"
 
+    def testCancel(self):
+        self.assertRaises(cherrypy.HTTPRedirect, self.cherryCall, 'cancel')
+
     def testBackendGood(self):
         self.mock('callBackend', lambda *args, **kwargs: (False, ''))
 
@@ -152,7 +155,7 @@ class NasTest(raatest.rAATest):
 
         res = nas.getMount(0,0, 'test')
 
-        assert res == (False, ('', ''))
+        self.failUnlessEqual(res, (False, ('', '')))
 
     def testGetMount(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()
@@ -164,7 +167,7 @@ class NasTest(raatest.rAATest):
 
         res = nas.getMount(0, 0, '/mountPoint')
 
-        assert res == (False, ('testSrv', 'testMnt'))
+        self.failUnlessEqual(res, (False, ('testSrv', 'testMnt')))
 
     def testLocalMount(self):
         nas = rPath.nasmount.srv.nasmount.NasMount()

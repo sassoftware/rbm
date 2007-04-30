@@ -82,3 +82,8 @@ class NasMount(rAAWebPlugin):
         if not self.errors:
             self.wizardDone()
         raise cherrypy.HTTPRedirect('index', 302)
+
+    @raa.expose(template="rPath.nasmount.templates.index")
+    def cancel(self, *args, **kwargs):
+        self.wizardDone()
+        raise cherrypy.HTTPRedirect('index', 302)
