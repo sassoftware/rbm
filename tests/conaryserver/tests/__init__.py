@@ -215,6 +215,15 @@ class ConaryServerTest(raatest.rAATest):
         assert 'testserver2' in res 
         assert res.count('testserver2') == 1
 
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, ['test3',
+                            'test4', 'test5'])
+        res = self.table.getdata()
+        assert res == ['testserver', 'testserver2', 'test3', 'test5', 'test4']
+        r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, ['test3',
+                            'test4', 'test5'])
+        res = self.table.getdata()
+        assert res == ['testserver', 'testserver2', 'test3', 'test5', 'test4']
+
     def test_delServerName(self):
         r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver')
         r = self.callXmlrpc(raaFramework.pseudoroot.addServerName, 'testserver2')
