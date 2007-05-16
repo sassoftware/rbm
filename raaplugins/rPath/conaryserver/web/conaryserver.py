@@ -58,6 +58,8 @@ class ConaryServer(rAAWebPlugin):
 
     tableClass = SrvChangeTable
 
+    roles = ['serverNames']
+
     cnrPath = '/srv/conary/repository.cnr'
 
     @turbogears.expose(html="rPath.conaryserver.config")
@@ -175,25 +177,29 @@ class ConaryServer(rAAWebPlugin):
         return self.table.getdata()
 
     @raa.expose(allow_xmlrpc=True)
-    def addServerName(self, servername):
+    @raa.web.require(turbogears.identity.has_any_permission('serverNames', 'admin'))
+    def addServerName(self, servernames):
         try:
             cfg = ServerConfig()
             cfg.read(self.cnrPath)
         except CfgEnvironmentError:
             return False
+        if type(servernames) != list:
+            servernames = [servernames]
 
         serverNames = self.table.getdata()
-        if servername in serverNames:
+        if set(servernames).issubset(set(serverNames)):
             return True
         else:
-            self.table.setserver(servername)
+            for x in set(servernames).difference(set(serverNames)):
+                self.table.setserver(x)
             self._update()
             try:
                 cfg = ServerConfig()
                 cfg.read(self.cnrPath)
             except CfgEnvironmentError:
                 return False
-            if servername not in cfg.serverName:
+            if not set(servernames).issubset(set(cfg.serverName)):
                 return False
             else:
                 return True
