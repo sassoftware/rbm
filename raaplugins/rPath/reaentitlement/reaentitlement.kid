@@ -38,14 +38,14 @@
             <br/>
             <p>Please provide the following information to your rEA 
             administrator. <span py:if="len(serverNames) > 1">Note that 
-            a separate service must be created for each Server Name.</span></p>
+            a separate service must be created for each Repository Hostname.</span></p>
             <table class="list" cellspacing="0" py:for="serverName in serverNames">
                 <tr>
                     <td>Resource Type:</td>
                     <td>rBuilder Mirror</td>
                 </tr>
                 <tr>
-                    <td>Server Name:</td>
+                    <td>Repository Hostname:</td>
                     <td>${serverName}</td>
                 </tr>
                 <tr>

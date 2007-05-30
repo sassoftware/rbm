@@ -7,7 +7,7 @@
     All Rights Reserved
 -->
 <head>
-    <title>Update Repository Server Names</title>
+    <title>Update Repository Repository Hostnames</title>
     <style type="text/css">
         tr#oddRow {
             background: #c7d7ff;
@@ -35,17 +35,17 @@
 </head>
 
 <body>
-        <h2>Update Repository Server Names</h2>
+        <h2>Update Repository Repository Hostnames</h2>
         <h5 id="${errorState}">${XML(pageText)}</h5>
         <hr />
         <form action="setsrvname" method="post">
-            <label for="servername"><h4>New Repository Server Name:</h4></label>
+            <label for="servername"><h4>New Repository Repository Hostname:</h4></label>
             <input type="text" id="servername" name="srvname" style="width: 75%; float: left;"/>
             <button type="submit"  class="img"><img alt="Add" src="${tg.url('/static/images/add_button.png')}"/></button>
         </form>
         <br/><br/><br/>
 
-        <h4 py:if="data">Current Repository Server Names:</h4>
+        <h4 py:if="data">Current Repository Repository Hostnames:</h4>
         <table class="list">
             <tr py:for="rowType, host in [(x[0] % 2, x[1]) for x in enumerate(data)]" id="${rowType and 'oddRow' or 'evenRow'}">
             <td>${host[0]}</td>

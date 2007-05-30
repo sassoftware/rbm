@@ -115,7 +115,7 @@ class ConaryServerTest(raatest.rAATest):
     def test_indextitle(self):
         "The mainpage should have the right title"
         self.requestWithIdent("/conaryserver/ConaryServer/")
-        assert "<title>update repository server names</title>" in cherrypy.response.body[0].lower()
+        assert "<title>update repository hostnames</title>" in cherrypy.response.body[0].lower()
 
         try:
             os.unlink(raaFramework.pseudoroot.cnrPath)

@@ -51,10 +51,10 @@ class SrvChangeTable(DatabaseTable):
 
 class ConaryServer(rAAWebPlugin):
     '''
-        This plugin configures the conary repository server names.
+        This plugin configures the conary repository hostnames.
     '''
 
-    displayName = _("Update Repository Server Names")
+    displayName = _("Update Repository Hostnames")
 
     tableClass = SrvChangeTable
 

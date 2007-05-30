@@ -45,7 +45,7 @@ class rEAEntitlement(rAAWebPlugin):
     cnrPath = "/srv/conary/repository.cnr"
 
     def _getReposCfg(self):
-        # Get server names and hostname
+        # Get repository hostnames and fqdn
         from conary.repository.netrepos.netserver import ServerConfig
         import os
         cfg = ServerConfig()
