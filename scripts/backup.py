@@ -12,6 +12,8 @@ tmpDbPath = dbPath + '-tmp'
 tmpFsPath = os.path.join(os.path.sep, 'srv', 'conary', 'fstab')
 apacheUID, apacheGID = pwd.getpwnam('apache')[2:4]
 
+from conary.repository.netrepos.netserver import ServerConfig
+
 class DBLock(object):
     def __init__(self, path):
         self.path = path
@@ -51,18 +53,33 @@ def backup(out = sys.stdout):
     os.chown(tmpFsPath, apacheUID, apacheGID)
 
     # now back up the sqldb
-    dbLock = DBLock(dbPath)
-    dbLock.acquire()
-    try:
-        shutil.copy(dbPath, tmpDbPath)
-    finally:
-        dbLock.release()
-    print >> out, tmpDbPath
+    serverCfg = ServerConfig()
+    serverCfg.read(os.path.join(os.path.sep, 'srv', 'conary', 'repository.cnr'))
+    if serverCfg.repositoryDB[0] == 'sqlite':
+        dbLock = DBLock(dbPath)
+        dbLock.acquire()
+        try:
+            shutil.copy(dbPath, tmpDbPath)
+        finally:
+            dbLock.release()
+        print >> out, tmpDbPath
+    elif serverCfg.repositoryDB[0] == 'postgresql':
+        dbName = serverCfg.repositoryDB[1].split('/')[-1]
+        dbUser = serverCfg.repositoryDB[1].split('@')[0]
+        os.system('pg_dump -U %s -c -O %s > %s' % \
+                      (dbUser, dbName, tmpDbPath))
     os.chown(tmpDbPath, apacheUID, apacheGID)
 
 def restore():
-    shutil.move(tmpDbPath, dbPath)
-    os.chown(dbPath, apacheUID, apacheGID)
+    serverCfg = ServerConfig()
+    serverCfg.read(os.path.join(os.path.sep, 'srv', 'conary', 'repository.cnr'))
+    if serverCfg.repositoryDB[0] == 'sqlite':
+        shutil.move(tmpDbPath, dbPath)
+        os.chown(dbPath, apacheUID, apacheGID)
+    elif serverCfg.repositoryDB[0] == 'postgresql':
+        dbName = serverCfg.repositoryDB[1].split('/')[-1]
+        dbUser = serverCfg.repositoryDB[1].split('@')[0]
+        os.system('cat %s | psql -U %s %s'% (tmpDbPath, dbUser, dbName))
     f = open(tmpFsPath)
     entry = f.read()
     f.close()
