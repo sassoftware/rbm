@@ -58,7 +58,7 @@ class ConaryServer(rAAWebPlugin):
 
     tableClass = SrvChangeTable
 
-    roles = ['serverNames']
+    roles = ['rbuilder']
 
     cnrPath = '/srv/conary/repository.cnr'
 
@@ -177,7 +177,7 @@ class ConaryServer(rAAWebPlugin):
         return self.table.getdata()
 
     @raa.expose(allow_xmlrpc=True)
-    @raa.web.require(turbogears.identity.has_any_permission('serverNames', 'admin'))
+    @raa.web.require(turbogears.identity.has_any_permission('rbuilder', 'admin'))
     def addServerName(self, servernames):
         try:
             cfg = ServerConfig()
