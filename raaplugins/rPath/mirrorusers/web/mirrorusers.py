@@ -13,7 +13,7 @@ class MirrorUsers(rAAWebPlugin):
     '''
     displayName = _("Manage Repository Users")
 
-    roles = ['rbuilder']
+    roles = ['mirror']
     
     def initPlugin(self):
         if 'plugin_rpath_MirrorTable' in self.pluginProperties.db.tables:
@@ -103,7 +103,7 @@ class MirrorUsers(rAAWebPlugin):
         return chars
 
     @raa.expose(allow_xmlrpc=True)
-    @raa.web.require(turbogears.identity.has_any_permission('rbuilder', 'admin'))
+    @raa.web.require(turbogears.identity.has_any_permission('mirror', 'admin'))
     def addRandomUser(self, user):
         passwd = self._genString()
         if not self._addUser(user, passwd, 'Mirror'):
