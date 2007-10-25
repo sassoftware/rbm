@@ -38,27 +38,28 @@
             <br/>
             <p>Please provide the following information to your rEA 
             administrator. <span py:if="len(serverNames) > 1">Note that 
-            a separate service must be created for each Repository Hostname.</span></p>
+            a separate Provider and Service must be created for each Provider
+            Name.</span></p>
             <table class="list" cellspacing="0" py:for="serverName in serverNames">
                 <tr>
-                    <td>Resource Type:</td>
-                    <td>rBuilder Mirror</td>
-                </tr>
-                <tr>
-                    <td>Repository Hostname:</td>
+                    <td>Provider Name:</td>
                     <td>${serverName}</td>
                 </tr>
                 <tr>
-                    <td>Server URL:</td>
-                    <td>https://${hostName}/conary/</td>
+                    <td>Resource Type:</td>
+                    <td>rPath Update Service</td>
                 </tr>
                 <tr>
                     <td>Entitlement Class:</td>
                     <td>management</td>
                 </tr>
                 <tr>
-                    <td>Entitlement:</td>
+                    <td>Entitlement Key:</td>
                     <td>${key}</td>
+                </tr>
+                <tr>
+                    <td>Host:</td>
+                    <td>${hostName}</td>
                 </tr>
             </table>
         </div></h5>
