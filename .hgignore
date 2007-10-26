@@ -1,0 +1,13 @@
+(^|/)CVS($|/)
+(^|/)\.hg($|/)
+^state$
+^state.journal$
+~$
+\.log$
+\.(pyc|swp|swo|orig|rej)$
+(^|/)docs/html*
+.*/help/.+\.html
+.coverage
+\.prof$
+^tags$
+dist/.*
