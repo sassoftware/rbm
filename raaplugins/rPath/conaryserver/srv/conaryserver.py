@@ -6,8 +6,8 @@
 
 import os
 from raa.modules.raasrvplugin import rAASrvPlugin
-from conary.repository.netrepos.netserver import ServerConfig
-from conary.lib.cfgtypes import CfgEnvironmentError
+from reposconary.conary.repository.netrepos.netserver import ServerConfig
+from reposconary.conary.lib.cfgtypes import CfgEnvironmentError
 
 class ConaryServer(rAASrvPlugin):
     cnrPath = '/srv/conary/repository.cnr'

@@ -7,7 +7,7 @@ from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
-from conary import dbstore
+from reposconary.conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.localhostonly import localhostOnly
 
@@ -47,7 +47,7 @@ class rEAEntitlement(rAAWebPlugin):
 
     def _getReposCfg(self):
         # Get repository hostnames and fqdn
-        from conary.repository.netrepos.netserver import ServerConfig
+        from reposconary.conary.repository.netrepos.netserver import ServerConfig
         import os
         cfg = ServerConfig()
         cfg.read(self.cnrPath)

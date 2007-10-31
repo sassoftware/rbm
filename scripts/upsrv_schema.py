@@ -6,10 +6,10 @@
 import sys
 import os
 import pwd
-from conary.server import schema
-from conary.lib import cfgtypes
-from conary.repository.netrepos.netserver import ServerConfig
-from conary import dbstore
+from reposconary.conary.server import schema
+from reposconary.conary.lib import cfgtypes
+from reposconary.conary.repository.netrepos.netserver import ServerConfig
+from reposconary.conary import dbstore
 
 cnrPath = '/srv/conary/repository.cnr'
 
