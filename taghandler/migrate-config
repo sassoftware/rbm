@@ -3,8 +3,8 @@
 # Copyright 2006 rPath, Inc.
 # All Rights Reserved
 #
-from conary.repository.netrepos.netserver import ServerConfig
-from conary import dbstore
+from reposconary.conary.repository.netrepos.netserver import ServerConfig
+from reposconary.conary import dbstore
 import cherrypy
 import os
 
