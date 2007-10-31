@@ -48,6 +48,11 @@ function rbm_tag_handler() {
        restart_apache=0
     fi
 
+    if [ -f /usr/libexec/updateservice/path_wrapper.sh ]
+    then
+        . /usr/libexec/updateservice/path_wrapper.sh
+    fi
+
     # Migrate the config file
     if [ -x @SERVICEDIR@/conary/bin/migrate-config ]; then
         echo "Migrating configuration file..."
