@@ -7,8 +7,7 @@
 # Copyright (c) 2006 rPath, Inc
 # All rights reserved
 
-lock_name="/srv/conary/init_schema_runonce.lock"
-schema_python="/usr/lib/python2.4/site-packages/rcra_schema.py"
+schema_python="/usr/bin/upsrv_schema.py"
 
 case "$1" in
 start)
@@ -17,13 +16,7 @@ start)
     echo "httpd is running. Please stop that service before running this script" > /dev/stderr
     exit 1
   fi
-  if [ ! -f $lock_name ]
-  then
-    $schema_python init
-    echo "do not remove this file." > $lock_name
-  else
-    $schema_python update
-  fi
+  $schema_python
   ;;
 stop)
   ;;

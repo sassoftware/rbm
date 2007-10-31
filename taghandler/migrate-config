@@ -1,0 +1,31 @@
+#!/usr/bin/python
+#
+# Copyright 2006 rPath, Inc.
+# All Rights Reserved
+#
+from conary.repository.netrepos.netserver import ServerConfig
+from conary import dbstore
+import cherrypy
+import os
+
+RAADB_DRIVER = 'sqlite'
+RAA_CONFIG = '/etc/raa/prod.cfg'
+
+raadb = cherrypy.config.dict_from_config_file(RAA_CONFIG)['global']['dbstore.connectstring']
+if os.path.exists(raadb):
+    db = dbstore.connect(raadb, RAADB_DRIVER)
+    cu = db.cursor()
+    generatedFile = open("/srv/conary/repository-generated.cnr", "w")
+    try:
+        cu.execute("SELECT srvname FROM plugin_rpath_SrvChangeTable")
+    except dbstore.sqlerrors.InvalidTable:
+        pass
+    else:
+        res = cu.fetchall()
+        servernames = []
+        for x in res:
+            servernames.append(x[0])
+        cfg = ServerConfig()
+        cfg.serverName = servernames
+        cfg.displayKey('serverName', out = generatedFile)
+    generatedFile.close()
