@@ -7,7 +7,6 @@ from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 
-from reposconary.conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.localhostonly import localhostOnly
 

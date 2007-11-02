@@ -7,12 +7,11 @@ import turbogears
 import cherrypy
 import raa
 
-from reposconary.conary.repository.netrepos.netserver import ServerConfig
-from reposconary.conary.lib.cfgtypes import CfgEnvironmentError
-from reposconary.conary import dbstore
+from conary.repository.netrepos.netserver import ServerConfig
+from conary.lib.cfgtypes import CfgEnvironmentError
+from conary import dbstore
 from raa.db.database import DatabaseTable, writeOp, readOp
 from raa.localhostonly import localhostOnly
-from reposconary.conary.repository.netrepos import netauth
 
 class SrvChangeTable(DatabaseTable):
     name = 'plugin_rpath_SrvChangeTable'

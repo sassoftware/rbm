@@ -7,10 +7,10 @@ import os
 import sys
 import time
 
-from reposconary.conary import dbstore
-from reposconary.conary.lib import util
-from reposconary.conary.repository.netrepos.netserver import ServerConfig
-from reposconary.conary.server import schema
+from conary import dbstore
+from conary.lib import util
+from conary.repository.netrepos.netserver import ServerConfig
+from conary.server import schema
 
 HTTPD_START = '/etc/init.d/httpd start'
 HTTPD_STOP = '/etc/init.d/httpd stop'

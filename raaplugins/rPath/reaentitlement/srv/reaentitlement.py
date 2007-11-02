@@ -5,9 +5,8 @@
 
 import random
 from raa.modules.raasrvplugin import rAASrvPlugin
-from reposconary.conary.repository.netrepos.netserver import ServerConfig
-from reposconary.conary.repository.netrepos.netserver import NetworkRepositoryServer
-from reposconary.conary.repository import errors
+from conary.repository.netrepos.netserver import ServerConfig
+from conary.repository.netrepos.netserver import NetworkRepositoryServer
 
 class rEAEntitlement(rAASrvPlugin):
     """

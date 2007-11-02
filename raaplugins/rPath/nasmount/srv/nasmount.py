@@ -14,8 +14,6 @@ from raa.modules.raasrvplugin import rAASrvPlugin
 from raaplugins.backup import lib
 from raa.lib import mount
 
-from reposconary.conary.lib import util
-
 import logging
 log = logging.getLogger('raa.nasmount')
 
