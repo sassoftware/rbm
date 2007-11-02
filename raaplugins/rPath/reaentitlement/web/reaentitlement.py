@@ -46,7 +46,7 @@ class rEAEntitlement(rAAWebPlugin):
 
     def _getReposCfg(self):
         # Get repository hostnames and fqdn
-        from reposconary.conary.repository.netrepos.netserver import ServerConfig
+        from conary.repository.netrepos.netserver import ServerConfig
         import os
         cfg = ServerConfig()
         cfg.read(self.cnrPath)
