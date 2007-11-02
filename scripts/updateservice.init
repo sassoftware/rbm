@@ -7,11 +7,6 @@
 # Copyright (c) 2006 rPath, Inc
 # All rights reserved
 
-if [ -f /usr/libexec/updateservice/path_wrapper.sh ]
-then
-    . /usr/libexec/updateservice/path_wrapper.sh
-fi
-
 schema_python="/usr/bin/upsrv_schema.py"
 
 case "$1" in
