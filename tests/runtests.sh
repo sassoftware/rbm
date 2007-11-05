@@ -6,4 +6,4 @@
 
 rm -f .coverage
 
-PYTHONPATH=$(pwd)/../raaplugins/:$(pwd)/../../conary:$RAA_PATH:$(pwd)/../../raa-test-2.1:..:$PYTHONPATH nosetests -v -p rPath $@ 2>&1
+PYTHONPATH=$(pwd)/../raaplugins/:$RAA_PATH:$(pwd)/../../raa-test-2.1:..:$CONARY_TEST_PATH:$CONARY_PATH:$PYTHONPATH nosetests -v -p rPath $@ 2>&1

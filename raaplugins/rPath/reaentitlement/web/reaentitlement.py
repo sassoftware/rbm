@@ -41,8 +41,7 @@ class rEAEntitlement(rAAWebPlugin):
     displayName = _("Manage Administrative Entitlement")
 
     tableClass = KeyChangeTable
-    #cnrPath = "/srv/conary/repository.cnr"
-    cnrPath = "repository.cnr"
+    cnrPath = "/srv/conary/repository.cnr"
 
     def _getReposCfg(self):
         # Get repository hostnames and fqdn
