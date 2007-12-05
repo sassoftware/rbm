@@ -6,7 +6,7 @@
 
 all: subdirs
 
-SUBDIRS=config postgresql scripts taghandler
+SUBDIRS=config postgresql rcgenerator scripts taghandler
 
 extra_files = \
 	Make.rules 		\
