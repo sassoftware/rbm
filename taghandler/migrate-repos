@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# check to make sure that apache is not running
+function check_apache() {
+    pidof httpd > /dev/null 2>&1
+}
+
+# assure that apache is not running
+function shutdown_apache() {
+    if check_apache; then
+        service httpd stop
+        for i in $(seq 30); do
+            if check_apache; then
+                sleep 1
+            else
+                break
+            fi
+        done
+        if check_apache; then
+            echo "WARNING: httpd still running, killing httpd"
+            killall httpd > /dev/null 2>&1
+            if check_apache; then
+                echo "WARNING: httpd *still* running, sending httpd signal 9"
+                killall -9 httpd > /dev/null 2>&1
+                if check_apache; then
+                    echo "WARNING: failed to shutdown the Apache (httpd) service"
+                    return 0 # return 0 to try to restart httpd anyway 
+                fi
+            fi
+        fi
+        return 0
+    fi
+    return 1
+}
+
+restart_apache=1
+
+# Shutdown apache if it's running
+if shutdown_apache; then
+   restart_apache=0
+fi
+
+# Migrate the config file
+if [ -x @SERVICEDIR@/conary/bin/migrate-config ]; then
+    echo "Migrating configuration file..."
+    @SERVICEDIR@/conary/bin/migrate-config
+fi 
+
+# Migrate conaryrc
+if [ -x @SERVICEDIR@/conary/bin/migrate-conaryrc ]; then
+    echo "Migrating conaryrc file..."
+    @SERVICEDIR@/conary/bin/migrate-conaryrc
+fi
+
+# Migrate the repo schema
+service updateservice start
+
+# restart apache
+if [ $restart_apache -eq 0 ]; then
+   service httpd start
+fi

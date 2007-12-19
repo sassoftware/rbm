@@ -22,6 +22,7 @@ all: default-all
 install: $(static_files)
 	install -D -m0744 migrate-conaryrc ${DESTDIR}/srv/conary/bin/migrate-conaryrc
 	install -D -m0744 migrate-config ${DESTDIR}/srv/conary/bin/migrate-config
+	install -D -m0744 migrate-repos ${DESTDIR}/srv/conary/bin/migrate-repos
 	#Let the recipe install the taghandlers
 
 clean: default-clean
