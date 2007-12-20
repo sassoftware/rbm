@@ -1,5 +1,4 @@
 #!/bin/bash
-set +x
 
 # check to make sure that apache is not running
 function check_apache() {
