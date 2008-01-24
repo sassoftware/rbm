@@ -16,8 +16,11 @@ def setupCnr():
     fd, dbFn = tempfile.mkstemp()
     os.close(fd)
 
+    contentsdir = tempfile.mkdtemp()
+
     f.write("serverName localhost\n")
-    f.write("repositoryDB sqlite %s" % dbFn)
+    f.write("repositoryDB sqlite %s\n" % dbFn)
+    f.write('contentsDir    %s\n' % contentsdir)
     f.close()
 
     db = dbstore.connect(dbFn, "sqlite")
