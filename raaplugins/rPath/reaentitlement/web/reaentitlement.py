@@ -3,7 +3,6 @@
 
 import sys
 import raa.web
-import raa.authenticate
 from raa.modules.raawebplugin import rAAWebPlugin
 from raa.modules.raawebplugin import immedTask
 from rPath.reaentitlement.web import migrateSpecialUseTableToProperties
