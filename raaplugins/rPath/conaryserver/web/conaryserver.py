@@ -6,6 +6,8 @@ from raa.modules.raawebplugin import immedTask
 import turbogears
 import cherrypy
 import raa
+import raa.web
+import raa.authenticate
 
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
@@ -61,8 +63,7 @@ class ConaryServer(rAAWebPlugin):
 
     cnrPath = '/srv/conary/repository.cnr'
 
-    @turbogears.expose(html="rPath.conaryserver.config")
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.conaryserver.config")
     def index(self):
         try:
             cfg = ServerConfig()
@@ -87,21 +88,16 @@ class ConaryServer(rAAWebPlugin):
         return dict(data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     pageText=pageText, errorState=errorState)
 
-    # this is strange-looking, but it triggers the doTask on the backend anyway
-    @immedTask
     def _update(self):
-        return dict()
+        self.callBackend('updateServerNames', self.table.getdata())
+        
 
-    @turbogears.expose(html="rPath.conaryserver.config",
-                       allow_json=True)
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.conaryserver.config")
     def refreshConaryrc(self):
         self._update()
         return self.index()
 
-    @turbogears.expose(html="rPath.conaryserver.config",
-                       allow_json=True)
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.conaryserver.config")
     def setsrvname(self, srvname=''):
         try:
             cfg = ServerConfig()
@@ -134,9 +130,7 @@ class ConaryServer(rAAWebPlugin):
                     data=[(x, self.checkRepository(cfg, x)) for x in self.table.getdata()], 
                     errorState=errorState)
 
-    @turbogears.expose(html="rPath.conaryserver.config",
-                       allow_json=True)
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.conaryserver.config")
     def delsrvname(self, srvname):
         try:
             cfg = ServerConfig()
@@ -176,7 +170,7 @@ class ConaryServer(rAAWebPlugin):
         return self.table.getdata()
 
     @raa.expose(allow_xmlrpc=True)
-    @raa.web.require(turbogears.identity.has_any_permission('mirror', 'admin'))
+    @raa.web.require(turbogears.identity.has_permission('mirror'))
     def addServerName(self, servernames):
         try:
             cfg = ServerConfig()

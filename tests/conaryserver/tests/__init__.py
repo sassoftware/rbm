@@ -43,19 +43,25 @@ class ConaryServerTest(raatest.rAATest):
 
         ConaryServer.__init__ = lambda *args: None
         self.conaryServer = ConaryServer()
-        self.conaryServer.server = cherrypy.root.conaryserver.ConaryServer
-        self.conaryServer.rootserver = cherrypy.root
-        self.conaryServer.taskId = cherrypy.root.conaryserver.ConaryServer.taskId
         self.conaryServer.cnrPath = raaFramework.pseudoroot.cnrPath
-        _, self.conaryServer.conaryrcPath = tempfile.mkstemp()
-        self.conaryServer.apacheRestart = '/bin/false'
+        fd, self.conaryServer.conaryrcPath = tempfile.mkstemp()
+        os.close(fd)
+        self.conaryServer.apacheRestart = ['/bin/false']
+
+        self.oldcallBackend = raaFramework.pseudoroot.callBackend
+        raaFramework.pseudoroot.callBackend = lambda method, *args: \
+            getattr(self.conaryServer, method)(1, 1, *args)
 
     def tearDown(self):
         try:
             os.unlink(raaFramework.pseudoroot.cnrPath)
+        except:
+            pass
+        try:
             os.unlink(self.conaryServer.conaryrcPath)
         except:
             pass
+        raaFramework.pseudoroot.callBackend = self.oldcallBackend
         raatest.rAATest.tearDown(self)
 
     def test_backend(self):
@@ -78,7 +84,7 @@ class ConaryServerTest(raatest.rAATest):
             genCfg.displayKey('repositoryDB', out=fd)
             fd.close()
             self.table.setserver('localhost2')
-            r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+            r = self.conaryServer.updateServerNames(0, 1, self.table.getdata())
             fd = open(tmpFile)
             cfgLines = fd.readlines()
             fd.close()
@@ -96,7 +102,7 @@ class ConaryServerTest(raatest.rAATest):
             cfg.display(fd)
             fd.close()
             self.table.setserver('localhost3')
-            r = self.callWithIdent(self.conaryServer.doTask, 0, 1)
+            r = self.conaryServer.updateServerNames(0, 1, self.table.getdata())
             fd = open(self.conaryServer.conaryrcPath)
             data = fd.read()
             fd.close()
@@ -168,6 +174,10 @@ class ConaryServerTest(raatest.rAATest):
         r = self.callWithIdent(raaFramework.pseudoroot.setsrvname, 'localhost2')
         assert r == {'data': [('localhost', True)], 'errorState': 'error',
             'pageText': 'Error:  Unable to update hostname.'}
+
+        r = self.callWithIdent(raaFramework.pseudoroot.setsrvname, '')
+        self.assertEquals({'data': [('localhost', True)], 'errorState': 'error',
+            'pageText': "Blank hostname entered."}, r)
 
     def test_brokenSetsrvname(self):
         self.hideCnr()

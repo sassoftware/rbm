@@ -13,21 +13,19 @@ class ConaryServer(rAASrvPlugin):
     cnrPath = '/srv/conary/repository.cnr'
     generatedFile = '/srv/conary/repository-generated.cnr'
     conaryrcPath = '/srv/www/html/conaryrc'
-    apacheRestart = '/usr/bin/killall -USR1 httpd'
+    apacheRestart = ['/usr/bin/killall',  '-USR1', 'httpd']
 
-    def doTask(self, schedId, execId):
+    def updateServerNames(self, schedId, execId, serverNames):
         '''
-            Updates serverName in repository.cnr if no commits have occured in the
-            repository.
+            Updates serverName in repository.cnr
         '''
 
-        data = self.server.getData()
-        if not len(data):
-            data = ('localhost',)
+        if not len(serverNames):
+            serverNames = ('localhost',)
         try:
             cfg = ServerConfig()
             cfg.read(self.generatedFile, exception=False)
-            cfg.serverName = data
+            cfg.serverName = serverNames
         except CfgEnvironmentError:
             pass
 
@@ -55,7 +53,7 @@ class ConaryServer(rAASrvPlugin):
         else:
             protocol = 'http'
 
-        cfgData = '\n'.join(['repositoryMap %s %s://%s/conary/' % (x, protocol, srvName) for x in data if x != 'localhost'])
+        cfgData = '\n'.join(['repositoryMap %s %s://%s/conary/' % (x, protocol, srvName) for x in serverNames if x != 'localhost'])
         cfgData = cfgData and (cfgData + '\n') or cfgData
         f = open(self.conaryrcPath, 'w')
         try:
@@ -64,6 +62,6 @@ class ConaryServer(rAASrvPlugin):
             f.close()
 
         try:
-            os.system(self.apacheRestart)
+            raa.lib.command.runCommand(self.apacheRestart)
         except:
             pass
