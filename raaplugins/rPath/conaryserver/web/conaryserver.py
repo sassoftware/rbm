@@ -7,7 +7,6 @@ import turbogears
 import cherrypy
 import raa
 import raa.web
-import raa.authenticate
 
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.lib.cfgtypes import CfgEnvironmentError
@@ -169,7 +168,7 @@ class ConaryServer(rAAWebPlugin):
     def getData(self):
         return self.table.getdata()
 
-    @raa.expose(allow_xmlrpc=True)
+    @raa.web.expose(allow_xmlrpc=True)
     @raa.web.require(turbogears.identity.has_permission('mirror'))
     def addServerName(self, servernames):
         try:
@@ -197,7 +196,7 @@ class ConaryServer(rAAWebPlugin):
             else:
                 return True
 
-    @raa.expose(allow_xmlrpc=True)
+    @raa.web.expose(allow_xmlrpc=True)
     def delServerName(self, servername):
         try:
             cfg = ServerConfig()
