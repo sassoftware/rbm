@@ -5,6 +5,7 @@ import random
 import turbogears
 
 import raa
+import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
 
 class MirrorUsers(rAAWebPlugin):
@@ -24,7 +25,7 @@ class MirrorUsers(rAAWebPlugin):
     def _getUserList(self):
         return self.callBackend('getUserList')
 
-    @raa.expose(template="rPath.mirrorusers.users")
+    @raa.web.expose(template="rPath.mirrorusers.users")
     def index(self, *args, **kwargs):
         userList = self._getUserList()
         userData = []
@@ -38,7 +39,7 @@ class MirrorUsers(rAAWebPlugin):
     def _addUser(self, username, password, permission):
         return self.callBackend('addUser', username, password, permission)
 
-    @raa.expose(template="rPath.mirrorusers.add")
+    @raa.web.expose(template="rPath.mirrorusers.add")
     def add(self, username=None, passwd1=None, passwd2=None, perm='Anonymous'):
         if not username and not passwd1 and not passwd2:
             returnMessage="""Enter the following information, select the 
@@ -68,7 +69,7 @@ class MirrorUsers(rAAWebPlugin):
     def _deleteUser(self, username):
         return self.callBackend('deleteUser', username)
 
-    @raa.expose(template='rPath.mirrorusers.delete')
+    @raa.web.expose(template='rPath.mirrorusers.delete')
     def deleteUser(self, username, confirm=False):
         if not confirm:
             return dict(username=username)
@@ -79,7 +80,7 @@ class MirrorUsers(rAAWebPlugin):
     def _changePassword(self, username, password):
         return self.callBackend('changePassword', username, password)
 
-    @raa.expose(template='rPath.mirrorusers.pass')
+    @raa.web.expose(template='rPath.mirrorusers.pass')
     def changePassword(self, username, passwd1='', passwd2=''):
         if not passwd1:
             errorState=False
@@ -102,16 +103,17 @@ class MirrorUsers(rAAWebPlugin):
             chars += random.choice(allowed)
         return chars
 
-    @raa.expose(allow_xmlrpc=True)
-    @raa.web.require(turbogears.identity.has_any_permission('mirror', 'admin'))
+    @raa.web.expose(allow_xmlrpc=True)
+    @raa.web.require(turbogears.identity.has_permission('mirror'))
     def addRandomUser(self, user):
         passwd = self._genString()
         if not self._addUser(user, passwd, 'Mirror'):
+            # What's this retry for?
             self._deleteUser(user)
             self._addUser(user, passwd, 'Mirror')
         return  passwd
 
-    @raa.expose(allow_xmlrpc=True)
+    @raa.web.expose(allow_xmlrpc=True)
     def deleteRandomUser(self, username):
         self._deleteUser(username)
         return True
