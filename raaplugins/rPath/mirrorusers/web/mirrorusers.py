@@ -1,4 +1,4 @@
-# Copyright (c) 2006 rPath, Inc
+# Copyright (c) 2006-2008 rPath, Inc
 # All rights reserved
 
 import random
