@@ -1,37 +1,23 @@
-# Copyright (c) 2006 rPath, Inc
+# Copyright (c) 2006-2008 rPath, Inc
 # All rights reserved
 
-from raa.db.schedule import ScheduleImmed
+import sys
+import raa.web
+import raa.authenticate
 from raa.modules.raawebplugin import rAAWebPlugin
 from raa.modules.raawebplugin import immedTask
-import turbogears
+from rPath.reaentitlement.web import migrateSpecialUseTableToProperties
 import cherrypy
 
 from raa.db.database import DatabaseTable, writeOp, readOp
+from raa.db.data import RDT_STRING
 from raa.localhostonly import localhostOnly
 
-class KeyChangeTable(DatabaseTable):
-    name = 'plugin_rpath_rEAEntitlementTable'
-    createSQL = """CREATE TABLE %s
-                   (ent_key VARCHAR(255))""" % (name)
-    fields = ['ent_key']
-    tableVersion = 1
+import traceback
+import logging
+log = logging.getLogger('rPath.reaentitlement')
 
-    @writeOp
-    def setkey(self, cu, key):
-        self.db.transaction()
-        cu.execute("DELETE FROM %s" % self.name)
-        cu.execute("INSERT INTO %s (ent_key) VALUES (?)" % self.name, key)
-        return True
-
-    @readOp
-    def getkey(self, cu):
-        cu.execute("""SELECT ent_key FROM %s""" % (self.name))
-        key = cu.fetchone()
-        if not key:
-            return ''
-        else:
-            return key[0]
+ENTITLEMENT_KEY = "Entitlement Key"
 
 class rEAEntitlement(rAAWebPlugin):
     '''
@@ -40,8 +26,11 @@ class rEAEntitlement(rAAWebPlugin):
 
     displayName = _("Manage Administrative Entitlement")
 
-    tableClass = KeyChangeTable
     cnrPath = "/srv/conary/repository.cnr"
+
+    def initPlugin(self):
+        migrateSpecialUseTableToProperties(self, self.pluginProperties.db,
+            'plugin_rpath_rEAEntitlementTable', ['ent_key'], [ENTITLEMENT_KEY])
 
     def _getReposCfg(self):
         # Get repository hostnames and fqdn
@@ -53,30 +42,23 @@ class rEAEntitlement(rAAWebPlugin):
         hostName = os.uname()[1]
         return serverNames, hostName
 
-    @turbogears.expose(html="rPath.reaentitlement.reaentitlement")
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.reaentitlement.reaentitlement")
     def index(self):
         serverNames, hostName = self._getReposCfg()
-        return dict(key=self.table.getkey(),
+        return dict(key=self.getPropertyValue(ENTITLEMENT_KEY),
             serverNames = serverNames, hostName = hostName)
 
-    @immedTask
-    def _setkey(self, key):
-        def callback(schedId):
-            self.table.setkey(key)
-        return dict(callback = callback)
-
-    @turbogears.expose(html="rPath.reaentitlement.reaentitlement",
-                       allow_json=True)
-    @turbogears.identity.require( turbogears.identity.not_anonymous() )
+    @raa.web.expose(html="rPath.reaentitlement.reaentitlement")
     def setkey(self, key=''):
-        self._setkey(key)
+        try:
+            if self.callBackend('setkey', key):
+                self.setPropertyValue(ENTITLEMENT_KEY, key)
+        except Exception, e:
+            log.error(traceback.format_exc(sys.exc_info()[2]))
+            return dict(errors = [str(e)])
+
         
         serverNames, hostName = self._getReposCfg()
-        return dict(key=self.table.getkey(),
+        return dict(key=self.getPropertyValue(ENTITLEMENT_KEY),
             serverNames = serverNames, hostName = hostName)
 
-    @cherrypy.expose()
-    @localhostOnly()
-    def getKey(self):
-        return self.table.getkey()

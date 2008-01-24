@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2006, rPath, Inc.
+# Copyright (C) 2006-2008, rPath, Inc.
 # All rights reserved.
 #
 
@@ -7,11 +7,20 @@ import random
 from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.repository.netrepos.netserver import NetworkRepositoryServer
+from conary.repository.errors import UnknownEntitlementClass, RoleNotFound
+
+import traceback
+import sys
+import logging
+log = logging.getLogger("rPath.reaentitlement")
 
 class rEAEntitlement(rAASrvPlugin):
     """
     Configure rEA entitlement.
     """
+
+    reposserver = 'localhost'
+    cnrPath ='/srv/conary/repository.cnr'
 
     def _genString(self):
         allowed = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -21,15 +30,13 @@ class rEAEntitlement(rAASrvPlugin):
             passwd += random.choice(allowed)
         return passwd
 
-    def doTask(self, schedId, execId):
+    def setkey(self, schedId, execId, key):
         entClass = 'management'
-        entGroup = 'management'
-        cnrPath ='/srv/conary/repository.cnr'
-        key = self.server.getKey()
+        entRole = 'management'
 
         cfg = ServerConfig()
-        cfg.read(cnrPath)
-        nr = NetworkRepositoryServer(cfg, 'localhost')
+        cfg.read(self.cnrPath)
+        nr = NetworkRepositoryServer(cfg, self.reposserver)
 
         adminUser = self._genString()
         passwd = self._genString()
@@ -37,29 +44,28 @@ class rEAEntitlement(rAASrvPlugin):
 
         try:
             nr.auth.addUser(adminUser, passwd)
-            nr.auth.addAcl(adminUser, None, None, True, False, True)
+            nr.auth.addAcl(adminUser, None, None, write=True)
+            nr.auth.setAdmin(adminUser, True)
 
             # remove the old entitlement group if it exists
             try:
-                nr.auth.deleteEntitlementGroup(authToken, entGroup)
-            except:
+                nr.auth.deleteEntitlementClass(authToken, entRole)
+            except UnknownEntitlementClass, e:
                 pass
-
-            # clean out old entitlements
-            for x in nr.auth.iterEntitlements(authToken, entGroup):
-                nr.auth.deleteEntitlement(authToken, entGroup, x)
 
             # remove the old group if it exists
             try:
-                nr.auth.deleteGroup(entGroup)
-            except:
+                nr.auth.deleteRole(entRole)
+            except RoleNotFound, e:
                 pass
 
             # add the management group and give it the proper ACLs
-            nr.auth.addGroup(entGroup)
-            nr.auth.addAcl(entGroup, None, None, True, False, True)
-            nr.auth.addEntitlementGroup(authToken, entClass, entGroup)
-            nr.auth.addEntitlement(authToken, entClass, key)
+            nr.auth.addRole(entRole)
+            nr.auth.addAcl(entRole, None, None, write=True)
+            nr.auth.setAdmin(entRole, True)
+            nr.auth.addEntitlementClass(authToken, entClass, entRole)
+            nr.auth.addEntitlementKey(authToken, entClass, key)
 
         finally:
             nr.auth.deleteUserByName(adminUser)
+        return True
