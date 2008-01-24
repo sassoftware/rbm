@@ -23,20 +23,21 @@ class MirrorUsers(rAASrvPlugin):
         ret = []
         for usr in users:
             perm = 'Other'
-            for x in nr.auth.userAuth.getGroupsByUser(usr):
+            for x in nr.auth.userAuth.getRolesByUser(usr):
                 # anonymous user
                 if x == 'anonymous':
                     perm = 'Anonymous'
                     break
-                perms = nr.auth.iterPermsByGroup(x)
+                perms = nr.auth.iterPermsByRole(x)
                 for i in perms:
                     # admin user
-                    if i == ('ALL', 'ALL', 1, 0, 1, 0):
+                    if nr.auth.roleIsAdmin(x) and \
+                            i == ('ALL', 'ALL', 1, 0):
                         perm = 'Admin'
                         break
                     # mirror user
-                    elif nr.auth.groupCanMirror(x) and \
-                            i == ('ALL', 'ALL', 1, 0, 0, 1):
+                    elif nr.auth.roleCanMirror(x) and \
+                            i == ('ALL', 'ALL', 1, 1):
                         perm = 'Mirroring'
                         break
             ret.append({'user' : usr, 'permission' : perm})
@@ -61,10 +62,10 @@ class MirrorUsers(rAASrvPlugin):
             remove = False
         try:
             nr.auth.addUser(user, password)
-            nr.auth.addAcl(user, None, None, write,
-                           False, admin, remove)
+            nr.auth.addAcl(user, None, None, write=write, remove=remove)
+            nr.auth.setAdmin(user, admin)
             nr.auth.setMirror(user, mirror)
-        except errors.GroupAlreadyExists:
+        except errors.RoleAlreadyExists:
             return False
         return True
 
@@ -77,9 +78,3 @@ class MirrorUsers(rAASrvPlugin):
         nr = self._getNetworkRepo()
         nr.auth.changePassword(user, newPass)
         return True
-
-    def doTask(self, schedId, execId):
-        """
-        Nothing to be done for the main task.
-        """
-        pass
