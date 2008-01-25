@@ -4,6 +4,8 @@
 # All rights reserved
 #
 
+from raa.db.data import RDT_STRING
+
 def migrateSpecialUseTableToProperties(plugin, db, oldTableName, oldColumns, newKeys):
     ''' Migrates special use tables that store key value pairs to the pluginProperties table.
 
