@@ -22,7 +22,7 @@ except cfgtypes.CfgEnvironmentError:
     sys.exit(1)
 
 db = dbstore.connect(cfg.repositoryDB[1], cfg.repositoryDB[0])
-schema.loadSchema(db)
+schema.loadSchema(db, doMigrate=True)
 if cfg.repositoryDB[0] == 'sqlite':
     os.chown(cfg.repositoryDB[1], pwd.getpwnam('apache')[2], 
              pwd.getpwnam('apache')[3])
