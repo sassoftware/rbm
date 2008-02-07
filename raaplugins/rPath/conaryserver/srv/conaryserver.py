@@ -67,3 +67,4 @@ class ConaryServer(rAASrvPlugin):
             os.system(self.apacheRestart)
         except:
             pass
+        return True
