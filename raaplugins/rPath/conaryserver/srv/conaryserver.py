@@ -65,3 +65,4 @@ class ConaryServer(rAASrvPlugin):
             raa.lib.command.runCommand(self.apacheRestart)
         except:
             pass
+        return True
