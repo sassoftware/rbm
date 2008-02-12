@@ -23,6 +23,4 @@ forceSSL True
 # config files below.
 serverName localhost
 
-includeConfigFile /srv/conary/repository-generated.cnr
 includeConfigFile /srv/conary/config/*.cnr
-includeConfigFile /srv/conary/repository-custom.cnr

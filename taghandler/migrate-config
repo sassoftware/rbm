@@ -6,15 +6,18 @@
 from reposconary.conary.repository.netrepos.netserver import ServerConfig
 from reposconary.conary import dbstore
 import cherrypy
+import shutil
 import os
 
 RAADB_DRIVER = 'sqlite'
 RAA_CONFIG = '/etc/raa/prod.cfg'
 
 if os.path.exists('/srv/conary/repository-generated.cnr'):
-    os.rename('/srv/conary/repository-generated.cnr', '/srv/conary/config/00_generated.cnr')
+    shutil.copy('/srv/conary/repository-generated.cnr', '/srv/conary/config/00_generated.cnr')
+    os.unlink('/srv/conary/repository-generated.cnr')
 if os.path.exists('/srv/conary/repository-custom.cnr'):
     os.rename('/srv/conary/repository-custom.cnr', '/srv/conary/config/99_custom.cnr')
+    os.unlink('/srv/conary/repository-custom.cnr')
 
 raadb = cherrypy.config.dict_from_config_file(RAA_CONFIG)['global']['dbstore.connectstring']
 if os.path.exists(raadb):
