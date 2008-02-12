@@ -18,7 +18,7 @@ export mandir = $(datadir)/man
 export sitedir = $(libdir)/python$(PYVERSION)/site-packages/
 export pluginsdir = $(libdir)/raa/rPath/
 
-SUBDIRS=conaryserver mirrorusers reaentitlement nasmount
+SUBDIRS=conaryserver mirrorusers reaentitlement nasmount repoconvert
 
 extra_files = \
 	Make.rules 		\
