@@ -11,7 +11,7 @@ from conary.lib.cfgtypes import CfgEnvironmentError
 
 class ConaryServer(rAASrvPlugin):
     cnrPath = '/srv/conary/repository.cnr'
-    generatedFile = '/srv/conary/repository-generated.cnr'
+    generatedFile = '/srv/conary/config/00_generated.cnr'
     conaryrcPath = '/srv/www/html/conaryrc'
     apacheRestart = ['/usr/bin/killall',  '-USR1', 'httpd']
 

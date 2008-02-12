@@ -29,8 +29,8 @@ def clean():
             os.unlink(path)
 
 def backup(out = sys.stdout):
-    for bkpFile in ('conaryver', 'repository.cnr', 'repository-custom.cnr',
-                    'repository-generated.cnr', 'logs'):
+    for bkpFile in ('conaryver', 'repository.cnr', 'config/*',
+                    'logs'):
         print >> out, os.path.join(os.path.sep, 'srv', 'conary', bkpFile)
 
     # now back up any programmaticly changed lines from /etc/fstab
@@ -51,6 +51,7 @@ def backup(out = sys.stdout):
     os.chown(tmpFsPath, apacheUID, apacheGID)
 
     # now back up the sqldb
+    ### TODO: Fix this for postgresql support
     dbLock = DBLock(dbPath)
     dbLock.acquire()
     try:
@@ -61,6 +62,7 @@ def backup(out = sys.stdout):
     os.chown(tmpDbPath, apacheUID, apacheGID)
 
 def restore():
+    ### TODO: Fix this for postgresql support
     shutil.move(tmpDbPath, dbPath)
     os.chown(dbPath, apacheUID, apacheGID)
     f = open(tmpFsPath)

@@ -15,7 +15,7 @@ raadb = cherrypy.config.dict_from_config_file(RAA_CONFIG)['global']['dbstore.con
 if os.path.exists(raadb):
     db = dbstore.connect(raadb, RAADB_DRIVER)
     cu = db.cursor()
-    generatedFile = open("/srv/conary/repository-generated.cnr", "w")
+    generatedFile = open("/srv/conary/config/00_generated.cnr", "w")
     try:
         cu.execute("SELECT srvname FROM plugin_rpath_SrvChangeTable")
     except dbstore.sqlerrors.InvalidTable:
