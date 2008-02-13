@@ -7,13 +7,15 @@ import sys
 import os
 import pwd
 from conary.server import schema
-from conary.lib import cfgtypes
+from conary.lib import cfgtypes, tracelog
 from conary.repository.netrepos.netserver import ServerConfig
 from conary import dbstore
 
 cnrPath = '/srv/conary/repository.cnr'
 
 cfg = ServerConfig()
+
+tracelog.initLog(filename='stdout', level=2)
 
 try:
     cfg.read(cnrPath)
