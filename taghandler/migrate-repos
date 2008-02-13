@@ -53,6 +53,7 @@ if [ -x @SERVICEDIR@/conary/bin/migrate-conaryrc ]; then
 fi
 
 # Migrate the repo schema
+echo "Migrating database..."
 service updateservice start
 
 # restart apache

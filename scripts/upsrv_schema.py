@@ -15,7 +15,7 @@ cnrPath = '/srv/conary/repository.cnr'
 
 cfg = ServerConfig()
 
-tracelog.initLog(filename='stdout', level=2)
+tracelog.initLog(filename='stderr', level=2)
 
 try:
     cfg.read(cnrPath)
