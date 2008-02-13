@@ -11,10 +11,15 @@ from conary.lib import cfgtypes, tracelog
 from conary.repository.netrepos.netserver import ServerConfig
 from conary import dbstore
 
+class SimpleFileLog(tracelog.FileLog):
+    def printLog(self, level, msg):
+        self.fd.write("%s\n" % msg)
+
 cnrPath = '/srv/conary/repository.cnr'
 
 cfg = ServerConfig()
 
+tracelog.FileLog = SimpleFileLog
 tracelog.initLog(filename='stderr', level=2)
 
 try:
