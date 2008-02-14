@@ -84,9 +84,9 @@ start)
   if [ ! -f "/srv/conary/sqldb" ]
   then
     freshInstall
+    $schema_python
   else
     prepForMigrate
-    $schema_python
   fi
   ;;
 stop)
