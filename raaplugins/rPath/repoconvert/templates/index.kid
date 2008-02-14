@@ -9,7 +9,7 @@
 -->
 
 <head>
-    <title>SqliteToPgsql - Index</title>
+    <title>PostgreSQL Conversion - Index</title>
     <?python
   from raa.widgets.callbackdisplay import CallbackDisplayWidget
     ?>
