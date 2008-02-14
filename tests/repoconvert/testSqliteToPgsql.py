@@ -129,7 +129,6 @@ class SqliteToPgsqlTest(raatest.rAATest):
             assert repoconvert._startPostgresql(), 'Did not return as expected'
             self.assertEquals(len(raa.lib.command.runCommand.commandList), 0)
 
-            import epdb; epdb.stc('f')
             dbstore.connect=raiseProgrammingError
             def raiseErrorRunCommand(*x, **y):
                 raise rpath_error.UnknownException('blah', 'blahblah')
