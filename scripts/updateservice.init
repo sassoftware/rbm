@@ -4,10 +4,75 @@
 # initial contents or simply upgrading the schema to match the current conary \
 # version installed on the system
 # 
-# Copyright (c) 2006 rPath, Inc
+# Copyright (c) 2006-2008 rPath, Inc
 # All rights reserved
 
 schema_python="/usr/bin/upsrv_schema.py"
+
+function waitForPg()
+{
+  echo "Waiting for postgres startup to complete"
+  ready="false"
+  while [ "$ready" == "false" ]
+  do
+    psql -U postgres -l
+    rc=$?
+    if [ "$rc" -eq 0 ]
+    then
+      ready="true"
+    elif [ "$rc" -eq 2 ]
+    then
+      sleep 4
+    else
+      echo "Failed waiting for Postgres"
+      exit 1
+    fi
+  done
+}
+
+function createPgMigrateFile()
+{
+  if [ ! -d "/srv/conary/config" ]
+  then
+    mkdir /srv/conary/config
+  fi
+  echo "repositoryDB    postgresql updateservice@localhost.localdomain/updateservice" > /srv/conary/config/50_repositorydb.cnr
+}
+
+function createPgDb()
+{
+  createlang -U postgres plpgsql template1
+  if [ "$?" -ne 0 -a  "$?" -ne 2 ]
+  then
+    echo "Failed enabling plpgsql"
+    exit 1
+  fi
+  psql -U postgres -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
+  if [ "$?" -ne 0 -a  "$?" -ne 1 ]
+  then
+    echo "Failed creating the updateservice role"
+    exit 1
+  fi
+  psql -U updateservice -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
+  if [ "$?" -ne 0  -a  "$?" -ne 1 ]
+  then
+    echo "Failed creating the postgres database"
+    exit 1
+  fi
+}
+
+function freshInstall()
+{
+  waitForPg
+  createPgMigrateFile
+  createPgDb
+}
+
+function prepForMigrate()
+{
+  waitForPg
+  createPgDb
+}
 
 case "$1" in
 start)
@@ -16,7 +81,13 @@ start)
     echo "httpd is running. Please stop that service before running this script" > /dev/stderr
     exit 1
   fi
-  $schema_python
+  if [ ! -f "/srv/conary/sqldb" ]
+  then
+    freshInstall
+  else
+    prepForMigrate
+    $schema_python
+  fi
   ;;
 stop)
   ;;
