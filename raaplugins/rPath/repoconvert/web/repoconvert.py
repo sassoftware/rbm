@@ -27,7 +27,7 @@ class SqliteToPgsql(rAAWebPlugin):
     # Name to be displayed on mouse over in the side bar.
     tooltip = _("Convert your repository to use Postgres")
 
-    CFG_PATH = '/srv/conary/repository.cnr'
+    cfgPath = '/srv/conary/repository.cnr'
 
     def _readRepoConfig(self, repoconfig):
         cfg = ServerConfig()
@@ -37,7 +37,7 @@ class SqliteToPgsql(rAAWebPlugin):
     def _getConfig(self):
         ret = dict()
 
-        repoCfg = self._readRepoConfig(self.CFG_PATH)
+        repoCfg = self._readRepoConfig(self.cfgPath)
         ret['converted'] = (repoCfg.repositoryDB[0] == 'postgresql')
         ret['finalized'] = self.getPropertyValue('FINALIZED', False)
         if ret['finalized'] and not ret['converted']:
@@ -71,6 +71,7 @@ class SqliteToPgsql(rAAWebPlugin):
     @raa.web.expose(allow_json=True)
     def convert(self, confirm=False):
         if confirm:
+            self.setPropertyValue('FINALIZED', False, data.RDT_BOOL)
             sched = schedule.ScheduleNow()
             schedId = self.schedule(sched)
             return dict(schedId=schedId)
@@ -88,6 +89,11 @@ class SqliteToPgsql(rAAWebPlugin):
             return dict(error=_('Finalize step not confirmed'))
 
     def initPlugin(self):
-        repoCfg = self._readRepoConfig(self.CFG_PATH)
-        if repoCfg.repositoryDB[0] == 'postgresql' and self.getPropertyValue('FINALIZED', False):
+        repoCfg = self._readRepoConfig(self.cfgPath)
+        val = self.getPropertyValue('FINALIZED')
+        if repoCfg.repositoryDB[0] == 'postgresql' and (val==0 or val):
+                #val is 0 if this is a fresh install, True if we've
+                #already finalized
             self.setPropertyValue('raa.hidden', True, data.RDT_BOOL)
+        else:
+            self.setPropertyValue('raa.hidden', False, data.RDT_BOOL)
