@@ -32,10 +32,10 @@
        <form action="deleteUser" method="POST">
          <input type="hidden" name="username" value="${username}"/>
          <input type="hidden" name="confirm" value="True"/>
-         <button class="img" type="submit"><img src="${tg.url('/static/images/ok_button.png')}" alt="Delete User" />
-         </button>
+         <input class="button" type="submit" value="Delete User"/>
        </form>
-       <a href="index"><button type="button" class="img"><img src="${tg.url('/static/images/cancel_button.png')}" alt="Cancel" /></button></a>
+
+       <input class="button" type="submit" onclick="javascript: window.location.replace('index'); return false;" value="Cancel"/>
     </div>
 </body>
 </html>
