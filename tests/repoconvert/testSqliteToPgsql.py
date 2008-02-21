@@ -26,6 +26,21 @@ from raa import constants, rpath_error
 raaFramework = webPluginTest()
 raaFramework.pseudoroot = cherrypy.root.repoconvert.SqliteToPgsql
 
+class fakeCursor(object):
+    _exec = []
+    _fetchOneRet = 1
+    def execute(s, *args):
+        s._exec.append(*args)
+    def fetchone(s):
+        return  [s._fetchOneRet]
+class fakeDbstore(object):
+    def __init__(s, retval):
+        s._retVal = retval
+    def cursor(s):
+        fcu = fakeCursor()
+        fcu._fetchOneRet = s._retVal
+        return fcu
+
 def setupConfig():
     """Write a fake repository.cnr file and return the filename"""
     topdir = tempfile.mkdtemp('', 'sqlitetopgsql-config-')
@@ -212,21 +227,6 @@ exit %d
         os.chmod(self.srvPlugin.convertScript, 0700)
 
     def test_checkPlPgSQL(self):
-        class fakeCursor(object):
-            _exec = []
-            _fetchOneRet = 1
-            def execute(self, *args):
-                self._exec.append(*args)
-            def fetchone(self):
-                return  [self._fetchOneRet]
-        class fakeDbstore(object):
-            def __init__(self, retval):
-                self._retVal = retval
-            def cursor(self):
-                fcu = fakeCursor()
-                fcu._fetchOneRet = self._retVal
-                return fcu
-
         def fakeConnect(*a, **kw):
             return fakeDbstore(self.retVal)
 
@@ -259,6 +259,8 @@ exit %d
         self.srvPlugin.reportMessage = runCommandStub()
         oldchkpgsql = self.srvPlugin._checkPlPgSQL
         self.srvPlugin._checkPlPgSQL = types.MethodType(lambda x: None, self.srvPlugin, repoconvert.SqliteToPgsql)
+        oldStartPgsql = repoconvert._startPostgresql
+        repoconvert._startPostgresql = lambda: None
         try:
             self.srvPlugin.doTask(execId, schedId)
 
@@ -279,4 +281,5 @@ exit %d
         finally:
             self.srvPlugin.reportMessage = oldreportMessage
             self.srvPlugin._checkPlPgSQL = self.srvPlugin._checkPlPgSQL
+            repoconvert._startPostgresql = oldStartPgsql
 
