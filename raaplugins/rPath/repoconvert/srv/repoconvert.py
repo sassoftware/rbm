@@ -75,8 +75,7 @@ class reportCallback:
 
 
 class SqliteToPgsql(rAASrvPlugin):
-    #convertScript = '/usr/share/conary/migration/db2db.py'
-    convertScript = '/home/jtate/hg/conary-2.0/scripts/migration/db2db.py'
+    convertScript = '/usr/share/conary/migration/db2db.py'
     cfgPath       = '/srv/conary/repository.cnr'
     newCfgPath    = '/srv/conary/config/50_repositorydb.cnr'
     pgConnectString = 'updateservice@localhost.localdomain/updateservice'
