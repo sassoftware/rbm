@@ -8,7 +8,7 @@ import sys
 import fcntl
 
 from conary.lib import util
-from conary.repository import netserver
+from conary.repository.netrepos import netserver
 
 
 dbPath = os.path.join(os.path.sep, 'srv', 'conary', 'sqldb')
@@ -37,7 +37,7 @@ def clean():
 
 def backup(out = sys.stdout):
     for bkpFile in ('conaryver', 'repository.cnr', 'config/*',
-                    'logs'):
+                    'logs', 'contents'):
         print >> out, os.path.join(os.path.sep, 'srv', 'conary', bkpFile)
 
     # now back up any programmaticly changed lines from /etc/fstab
@@ -72,7 +72,8 @@ def backup(out = sys.stdout):
         print >> out, tmpDbPath
         os.chown(tmpDbPath, apacheUID, apacheGID)
     elif rep_driver == 'postgresql':
-        util.execute('pg_dump -c --disable-triggers updateservice >"%s"' % pg_dump_path)
+        util.execute('pg_dump -U updateservice -c --disable-triggers '
+            'updateservice >"%s"' % pg_dump_path)
         print >> out, pg_dump_path
     else:
         sys.exit("Don't know how to back up a '%s' database!" % rep_driver)
@@ -97,7 +98,7 @@ def restore():
         os.system('createlang -U postgres plpgsql updateservice >/dev/null 2>&1')
 
         # Now do the restore
-        util.execute('psql -l <"%s" >/dev/null' % pg_dump_path)
+        util.execute('psql -U postgres updateservice -1 <"%s" >/dev/null' % pg_dump_path)
     else:
         sys.exit("Don't know how to restore a '%s' database!" % rep_driver)
 
