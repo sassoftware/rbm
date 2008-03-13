@@ -11,17 +11,13 @@ export LIBEXECDIR = $(PREFIX)/libexec
 
 export PYDIR = $(LIBDIR)/python$(PYVERSION)/site-packages
 
-extra_dist = postgres.cron.in
-
-generated_files = postgres.cron
+static_files = postgres.chkconfig postgres.cron
 
 all: default-all
 
-postgres.cron: postgres.cron.in
-	sed -e's,@BINDIR@,$(BINDIR),g' postgres.cron.in > postgres.cron
-
 install: $(static_files) $(generated_files)
 	install -D -m0644 postgres.cron	${DESTDIR}/etc/cron.d/postgres
+	install -D -m0644 postgres.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql
 
 clean: default-clean
 

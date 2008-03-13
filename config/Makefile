@@ -20,8 +20,8 @@ install:
 	install -D -m0644 repository.cnr ${DESTDIR}/srv/conary/repository.cnr
 	install -D -m0644 conary.conf ${DESTDIR}/etc/httpd/conf.d/conary.conf
 	install -D -m0644 updateservice.conf ${DESTDIR}/etc/httpd/conf.d/updateservice.conf
-	install -D -m0755 httpd ${DESTDIR}/etc/chkconfig.d/httpd
-	install -D -m0755 ntpd ${DESTDIR}/etc/chkconfig.d/ntpd
+	install -D -m0644 httpd ${DESTDIR}/etc/chkconfig.d/httpd
+	install -D -m0644 ntpd ${DESTDIR}/etc/chkconfig.d/ntpd
 
 clean: default-clean
 
