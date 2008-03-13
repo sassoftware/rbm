@@ -17,7 +17,7 @@ tmpFsPath = os.path.join(os.path.sep, 'srv', 'conary', 'fstab')
 apacheUID, apacheGID = pwd.getpwnam('apache')[2:4]
 
 cfg_path = '/srv/conary/repository.cnr'
-pg_dump_path = '/srv/conary/rapus.sql'
+pg_dump_path = '/srv/conary/updateservice.sql'
 
 class DBLock(object):
     def __init__(self, path):
@@ -72,7 +72,7 @@ def backup(out = sys.stdout):
         print >> out, tmpDbPath
         os.chown(tmpDbPath, apacheUID, apacheGID)
     elif rep_driver == 'postgresql':
-        util.execute('pg_dump -c --disable-triggers rapus >"%s"' % pg_dump_path
+        util.execute('pg_dump -c --disable-triggers updateservice >"%s"' % pg_dump_path)
         print >> out, pg_dump_path
     else:
         sys.exit("Don't know how to back up a '%s' database!" % rep_driver)
@@ -89,12 +89,12 @@ def restore():
         # Try to create needed resources first. This will generally fail since
         # these are created when the database is initialized, but we might
         # be restoring onto a bare database.
-        os.system('psql -U postgres -d postgres -c "CREATE ROLE rapus '
+        os.system('psql -U postgres -d postgres -c "CREATE ROLE updateservice '
             'NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;" '
             '>/dev/null 2>&1')
-        os.system('psql -U rapus -d postgres -c "CREATE DATABASE rapus '
+        os.system('psql -U updateservice -d postgres -c "CREATE DATABASE updateservice '
             'ENCODING \'UTF8\';" >/dev/null 2>&1')
-        os.system('createlang -U postgres plpgsql rapus >/dev/null 2>&1')
+        os.system('createlang -U postgres plpgsql updateservice >/dev/null 2>&1')
 
         # Now do the restore
         util.execute('psql -l <"%s" >/dev/null' % pg_dump_path)
