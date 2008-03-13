@@ -24,8 +24,6 @@ postgres.cron: postgres.cron.in
 	sed -e's,@BINDIR@,$(BINDIR),g' postgres.cron.in > postgres.cron
 
 install: $(static_files) $(generated_files)
-	install -D -m0755 postgresql ${DESTDIR}/etc/chkconfig.d/postgresql
-	install -D -m0755 usepostgres.py ${DESTDIR}/srv/conary/bin/usepostgres.py
 	install -D -m0644 postgres.cron	${DESTDIR}/etc/cron.d/postgres
 
 clean: default-clean

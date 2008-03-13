@@ -1,2 +1,2 @@
-0 0 * * * postgres @BINDIR@/vacuumdb -az -U rus >& /dev/null
+0 0 * * * postgres @BINDIR@/vacuumdb -z -U updateservce updateservice >& /dev/null
 
