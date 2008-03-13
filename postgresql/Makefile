@@ -11,9 +11,6 @@ export LIBEXECDIR = $(PREFIX)/libexec
 
 export PYDIR = $(LIBDIR)/python$(PYVERSION)/site-packages
 
-static_files = \
-	postgresql  usepostgres.py
-
 extra_dist = postgres.cron.in
 
 generated_files = postgres.cron
