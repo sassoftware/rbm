@@ -81,6 +81,10 @@ start)
     echo "httpd is running. Please stop that service before running this script" > /dev/stderr
     exit 1
   fi
+
+  # PostgreSQL must be running for initialization
+  service postgresql start
+
   if [ ! -f "/srv/conary/sqldb" ]
   then
     freshInstall
