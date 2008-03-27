@@ -6,7 +6,8 @@
 
 all: default-all default-subdirs
 
-SUBDIRS = srv \
+SUBDIRS = \
+	rpc \
 	web
 
 python_files = __init__.py

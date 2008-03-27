@@ -19,8 +19,6 @@ logFile /srv/conary/logs/repository.log
 
 forceSSL True
 
-# This serverName will be overridden by the auto-generated
-# config files below.
-serverName localhost
+serverName *
 
 includeConfigFile /srv/conary/config/*.cnr

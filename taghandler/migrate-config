@@ -1,39 +1,21 @@
-#!/usr/bin/python
+#!/bin/sh
 #
-# Copyright 2006 rPath, Inc.
+# Copyright 2008 rPath, Inc.
 # All Rights Reserved
 #
-from reposconary.conary.repository.netrepos.netserver import ServerConfig
-from reposconary.conary import dbstore
-import cherrypy
-import shutil
-import os
 
-RAADB_DRIVER = 'sqlite'
-RAA_CONFIG = '/etc/raa/prod.cfg'
+OLD_GENERATED_FILE=/srv/conary/repository-generated.cnr
+NEW_GENERATED_FILE=/srv/conary/config/00_generated.cnr
 
-if os.path.exists('/srv/conary/repository-generated.cnr'):
-    shutil.copy('/srv/conary/repository-generated.cnr', '/srv/conary/config/00_generated.cnr')
-    os.unlink('/srv/conary/repository-generated.cnr')
-if os.path.exists('/srv/conary/repository-custom.cnr'):
-    os.rename('/srv/conary/repository-custom.cnr', '/srv/conary/config/99_custom.cnr')
-    os.unlink('/srv/conary/repository-custom.cnr')
+OLD_CUSTOM_FILE=/srv/conary/repository-custom.cnr
+NEW_CUSTOM_FILE=/srv/conary/config/99_custom.cnr
 
-raadb = cherrypy.config.dict_from_config_file(RAA_CONFIG)['global']['dbstore.connectstring']
-if os.path.exists(raadb):
-    db = dbstore.connect(raadb, RAADB_DRIVER)
-    cu = db.cursor()
-    generatedFile = open("/srv/conary/config/00_generated.cnr", "w")
-    try:
-        cu.execute("SELECT srvname FROM plugin_rpath_SrvChangeTable")
-    except dbstore.sqlerrors.InvalidTable:
-        pass
-    else:
-        res = cu.fetchall()
-        servernames = []
-        for x in res:
-            servernames.append(x[0])
-        cfg = ServerConfig()
-        cfg.serverName = servernames
-        cfg.displayKey('serverName', out = generatedFile)
-    generatedFile.close()
+# We don't use generated Conary Configs anymore, so delete them all
+for x in $OLD_GENERATED_FILE $NEW_GENERATED_FILE; do
+    [ -f $x ] && rm -f $x
+done
+
+# Move the original custom file to the new custom file location
+[ -f $OLD_CUSTOM_FILE ] && mv $OLD_CUSTOM_FILE $NEW_CUSTOM_FILE
+
+exit 0
