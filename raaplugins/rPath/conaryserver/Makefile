@@ -12,12 +12,9 @@ SUBDIRS = \
 
 python_files = __init__.py
 
-kid_files = complete.kid \
-	config.kid
-
 extra_files = Makefile
 
-dist_files = $(python_files) $(extra_files) $(kid_files)
+dist_files = $(python_files) $(extra_files)
 
 generated_files = *.pyo *.pyc
 
