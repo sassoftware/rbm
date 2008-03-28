@@ -22,16 +22,9 @@ generated_files = *.pyo *.pyc
 
 subdirs: default-subdirs
 
-install: all install-subdirs pyfiles-install kidfiles-install
+install: all install-subdirs pyfiles-install
 	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
 	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-
-kidfiles-install:
-	kidc --strip-dest-dir $$(pwd) $(kid_files)
-	mkdir -p $(DESTDIR)$(pluginsdir)$(DIR)
-	for f in $(kid_files) *.pyc; do \
-		cp -a $$f $(DESTDIR)$(pluginsdir)$(DIR)/$$f; \
-	done
 
 dist: default-dist
 
