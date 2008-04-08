@@ -36,6 +36,14 @@ def clean():
             os.unlink(path)
 
 def backup(out = sys.stdout):
+    # Make sure that there is a DB config file so that a sqlite backup
+    # can be restored onto a postgres rUS and not still be configured
+    # for postgres
+    db_config = '/srv/conary/config/50_repositorydb.cnr'
+    if not os.path.exists(db_config):
+        open(db_config, 'w').close()
+
+    # First add some static configs and contents
     for bkpFile in ('conaryver', 'repository.cnr', 'config/*',
                     'logs', 'contents'):
         print >> out, os.path.join(os.path.sep, 'srv', 'conary', bkpFile)
