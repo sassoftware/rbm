@@ -23,23 +23,27 @@ class MirrorUsers(rAASrvPlugin):
         ret = []
         for usr in users:
             perm = 'Other'
-            for x in nr.auth.userAuth.getRolesByUser(usr):
-                # anonymous user
-                if x == 'anonymous':
-                    perm = 'Anonymous'
-                    break
-                perms = nr.auth.iterPermsByRole(x)
-                for i in perms:
+            roles = nr.auth.userAuth.getRolesByUser(usr)
+            if len(roles) == 1:
+                role = roles[0]
+                for roleperm in nr.auth.iterPermsByRole(role):
                     # admin user
-                    if nr.auth.roleIsAdmin(x) and \
-                            i == ('ALL', 'ALL', 1, 0):
+                    if nr.auth.roleIsAdmin(role) and \
+                            roleperm == ('ALL', 'ALL', 1, 0):
                         perm = 'Admin'
                         break
                     # mirror user
-                    elif nr.auth.roleCanMirror(x) and \
-                            i == ('ALL', 'ALL', 1, 1):
+                    elif nr.auth.roleCanMirror(role) and \
+                            roleperm == ('ALL', 'ALL', 1, 1):
                         perm = 'Mirroring'
                         break
+                # anonymous user
+                if role == 'anonymous':
+                    if usr == 'anonymous':
+                        perm = 'Anonymous'
+                    else:
+                        perm = 'Read-Only'
+            # Complex roles (with more than one perm) are "Other"
             ret.append({'user' : usr, 'permission' : perm})
         return ret
     
@@ -60,13 +64,21 @@ class MirrorUsers(rAASrvPlugin):
             mirror = False
             admin = True
             remove = False
+
+        # First create a role for the desired permission
+        role = permission.lower()
         try:
-            nr.auth.addUser(user, password)
-            nr.auth.addAcl(user, None, None, write=write, remove=remove)
-            nr.auth.setAdmin(user, admin)
-            nr.auth.setMirror(user, mirror)
+            nr.auth.addRole(role)
+            nr.auth.addAcl(role, None, None, write=write, remove=remove)
+            nr.auth.setAdmin(role, admin)
+            nr.auth.setMirror(role, mirror)
         except errors.RoleAlreadyExists:
-            return False
+            pass
+
+        # Now (maybe) create the user and add them to the role
+        nr.auth.addUser(user, password)
+        nr.auth.addRoleMember(role, user)
+
         return True
 
     def deleteUser(self, schedId, execId, user):

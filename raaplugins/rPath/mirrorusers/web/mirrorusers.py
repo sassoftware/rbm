@@ -4,6 +4,8 @@
 import random
 import turbogears
 
+from conary.repository import errors
+
 import raa
 import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
@@ -47,7 +49,7 @@ class MirrorUsers(rAAWebPlugin):
                              button to create a repository user."""
             errorState = False
         elif not username:
-            returnMessage = "Please enter a user uame."
+            returnMessage = "Please enter a user name."
             errorState = True
         elif passwd1 != passwd2 or not passwd1:
             returnMessage = "Passwords do not match. Please try again."
@@ -56,15 +58,26 @@ class MirrorUsers(rAAWebPlugin):
             returnMessage = 'The user name "anonymous" is reserved.  Please choose a different user name.'
             errorState = True
         else:
-            if not self._addUser(username, passwd1, perm):
-                returnMessage = 'User "%s" already exists.  Please choose a different user name.' % username
-                errorState = True
-            else:
+            try:
                 self._addUser(username, passwd1, perm)
-                returnMessage= 'User "%s" added with %s permission.' % \
-                             (username, perm)
                 errorState = False
-        return dict(message=_(returnMessage), error=errorState)
+            except errors.UserAlreadyExists:
+                returnMessage = ('User "%s" already exists.  Please choose '
+                    'a different user name.' % username)
+                errorState = True
+            except errors.InvalidName:
+                returnMessage = ('The user name "%s" is invalid.  Please '
+                    'choose a different user name.' % username)
+                errorState = True
+
+            if not errorState:
+                returnMessage = 'User "%s" added with %s permission.' % \
+                         (username, perm)
+
+        if errorState:
+            return dict(errors=_(returnMessage), error=True)
+        else:
+            return dict(message=_(returnMessage), error=False)
 
     def _deleteUser(self, username):
         return self.callBackend('deleteUser', username)

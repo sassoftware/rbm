@@ -7,7 +7,7 @@ import random
 from raa.modules.raasrvplugin import rAASrvPlugin
 from conary.repository.netrepos.netserver import ServerConfig
 from conary.repository.netrepos.netserver import NetworkRepositoryServer
-from conary.repository.errors import UnknownEntitlementClass, RoleNotFound
+from conary.repository.errors import UnknownEntitlementClass, RoleAlreadyExists
 
 import traceback
 import sys
@@ -32,7 +32,7 @@ class rEAEntitlement(rAASrvPlugin):
 
     def setkey(self, schedId, execId, key):
         entClass = 'management'
-        entRole = 'management'
+        entRole = 'admin'
 
         cfg = ServerConfig()
         cfg.read(self.cnrPath)
@@ -42,27 +42,25 @@ class rEAEntitlement(rAASrvPlugin):
         passwd = self._genString()
         authToken = [adminUser, passwd, None, None]
 
+        # Create an admin role as the mirrorusers plugin would
         try:
-            nr.auth.addUser(adminUser, passwd)
-            nr.auth.addAcl(adminUser, None, None, write=True)
-            nr.auth.setAdmin(adminUser, True)
-
-            # remove the old entitlement group if it exists
-            try:
-                nr.auth.deleteEntitlementClass(authToken, entRole)
-            except UnknownEntitlementClass, e:
-                pass
-
-            # remove the old group if it exists
-            try:
-                nr.auth.deleteRole(entRole)
-            except RoleNotFound, e:
-                pass
-
-            # add the management group and give it the proper ACLs
             nr.auth.addRole(entRole)
             nr.auth.addAcl(entRole, None, None, write=True)
             nr.auth.setAdmin(entRole, True)
+        except RoleAlreadyExists:
+            pass
+
+        try:
+            nr.auth.addUser(adminUser, passwd)
+            nr.auth.addRoleMember(entRole, adminUser)
+
+            # remove the old entitlement group if it exists
+            try:
+                nr.auth.deleteEntitlementClass(authToken, entClass)
+            except UnknownEntitlementClass:
+                pass
+
+            # add the management group and give it the proper ACLs
             nr.auth.addEntitlementClass(authToken, entClass, entRole)
             nr.auth.addEntitlementKey(authToken, entClass, key)
 

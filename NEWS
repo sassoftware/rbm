@@ -1,0 +1,18 @@
+Changes in @NEW@
+================
+
+New Features
+------------
+* The Update Service now utilizes Conary 2.0.
+* Configuration is now stored in a config.d-style directory for added
+  flexibility.
+* The repository can now be switched to PostgreSQL via a plugin in the
+  administration interface.
+* The backup plugin is now enabled.
+* Repository hostnames no longer need to be explicitly configured before
+  use. (RBM-212)
+
+Bug Fixes
+---------
+* Invalid user names are now reported correctly in the Repository Users
+  plugin. (RBM-223)

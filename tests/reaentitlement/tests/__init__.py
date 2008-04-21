@@ -42,6 +42,9 @@ class rEAEntitlementTest(raatest.rAATest):
         assert "<title>manage administrative entitlement</title>" in cherrypy.response.body[0].lower()
 
     def test_setkey(self):
+        managementClass = 'management'
+        managementRole = 'admin'
+
         r = self.callWithIdent(raaFramework.pseudoroot.setkey, key = "thisismykey")
         assert r['key'] == 'thisismykey'
         assert r.has_key('serverNames')
@@ -52,17 +55,20 @@ class rEAEntitlementTest(raatest.rAATest):
         cfg.read(self.srvPlugin.cnrPath)
         nr = NetworkRepositoryServer(cfg, self.srvPlugin.reposserver)
 
-        managementrole = 'management'
-        authtoken = ('anonymous', 'anonymous', [(managementrole, 'thisismykey')])
+        authtoken = ('anonymous', 'anonymous', [(managementClass, 'thisismykey')])
         assert nr.auth.authCheck(authtoken, admin=True)
-        self.assertEquals(nr.auth.iterEntitlementKeys(authtoken, managementrole), ['thisismykey'])
-        self.assertEquals(nr.auth.getEntitlementClassesRoles(authtoken, [managementrole]), {managementrole: [managementrole]})
-        self.assertEquals(nr.auth.getRoleList(), [managementrole])
+        self.assertEquals(
+            nr.auth.iterEntitlementKeys(authtoken, managementClass),
+            ['thisismykey'])
+        self.assertEquals(
+            nr.auth.getEntitlementClassesRoles(authtoken, [managementClass]),
+            {managementClass: [managementRole]})
+        self.assertEquals(nr.auth.getRoleList(), [managementRole])
 
         #Set another key
         r = self.callWithIdent(raaFramework.pseudoroot.setkey, key = "thisismyotherkey")
         assert r['key'] == 'thisismyotherkey'
-        authtoken = ('anonymous', 'anonymous', [(managementrole, 'thisismyotherkey')])
+        authtoken = ('anonymous', 'anonymous', [(managementClass, 'thisismyotherkey')])
         assert nr.auth.authCheck(authtoken, admin=True)
 
     def test_migrate(self):

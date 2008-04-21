@@ -50,19 +50,19 @@ class MirrorUsersTest(raatest.rAATest):
         # test for mismatched passwords
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'newuser', passwd1 = 'pass', passwd2 = 'notmatch')
-        assert result == {'message': 'Passwords do not match. Please try again.', 'error': True}
+        self.assertEqual(result, {'errors': 'Passwords do not match. Please try again.', 'error': True})
 
         # test for blank username
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = '', passwd1 = 'pass', passwd2 = 'pass')
-        assert result == {'message': 'Please enter a user uame.', 'error': True}
+        self.assertEqual(result, {'errors': 'Please enter a user name.', 'error': True})
 
         # test for bogus anonymous username
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'anonymous', passwd1 = 'pass', passwd2 = 'pass',
             perm = 'not anonymous')
-        assert result == {'message': 'The user name "anonymous" is reserved.  '
-            'Please choose a different user name.', 'error': True}
+        self.assertEqual(result, {'errors': 'The user name "anonymous" is reserved.  '
+            'Please choose a different user name.', 'error': True})
 
         # test for success
         result = self.callWithIdent(raaFramework.pseudoroot.add,
@@ -72,7 +72,7 @@ class MirrorUsersTest(raatest.rAATest):
         # test for duplicate user
         result = self.callWithIdent(raaFramework.pseudoroot.add,
             username = 'newuser', passwd1 = 'pass', passwd2 = 'pass')
-        self.assertEquals( result, {'message': 'User "newuser" already exists. '
+        self.assertEquals( result, {'errors': 'User "newuser" already exists. '
             ' Please choose a different user name.', 'error': True})
 
     def test_addUser2(self):
@@ -100,12 +100,12 @@ class MirrorUsersTest(raatest.rAATest):
             username = 'newMirror', passwd1 = 'pass', passwd2 = 'pass',
             perm = 'Mirror')
         result = self.callWithIdent(raaFramework.pseudoroot.add,
-            username = 'newuser', passwd1 = 'pass', passwd2 = 'pass')
+            username = 'newUser', passwd1 = 'pass', passwd2 = 'pass')
 
         result = self.callWithIdent(raaFramework.pseudoroot.index)
         assert {'user': 'newAdmin', 'permission': 'Admin'} in result['userList']
         assert {'user': 'newMirror', 'permission': 'Mirroring'} in result['userList']
-        assert {'user': 'newuser', 'permission': 'Other'} in result['userList']
+        assert {'user': 'newUser', 'permission': 'Read-Only'} in result['userList']
         assert {'user': 'anonymous', 'permission': 'Anonymous'} in result['userList']
 
     def test_deleteUser(self):
