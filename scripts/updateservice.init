@@ -8,6 +8,8 @@
 # All rights reserved
 
 schema_python="/usr/bin/upsrv_schema.py"
+pgsql_config="/etc/postgresql.conf.updateservice"
+pgsql_config_target="/srv/pgsql/8.2/postgresql.conf"
 
 function waitForPg()
 {
@@ -15,7 +17,7 @@ function waitForPg()
   ready="false"
   while [ "$ready" == "false" ]
   do
-    psql -U postgres -l
+    psql -U postgres -l >/dev/null
     rc=$?
     if [ "$rc" -eq 0 ]
     then
@@ -84,6 +86,18 @@ start)
 
   # PostgreSQL must be running for initialization
   service postgresql start
+
+  # Copy our config file over the one generated during initialization
+  # and restart PostgreSQL. The DB must already be initialized, or it
+  # will fail to do so once the config is written, hence we still must
+  # start it above.
+  if [ "$pgsql_config" -nt "$pgsql_config_target" ]
+  then
+    echo "Updating PostgreSQL configuration"
+    waitForPg
+    cp "$pgsql_config" "$pgsql_config_target"
+    service postgresql restart
+  fi
 
   if [ ! -f "/srv/conary/sqldb" ]
   then

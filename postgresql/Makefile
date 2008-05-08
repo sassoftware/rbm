@@ -18,6 +18,7 @@ all: default-all
 install: $(static_files) $(generated_files)
 	install -D -m0644 postgres.cron	${DESTDIR}/etc/cron.d/postgres
 	install -D -m0644 postgres.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql
+	install -D -m0644 postgresql.conf ${DESTDIR}/etc/postgresql.conf.updateservice
 
 clean: default-clean
 
