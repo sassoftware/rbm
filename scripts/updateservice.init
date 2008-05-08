@@ -91,7 +91,7 @@ start)
   # and restart PostgreSQL. The DB must already be initialized, or it
   # will fail to do so once the config is written, hence we still must
   # start it above.
-  if [ "$pgsql_config" -nt "$pgsql_config_target" ]
+  if ! diff "$pgsql_config" "$pgsql_config_target" >/dev/null
   then
     echo "Updating PostgreSQL configuration"
     waitForPg
