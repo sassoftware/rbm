@@ -7,9 +7,11 @@
 # Copyright (c) 2006-2008 rPath, Inc
 # All rights reserved
 
+. /etc/sysconfig/pgsql/postgresql-updateservice
+
 schema_python="/usr/bin/upsrv_schema.py"
 pgsql_config="/etc/postgresql.conf.updateservice"
-pgsql_config_target="/srv/pgsql/8.2/postgresql.conf"
+pgsql_config_target="$PGDATA/postgresql.conf"
 
 function waitForPg()
 {
@@ -17,7 +19,7 @@ function waitForPg()
   ready="false"
   while [ "$ready" == "false" ]
   do
-    psql -U postgres -l >/dev/null
+    psql -U postgres -p "$PGPORT" -l >/dev/null
     rc=$?
     if [ "$rc" -eq 0 ]
     then
@@ -49,13 +51,13 @@ function createPgDb()
     echo "Failed enabling plpgsql"
     exit 1
   fi
-  psql -U postgres -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
+  psql -U postgres -p "$PGPORT" -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
   if [ "$?" -ne 0 -a  "$?" -ne 1 ]
   then
     echo "Failed creating the updateservice role"
     exit 1
   fi
-  psql -U updateservice -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
+  psql -U updateservice -p "$PGPORT" -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
   if [ "$?" -ne 0  -a  "$?" -ne 1 ]
   then
     echo "Failed creating the postgres database"
@@ -84,8 +86,15 @@ start)
     exit 1
   fi
 
+  # Adjust system max shared memory to at least 500MB
+  SHMMAX=524288000
+  if [ `sysctl -n kernel.shmmax` -lt $SHMMAX ]
+  then
+    sysctl -w "kernel.shmmax=$SHMMAX" -q
+  fi
+
   # PostgreSQL must be running for initialization
-  service postgresql start
+  service postgresql-updateservice start
 
   # Copy our config file over the one generated during initialization
   # and restart PostgreSQL. The DB must already be initialized, or it
@@ -96,7 +105,7 @@ start)
     echo "Updating PostgreSQL configuration"
     waitForPg
     cp "$pgsql_config" "$pgsql_config_target"
-    service postgresql restart
+    service postgresql-updateservice restart
   fi
 
   if [ ! -f "/srv/conary/sqldb" ]

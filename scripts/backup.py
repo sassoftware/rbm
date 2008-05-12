@@ -80,7 +80,7 @@ def backup(out = sys.stdout):
         print >> out, tmpDbPath
         os.chown(tmpDbPath, apacheUID, apacheGID)
     elif rep_driver == 'postgresql':
-        util.execute('pg_dump -U updateservice -c --disable-triggers '
+        util.execute('pg_dump -U updateservice -p 5439 -c --disable-triggers '
             'updateservice >"%s"' % pg_dump_path)
         print >> out, pg_dump_path
     else:
@@ -98,15 +98,15 @@ def restore():
         # Try to create needed resources first. This will generally fail since
         # these are created when the database is initialized, but we might
         # be restoring onto a bare database.
-        os.system('psql -U postgres -d postgres -c "CREATE ROLE updateservice '
+        os.system('psql -U postgres -p 5439 -d postgres -c "CREATE ROLE updateservice '
             'NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;" '
             '>/dev/null 2>&1')
-        os.system('psql -U updateservice -d postgres -c "CREATE DATABASE updateservice '
+        os.system('psql -U updateservice -p 5439 -d postgres -c "CREATE DATABASE updateservice '
             'ENCODING \'UTF8\';" >/dev/null 2>&1')
         os.system('createlang -U postgres plpgsql updateservice >/dev/null 2>&1')
 
         # Now do the restore
-        util.execute('psql -U postgres updateservice -1 <"%s" >/dev/null' % pg_dump_path)
+        util.execute('psql -U postgres -p 5439 updateservice -1 <"%s" >/dev/null' % pg_dump_path)
     else:
         sys.exit("Don't know how to restore a '%s' database!" % rep_driver)
 

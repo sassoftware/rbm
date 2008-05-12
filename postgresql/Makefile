@@ -11,14 +11,16 @@ export LIBEXECDIR = $(PREFIX)/libexec
 
 export PYDIR = $(LIBDIR)/python$(PYVERSION)/site-packages
 
-static_files = postgres.chkconfig postgres.cron
-
 all: default-all
 
-install: $(static_files) $(generated_files)
+install: $(generated_files)
 	install -D -m0644 postgres.cron	${DESTDIR}/etc/cron.d/postgres
-	install -D -m0644 postgres.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql
+	install -D -m0644 postgresql.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql
 	install -D -m0644 postgresql.conf ${DESTDIR}/etc/postgresql.conf.updateservice
+	install -D -m0644 postgresql-updateservice.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql-updateservice
+	install -D -m0644 postgresql-updateservice.sysconfig ${DESTDIR}/etc/sysconfig/pgsql/postgresql-updateservice
+	mkdir -p ${DESTDIR}/etc/init.d
+	ln -sf /etc/init.d/postgresql ${DESTDIR}/etc/init.d/postgresql-updateservice
 
 clean: default-clean
 
