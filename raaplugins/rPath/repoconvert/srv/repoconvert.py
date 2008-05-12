@@ -30,7 +30,7 @@ def _startPostgresql():
     started = False
     while True:
         try:
-            dbm = dbstore.connect('postgres@localhost.localdomain/template1', 'postgresql')
+            dbm = dbstore.connect('postgres@localhost.localdomain:5439/template1', 'postgresql')
         except pgsql.ProgrammingError, e:
             log.warning("PostgreSQL was not running, attempting to start it")
             if not started:
