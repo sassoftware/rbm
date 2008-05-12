@@ -8,6 +8,7 @@
 # All rights reserved
 
 . /etc/sysconfig/pgsql/postgresql-updateservice
+export PGDATA PGPORT
 
 schema_python="/usr/bin/upsrv_schema.py"
 pgsql_config="/etc/postgresql.conf.updateservice"
@@ -19,7 +20,7 @@ function waitForPg()
   ready="false"
   while [ "$ready" == "false" ]
   do
-    psql -U postgres -p "$PGPORT" -l >/dev/null
+    psql -U postgres -l >/dev/null
     rc=$?
     if [ "$rc" -eq 0 ]
     then
@@ -51,13 +52,13 @@ function createPgDb()
     echo "Failed enabling plpgsql"
     exit 1
   fi
-  psql -U postgres -p "$PGPORT" -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
+  psql -U postgres -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
   if [ "$?" -ne 0 -a  "$?" -ne 1 ]
   then
     echo "Failed creating the updateservice role"
     exit 1
   fi
-  psql -U updateservice -p "$PGPORT" -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
+  psql -U updateservice -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
   if [ "$?" -ne 0  -a  "$?" -ne 1 ]
   then
     echo "Failed creating the postgres database"

@@ -103,7 +103,7 @@ def restore():
             '>/dev/null 2>&1')
         os.system('psql -U updateservice -p 5439 -d postgres -c "CREATE DATABASE updateservice '
             'ENCODING \'UTF8\';" >/dev/null 2>&1')
-        os.system('createlang -U postgres plpgsql updateservice >/dev/null 2>&1')
+        os.system('createlang -U postgres -p 5439 plpgsql updateservice >/dev/null 2>&1')
 
         # Now do the restore
         util.execute('psql -U postgres -p 5439 updateservice -1 <"%s" >/dev/null' % pg_dump_path)
