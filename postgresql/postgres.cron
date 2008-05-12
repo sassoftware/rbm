@@ -1,2 +1,2 @@
-0 0 * * * postgres /usr/bin/vacuumdb -z -U updateservce updateservice >& /dev/null
+0 0 * * * postgres /usr/bin/vacuumdb -z -U updateservce -p 5439 updateservice >& /dev/null
 
