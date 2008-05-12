@@ -19,8 +19,8 @@ install: $(generated_files)
 	install -D -m0644 postgresql.conf ${DESTDIR}/etc/postgresql.conf.updateservice
 	install -D -m0644 postgresql-updateservice.chkconfig ${DESTDIR}/etc/chkconfig.d/postgresql-updateservice
 	install -D -m0644 postgresql-updateservice.sysconfig ${DESTDIR}/etc/sysconfig/pgsql/postgresql-updateservice
-	mkdir -p ${DESTDIR}/etc/init.d
-	ln -sf /etc/init.d/postgresql ${DESTDIR}/etc/init.d/postgresql-updateservice
+	# The recipe installs a symlink at /etc/init.d/postgresql-updateservice pointing
+	# at postgresql since dangling symlinks cannot be installed any other way
 
 clean: default-clean
 
