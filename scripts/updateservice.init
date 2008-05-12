@@ -86,13 +86,6 @@ start)
     exit 1
   fi
 
-  # Adjust system max shared memory to at least 500MB
-  SHMMAX=524288000
-  if [ `sysctl -n kernel.shmmax` -lt $SHMMAX ]
-  then
-    sysctl -w "kernel.shmmax=$SHMMAX" -q
-  fi
-
   # PostgreSQL must be running for initialization
   service postgresql-updateservice start
 
