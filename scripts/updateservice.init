@@ -7,12 +7,13 @@
 # Copyright (c) 2006-2008 rPath, Inc
 # All rights reserved
 
-. /etc/sysconfig/pgsql/postgresql-updateservice
-export PGDATA PGPORT
-
 schema_python="/usr/bin/upsrv_schema.py"
 pgsql_config="/etc/postgresql.conf.updateservice"
 pgsql_config_target="$PGDATA/postgresql.conf"
+pgsql_service=postgresql-updateservice
+
+. /etc/sysconfig/pgsql/$pgsql_service
+export PGDATA PGPORT
 
 function waitForPg()
 {
@@ -90,7 +91,11 @@ start)
   fi
 
   # PostgreSQL must be running for initialization
-  service postgresql-updateservice start
+  if [ ! -f /var/lock/subsys/$pgsql_service ]
+  then
+    stop_after_init=1
+    service $pgsql_service start
+  fi
 
   # Copy our config file over the one generated during initialization
   # and restart PostgreSQL. The DB must already be initialized, or it
@@ -101,7 +106,7 @@ start)
     echo "Updating PostgreSQL configuration"
     waitForPg
     cp "$pgsql_config" "$pgsql_config_target"
-    service postgresql-updateservice restart
+    service $pgsql_service restart
   fi
 
   if [ ! -f "/srv/conary/sqldb" ]
@@ -111,6 +116,15 @@ start)
     prepForMigrate
   fi
   $schema_python
+
+  # If PostgreSQL wasn't running before, we're probably running in a
+  # tag handler, possibly even in a jobslave. Don't leave postmaster
+  # running.
+  if [ "$stop_after_init" == 1 ]
+  then
+    service $pgsql_service stop
+  fi
+
   ;;
 stop)
   ;;
