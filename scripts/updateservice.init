@@ -44,7 +44,7 @@ function createPgMigrateFile()
   then
     mkdir /srv/conary/config
   fi
-  echo "repositoryDB    postgresql updateservice@localhost.localdomain/updateservice" > /srv/conary/config/50_repositorydb.cnr
+  echo "repositoryDB    postgresql updateservice@localhost.localdomain:5439/updateservice" > /srv/conary/config/50_repositorydb.cnr
 }
 
 function createPgDb()

@@ -78,7 +78,7 @@ class SqliteToPgsql(rAASrvPlugin):
     convertScript = '/usr/share/conary/migration/db2db.py'
     cfgPath       = '/srv/conary/repository.cnr'
     newCfgPath    = '/srv/conary/config/50_repositorydb.cnr'
-    pgConnectString = 'updateservice@localhost.localdomain/updateservice'
+    pgConnectString = 'updateservice@localhost.localdomain:5439/updateservice'
 
     def _runScriptAndReportOutput(self, execId, cmd, messagePrefix = '', reporter = None):
         env = os.environ
