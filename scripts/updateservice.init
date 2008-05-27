@@ -8,8 +8,6 @@
 # All rights reserved
 
 schema_python="/usr/bin/upsrv_schema.py"
-pgsql_config="/etc/postgresql.conf.updateservice"
-pgsql_config_target="$PGDATA/postgresql.conf"
 pgsql_service=postgresql-updateservice
 
 . /etc/sysconfig/pgsql/$pgsql_service
@@ -95,15 +93,6 @@ start)
   then
     stop_after_init=1
     service $pgsql_service start
-  fi
-
-  # Copy our config file over the one generated during initialization.
-  # If we aren't going to stop PostgreSQL at the end of this script,
-  # then restart it so the new config will take effect.
-  cp "$pgsql_config" "$pgsql_config_target"
-  if [ "$stop_after_init" == "" ]
-  then
-    service $pgsql_service restart
   fi
 
   if [ ! -f "/srv/conary/sqldb" ]
