@@ -10,7 +10,7 @@ base=/mnt/scratch
 case "$1" in
 start)
     mkdir "$base"
-    mount /dev/sda1 "$base"
+    mount /dev/sda2 "$base"
 
     pgsql_old=/srv/pgsql/8.2-updateservice
     [ -d "$pgsql_old" ] && mv "$pgsql_old" "$base/pgsql-updateservice"
