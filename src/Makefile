@@ -1,17 +1,18 @@
 #
-# Copyright (c) 2008 rPath, Inc.
+# Copyright (c) 2007 rPath, Inc.
 #
 # All Rights Reserved
 #
 
-static_files = \
-	__init__.py		\
-	nasmount.py
+override DEST = $(PYDIR)
 
+static_files = \
+	rbm_rc.py
 
 all: default-all
 
 install: default-install
+	install -D -m0755 upsrv_schema.py $(DESTDIR)/usr/bin/upsrv_schema.py
 
 clean: default-clean
 

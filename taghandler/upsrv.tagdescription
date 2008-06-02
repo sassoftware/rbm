@@ -1,4 +1,0 @@
-file        @TAGDESCRIPTION@/rbm
-datasource  multitag
-implements  files update
-include     /srv/conary/conaryver

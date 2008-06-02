@@ -4,14 +4,10 @@
 # All Rights Reserved
 #
 
-static_files = \
-	__init__.py		\
-	nasmount.py
-
-
 all: default-all
 
 install: default-install
+	install -D -m0755 backup-script $(DESTDIR)/etc/raa/backup.d/update-service
 
 clean: default-clean
 

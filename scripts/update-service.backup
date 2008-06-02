@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python /srv/conary/bin/backup.pyc $*

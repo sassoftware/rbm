@@ -1,41 +1,22 @@
 #
-# Copyright (c) 2005-2006 rPath, Inc.
+# Copyright (c) 2008 rPath, Inc.
 #
-# All rights reserved
+# All Rights Reserved
 #
 
-all: default-all default-subdirs
+SUBDIRS = rpc web
 
-SUBDIRS = \
-	rpc \
-	web
+plugin_config_files = conaryserver.cfg
 
-cfg_files = conaryserver.cfg
-
-python_files = __init__.py
-
-extra_files = Makefile
-
-dist_files = $(python_files) $(extra_files)
-
-generated_files = *.pyo *.pyc
-
-.PHONY: clean dist install subdirs
-
-subdirs: default-subdirs
-
-install: all install-subdirs pyfiles-install cfg-install
-	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-
-cfg-install:
-	echo I AM HERE
-	mkdir -p $(DESTDIR)/etc/raa/plugins.d
-	install -m0644 $(cfg_files) $(DESTDIR)/etc/raa/plugins.d/
+static_files = __init__.py
 
 
-dist: default-dist
+all: default-all
 
-clean: clean-subdirs default-clean
+install: default-install
 
-include ../Make.rules
+clean: default-clean
+
+
+include $(TOP)/Make.rules
+# vim: set sts=8 sw=8 noexpandtab :

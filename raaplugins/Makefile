@@ -4,9 +4,9 @@
 # All Rights Reserved
 #
 
-static_files = \
-	__init__.py		\
-	nasmount.py
+SUBDIRS = rPath
+
+override DEST = /usr/lib/raa
 
 
 all: default-all

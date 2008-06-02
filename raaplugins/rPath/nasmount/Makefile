@@ -1,35 +1,20 @@
 #
-# Copyright (c) 2007 rPath, Inc.
+# Copyright (c) 2008 rPath, Inc.
 #
-# All rights reserved
+# All Rights Reserved
 #
 
-all: default-all default-subdirs
+SUBDIRS = srv templates web
 
-SUBDIRS = srv \
-	web \
-	templates
+static_files = __init__.py
 
-python_files = __init__.py
 
-kid_files =
+all: default-all
 
-extra_files = Makefile
+install: default-install
 
-dist_files = $(python_files) $(extra_files) $(kid_files)
+clean: default-clean
 
-generated_files = *.pyo *.pyc
 
-.PHONY: clean dist install subdirs
-
-subdirs: default-subdirs
-
-install: all install-subdirs pyfiles-install
-	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-
-dist: default-dist
-
-clean: clean-subdirs default-clean
-
-include ../Make.rules
+include $(TOP)/Make.rules
+# vim: set sts=8 sw=8 noexpandtab :

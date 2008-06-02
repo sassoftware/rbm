@@ -1,0 +1,32 @@
+#!/bin/bash
+# chkconfig: 345 20 80
+# description: configures the update service for EC2
+# 
+# Copyright (c) 2008 rPath, Inc
+# All rights reserved
+
+base=/mnt/scratch
+
+case "$1" in
+start)
+    mkdir "$base"
+    mount /dev/sda1 "$base"
+
+    pgsql_old=/srv/pgsql/8.2-updateservice
+    [ -d "$pgsql_old" ] && mv "$pgsql_old" "$base/pgsql-updateservice"
+    ln -sfn "$base/pgsql-updateservice" "$pgsql_old"
+
+    mkdir -p "$base/conary"
+    for x in contents tmp logs cscache
+    do
+        old="/srv/conary/$x"
+        [ -d "$old" ] && mv "$old" "$base/conary/$x"
+        ln -sfn "$base/conary/$x" "$old"
+    done
+    ;;
+stop)
+    ;;
+*)
+    echo "Usage $0 {start | stop}"
+    ;;
+esac

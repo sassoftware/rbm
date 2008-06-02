@@ -1,40 +1,20 @@
 #
-# Copyright (c) 2007 rPath, Inc.
+# Copyright (c) 2008 rPath, Inc.
 #
-# All rights reserved
+# All Rights Reserved
 #
-
-all: default-all default-subdirs
-
-SUBDIRS =
-
-python_files = __init__.py
 
 kid_files = index.kid
 
-extra_files = Makefile
+static_files = __init__.py
 
-dist_files = $(python_files) $(extra_files) $(kid_files)
 
-generated_files = *.pyo *.pyc
+all: default-all
 
-.PHONY: clean dist install subdirs
+install: default-install
 
-subdirs: default-subdirs
+clean: default-clean
 
-install: all install-subdirs pyfiles-install kidfiles-install
-	$(PYTHON) -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
-	$(PYTHON) -OO -c "import compileall; compileall.compile_dir('$(DESTDIR)$(pluginsdir)', ddir='$(pluginsdir)', quiet=1)"
 
-kidfiles-install:
-	kidc --strip-dest-dir $$(pwd) $(kid_files)
-	mkdir -p $(DESTDIR)$(pluginsdir)$(DIR)
-	for f in $(kid_files) *.pyc; do \
-		cp -a $$f $(DESTDIR)$(pluginsdir)$(DIR)/$$f; \
-	done
-
-dist: default-dist
-
-clean: clean-subdirs default-clean
-
-include ../../Make.rules
+include $(TOP)/Make.rules
+# vim: set sts=8 sw=8 noexpandtab :
