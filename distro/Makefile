@@ -4,7 +4,7 @@
 # All Rights Reserved
 #
 
-SUBDIRS = httpd postgresql rapa taghandler
+SUBDIRS = ec2 httpd postgresql rapa taghandler
 
 
 all: default-all
@@ -14,9 +14,6 @@ install: default-install
 	install -D -m0644 ntpd.chkconfig $(DESTDIR)/etc/chkconfig.d/ntpd
 	install -D -m0755 updateservice.init $(DESTDIR)/etc/init.d/updateservice
 	install -D -m0755 cleanup.sh $(DESTDIR)/etc/cron.daily/mirror
-ifdef EC2
-	install -D -m0755 ec2.init $(DESTDIR)/etc/init.d/updateservice-ec2
-endif
 
 clean: default-clean
 

@@ -16,13 +16,15 @@ start)
     [ -d "$pgsql_old" ] && mv "$pgsql_old" "$base/pgsql-updateservice"
     ln -sfn "$base/pgsql-updateservice" "$pgsql_old"
 
+    # Create (move) base conary directories
     mkdir -p "$base/conary"
-    for x in contents tmp logs cscache
+    for x in contents logs cscache tmp
     do
         old="/srv/conary/$x"
         [ -d "$old" ] && mv "$old" "$base/conary/$x"
         ln -sfn "$base/conary/$x" "$old"
     done
+
     ;;
 stop)
     ;;
