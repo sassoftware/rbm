@@ -73,20 +73,38 @@ class MirrorUsers(rAASrvPlugin):
             nr.auth.setAdmin(role, admin)
             nr.auth.setMirror(role, mirror)
         except errors.RoleAlreadyExists:
-            pass
+            # Not an error, but roll back the DB anyway
+            nr.db.rollback()
+        except:
+            nr.db.rollback()
+            raise
 
         # Now (maybe) create the user and add them to the role
-        nr.auth.addUser(user, password)
-        nr.auth.addRoleMember(role, user)
+        try:
+            nr.auth.addUser(user, password)
+            nr.auth.addRoleMember(role, user)
+        except:
+            nr.db.rollback()
+            raise
 
         return True
 
     def deleteUser(self, schedId, execId, user):
         nr = self._getNetworkRepo()
-        nr.auth.deleteUserByName(user)
+        try:
+            nr.auth.deleteUserByName(user)
+        except:
+            nr.db.rollback()
+            raise
+
         return True
 
     def changePassword(self, schedId, execId, user, newPass):
         nr = self._getNetworkRepo()
-        nr.auth.changePassword(user, newPass)
+        try:
+            nr.auth.changePassword(user, newPass)
+        except:
+            nr.db.rollback()
+            raise
+
         return True

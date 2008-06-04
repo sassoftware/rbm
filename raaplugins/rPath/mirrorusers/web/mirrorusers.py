@@ -120,11 +120,14 @@ class MirrorUsers(rAAWebPlugin):
     @raa.web.require(turbogears.identity.has_permission('mirror'))
     def addRandomUser(self, user):
         passwd = self._genString()
-        if not self._addUser(user, passwd, 'Mirror'):
-            # What's this retry for?
+        try:
+            self._addUser(user, passwd, 'Mirror')
+        except errors.UserAlreadyExists:
+            # User exists, but the password is gone, so just delete it
+            # and recreate (and return the new password as usual).
             self._deleteUser(user)
             self._addUser(user, passwd, 'Mirror')
-        return  passwd
+        return passwd
 
     @raa.web.expose(allow_xmlrpc=True)
     def deleteRandomUser(self, username):

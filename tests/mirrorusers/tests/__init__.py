@@ -137,14 +137,25 @@ class MirrorUsersTest(raatest.rAATest):
             'error': False}
 
     def test_addRandomness(self):
-        r = self.callXmlrpc(raaFramework.pseudoroot.addRandomUser, 
-                               'testuser')
-        value = re.compile('[0-9a-z]{128}')
-        assert value.search(r)
+        valid_passwd = re.compile('^[0-9a-z]{128}$')
 
-        r = self.callXmlrpc(raaFramework.pseudoroot.deleteRandomUser, 
-                               'testuser')
-        assert r
+        # Create a user and test that the password is reasonable.
+        passwd1 = self.callXmlrpc(raaFramework.pseudoroot.addRandomUser, 
+            'testuser')
+        self.failUnless(valid_passwd.search(passwd1))
+
+        # Create the same user again and make sure the user is
+        # recreated, but with a different password.
+        passwd2 = self.callXmlrpc(raaFramework.pseudoroot.addRandomUser,
+            'testuser')
+        self.failUnless(valid_passwd.search(passwd1))
+        self.failIfEqual(passwd1, passwd2,
+            'New password is the same as the old one')
+
+        # Delete the user.
+        success = self.callXmlrpc(raaFramework.pseudoroot.deleteRandomUser,
+            'testuser')
+        self.failUnless(success, 'Could not delete user')
 
     def test_migrate(self):
         db = raaFramework.pseudoroot.pluginProperties.db
