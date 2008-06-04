@@ -1,0 +1,3 @@
+# tmpDir cannot be a symlink, so we must re-point it
+# to the EC2 scratch disk manually.
+tmpDir /mnt/scratch/conary/tmp
