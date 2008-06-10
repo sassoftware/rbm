@@ -1,16 +1,16 @@
-Changes in @NEW@
+Changes in 4.1.0
 ================
 
 New Features
 ------------
-* The Update Service now utilizes Conary 2.0.
-* Configuration is now stored in a config.d-style directory for added
-  flexibility.
-* The repository can now be switched to PostgreSQL via a plugin in the
-  administration interface.
-* The backup plugin is now enabled.
-* Repository hostnames no longer need to be explicitly configured before
-  use. (RBM-212)
+* Amazon Elastic Compute Cloud (EC2) is now officially supported. (RBM-248)
+* Repository hostnames no longer need to be explicitly configured. (RBM-212)
+* New rPath Appliance Platform Update Service (rUS) installations are created
+  using PostgreSQL as the repository database.  Existing installations are
+  given a new plugin that will migrate existing SQLite repositories
+  to PostgreSQL. (RBM-61)
+* Update Service services may now be backed up using the rPath Appliance
+  Platform Agent (rAPA).
 
 Bug Fixes
 ---------
