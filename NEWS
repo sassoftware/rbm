@@ -1,3 +1,13 @@
+Changes in 4.1.0.1
+==================
+
+Bug Fixes
+---------
+* The lists of repositoryMap entries published by the rUS is now determined
+  by examining the contents of the Conary repository.  Explicit
+  repositoryMap entries are provided instead of a single "repositoryMap *"
+  entry. (RBM-256)
+
 Changes in 4.1.0
 ================
 
