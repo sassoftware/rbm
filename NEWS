@@ -1,4 +1,4 @@
-Changes in 4.1.0.1
+Changes in 4.1.1
 ==================
 
 Bug Fixes
@@ -7,6 +7,7 @@ Bug Fixes
   by examining the contents of the Conary repository.  Explicit
   repositoryMap entries are provided instead of a single "repositoryMap *"
   entry. (RBM-256)
+
 
 Changes in 4.1.0
 ================
