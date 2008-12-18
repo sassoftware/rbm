@@ -122,11 +122,18 @@ class MirrorUsers(rAAWebPlugin):
         passwd = self._genString()
         try:
             self._addUser(user, passwd, 'Mirror')
+            return passwd
         except errors.UserAlreadyExists:
-            # User exists, but the password is gone, so just delete it
-            # and recreate (and return the new password as usual).
-            self._deleteUser(user)
-            self._addUser(user, passwd, 'Mirror')
+            # drop down to common case - this happens when
+            # in the testsuite it seems
+            pass
+        except Exception, e:
+            if 'UserAlreadyExists' not in str(e):
+                raise
+        # User exists, but the password is gone, so just delete it
+        # and recreate (and return the new password as usual).
+        self._deleteUser(user)
+        self._addUser(user, passwd, 'Mirror')
         return passwd
 
     @raa.web.expose(allow_xmlrpc=True)
