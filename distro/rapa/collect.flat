@@ -1,0 +1,2 @@
+/srv/pgsql/*/*.conf
+/srv/pgsql/*/pg_log/*

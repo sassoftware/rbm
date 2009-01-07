@@ -1,3 +1,9 @@
+Changes in 5.0
+==================
+New Features
+------------
+* Added postgres logs rapa collection data (RBM-258). 
+
 Changes in 4.1.1
 ==================
 
