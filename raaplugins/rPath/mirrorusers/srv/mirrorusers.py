@@ -103,8 +103,8 @@ class MirrorUsers(rAASrvPlugin):
         nr = self._getNetworkRepo()
         try:
             nr.auth.changePassword(user, newPass)
-        except:
+        except Exception, e:
             nr.db.rollback()
-            raise
+            return dict(errors=["Password change failed: %s" % str(e)])
 
-        return True
+        return dict(message="Password changed for %s" % user)

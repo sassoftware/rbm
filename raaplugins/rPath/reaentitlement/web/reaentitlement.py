@@ -4,13 +4,11 @@
 import sys
 import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
-from raa.modules.raawebplugin import immedTask
 from rPath.reaentitlement.web import migrateSpecialUseTableToProperties
-import cherrypy
 
 from raa.db.database import DatabaseTable, writeOp, readOp
-from raa.db.data import RDT_STRING
-from raa.localhostonly import localhostOnly
+from raa.authorization import LocalhostOnly
+from gettext import gettext as _
 
 import traceback
 import logging
@@ -41,13 +39,13 @@ class rEAEntitlement(rAAWebPlugin):
         hostName = os.uname()[1]
         return serverNames, hostName
 
-    @raa.web.expose(html="rPath.reaentitlement.reaentitlement")
+    @raa.web.expose(template="rPath.reaentitlement.templates.reaentitlement")
     def index(self):
         serverNames, hostName = self._getReposCfg()
         return dict(key=self.getPropertyValue(ENTITLEMENT_KEY),
             serverNames = serverNames, hostName = hostName)
 
-    @raa.web.expose(html="rPath.reaentitlement.reaentitlement")
+    @raa.web.expose(template="rPath.reaentitlement.templates.reaentitlement")
     def setkey(self, key=''):
         try:
             if self.callBackend('setkey', key):

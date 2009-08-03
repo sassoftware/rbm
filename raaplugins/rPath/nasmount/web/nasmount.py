@@ -2,9 +2,9 @@
 # All rights reserved
 
 import random
-import cherrypy
+from gettext import gettext as _
 
-import raa
+import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
 
 def marshallMessages(func):
@@ -44,7 +44,7 @@ class NasMount(rAAWebPlugin):
     def initPlugin(self):
         return
 
-    @raa.expose(template="rPath.nasmount.templates.index")
+    @raa.web.expose(template="rPath.nasmount.templates.index")
     @marshallMessages
     def index(self, *args, **kwargs):
         server = remoteMount = ''
@@ -65,7 +65,7 @@ class NasMount(rAAWebPlugin):
         else:
             self.messages.append('Sucessfully set remote contents store')
 
-    @raa.expose(template="rPath.nasmount.templates.index")
+    @raa.web.expose(template="rPath.nasmount.templates.index")
     @marshallMessages
     def setMount(self, *args, **kwargs):
         for param in ('server', 'remoteMount'):
@@ -81,9 +81,9 @@ class NasMount(rAAWebPlugin):
 
         if not self.errors:
             self.wizardDone()
-        raise cherrypy.HTTPRedirect('index', 302)
+        raise raa.web.raiseHttpRedirect('index', 302)
 
-    @raa.expose(template="rPath.nasmount.templates.index")
+    @raa.web.expose(template="rPath.nasmount.templates.index")
     def cancel(self, *args, **kwargs):
         self.wizardDone()
-        raise cherrypy.HTTPRedirect('index', 302)
+        raise raa.web.raiseHttpRedirect('index', 302)

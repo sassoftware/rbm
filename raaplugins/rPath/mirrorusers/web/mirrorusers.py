@@ -2,13 +2,13 @@
 # All rights reserved
 
 import random
-import turbogears
 
 from conary.repository import errors
 
-import raa
 import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
+import raa.authorization
+from gettext import gettext as _
 
 class MirrorUsers(rAAWebPlugin):
     '''
@@ -27,7 +27,7 @@ class MirrorUsers(rAAWebPlugin):
     def _getUserList(self):
         return self.callBackend('getUserList')
 
-    @raa.web.expose(template="rPath.mirrorusers.users")
+    @raa.web.expose(template="rPath.mirrorusers.templates.users")
     def index(self, *args, **kwargs):
         userList = self._getUserList()
         userData = []
@@ -41,7 +41,7 @@ class MirrorUsers(rAAWebPlugin):
     def _addUser(self, username, password, permission):
         return self.callBackend('addUser', username, password, permission)
 
-    @raa.web.expose(template="rPath.mirrorusers.add")
+    @raa.web.expose(template="rPath.mirrorusers.templates.add")
     def add(self, username=None, passwd1=None, passwd2=None, perm='Anonymous'):
         if not username and not passwd1 and not passwd2:
             returnMessage="""Enter the following information, select the 
@@ -82,31 +82,28 @@ class MirrorUsers(rAAWebPlugin):
     def _deleteUser(self, username):
         return self.callBackend('deleteUser', username)
 
-    @raa.web.expose(template='rPath.mirrorusers.delete')
-    def deleteUser(self, username, confirm=False):
-        if not confirm:
-            return dict(username=username)
-        else:
+    @raa.web.expose(allow_json=True)
+    def deleteUser(self, username):
+        try:
             self._deleteUser(username)
-            return self.index()
+        except Exception, e:
+            return(dict(errors=[ repr(e) ]))
+        return dict(message="User %s has been deleted from the repository." % username)
 
     def _changePassword(self, username, password):
         return self.callBackend('changePassword', username, password)
 
-    @raa.web.expose(template='rPath.mirrorusers.pass')
-    def changePassword(self, username, passwd1='', passwd2=''):
-        if not passwd1:
-            errorState=False
-            message = 'Enter a new password for the repository user "%s":'\
+    @raa.web.expose(allow_json=True)
+    def changePassword(self, username, currentpw, pwd1, pwd2):
+        if not pwd1:
+            errors = 'Enter a new password for the repository user "%s":'\
                                                                % username
-        elif passwd1 != passwd2: 
-            message = "Passwords do not match. Please try again."
-            errorState = True
+        elif pwd1 != pwd2: 
+            errors = "Passwords do not match. Please try again."
         else:
-            self._changePassword(username, passwd1)
-            return self.index()
+            return self._changePassword(username, pwd1)
 
-        return dict(username=username, error=errorState, message=message)
+        return dict(errors=errors, message=message)
 
     def _genString(self):
         allowed = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -117,7 +114,7 @@ class MirrorUsers(rAAWebPlugin):
         return chars
 
     @raa.web.expose(allow_xmlrpc=True)
-    @raa.web.require(turbogears.identity.has_permission('mirror'))
+    @raa.web.require(raa.authorization.PermissionPresent('mirror'))
     def addRandomUser(self, user):
         passwd = self._genString()
         try:

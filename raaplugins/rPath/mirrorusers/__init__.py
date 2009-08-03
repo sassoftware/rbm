@@ -3,3 +3,9 @@
 #
 # All rights reserved
 #
+
+orderList = [ 'index', 'add' ]
+pageList = {
+    'index': 'Users',
+    'add': 'Add User'
+}
