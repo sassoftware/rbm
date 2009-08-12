@@ -4,7 +4,12 @@
 # All Rights Reserved
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert
+kid_files = \
+	add.kid		\
+	pass.kid	\
+	users.kid
+
+static_files = __init__.py
 
 
 all: default-all

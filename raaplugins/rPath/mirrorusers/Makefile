@@ -4,13 +4,7 @@
 # All Rights Reserved
 #
 
-SUBDIRS = srv web
-
-kid_files = \
-	add.kid		\
-	delete.kid	\
-	pass.kid	\
-	users.kid
+SUBDIRS = srv web templates
 
 static_files = __init__.py
 

@@ -4,9 +4,7 @@
 # All Rights Reserved
 #
 
-SUBDIRS = srv web
-
-kid_files = reaentitlement.kid
+SUBDIRS = srv web templates
 
 static_files = __init__.py
 
