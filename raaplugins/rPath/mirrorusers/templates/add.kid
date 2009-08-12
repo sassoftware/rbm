@@ -6,6 +6,13 @@
     Copyright (c) 2005-2006 rPath, Inc.
     All Rights Reserved
 -->
+
+<?python
+from raa.web import getConfigValue
+from raa.templates.tabbedpagewidget import TabbedPageWidget
+from rPath.mirrorusers import pageList, orderList
+?>
+
 <head>
   <title>Manage Repository Users</title>
   <style type="text/css">
@@ -61,20 +68,13 @@
   </script>
 </head>
 <body>
-  <div class="tabs">
-    <ul>
-      <li><a href="index"><span>Users</span></a></li>
-      <li class="current"><a href="add"><span>Add User</span></a></li> 
-     </ul>
-  </div>
-  <br/>
-  <p>
-   <hr />
-  </p>
+  <div class="plugin-page" id="plugin-page"> 
+    <div class="page-content">
+      ${TabbedPageWidget(value=pageList, orderList=orderList)}
     <div id="add">
       <h5 id="guideText">${message}</h5>
       <h5 id="warnText"></h5>
-       <form action="add" method="POST">
+       <form action="add" method="POST" name="page_form">
            <table>
                 <tr>
                     <td class="label">
@@ -112,14 +112,14 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="buttons">
-                        <button class="img" type="submit">
-                          <img src="${tg.url('/static/images/apply_button.png')}" alt="Change Password" />
-                        </button>
+                       <a class="rnd_button float-left" href="javascript:button_submit(document.page_form);">Apply</a>
                     </td>
                 </tr>
             </table>
        </form>
     </div>
+  </div>
+  </div>
 </body>
 </html>
 <!-- vim: set ts=2 sw=2 sts=2 expandtab autoindent: -->
