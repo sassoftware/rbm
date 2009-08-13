@@ -59,7 +59,9 @@ from raa.web import makeUrl
         </table>
         </div>
         <div class="page-section-content">
-        To change the administrative entitlement, use the form below.
+        <br />
+        <p>To change the administrative entitlement, use the form below.
+        The <b>Generate</b> button will create a new random key, or you may enter a key of your choosing.</p>
         </div>
         <div py:if="not key">
           <div class="page-section-content">
@@ -79,12 +81,17 @@ from raa.web import makeUrl
         </div>
         <form name="page_form" action="setkey" method="POST">
           <div class="page-section-content">
-            <a class="rnd_button float-right" id="Generate" onclick="genKey();" href="javascript:void(0);">Generate</a>
+            <div class="form-line" style="width: 550px">
+              <a class="rnd_button float-right" id="Generate" onclick="genKey();" href="javascript:void(0);">Generate</a>
+              <br />
+            </div>
             <div class="form-line">
               <label for="key_field" class="pwd-label-div">Entitlement:</label>
               <input id="key_field" type="text" name="key" size="40" value="${key}" class="pwd-input" style="width: 400px;" />
             </div>
-            <a class="rnd_button float-right" id="OK" href="javascript:button_submit(document.page_form)">OK</a>
+            <div class="form-line" style="width: 550px">
+              <a class="rnd_button float-right" id="OK" href="javascript:button_submit(document.page_form)">OK</a>
+            </div>
           </div>
         </form>
       </div>

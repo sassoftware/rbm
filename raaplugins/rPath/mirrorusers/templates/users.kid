@@ -65,9 +65,9 @@ from raa.web import getConfigValue
     </thead>
     <tbody style="height : auto; overflow: auto; padding-right: 2em; ">
       <tr py:for="x in userData" py:attrs="{'class': x[2]}" >
-         <td valign="top" align="center" id="logItem" width="130">${x[0]}</td>
-         <td valign="top" align="center" id="logItem">${x[1]}</td>
-         <td valign="top" align="center" id="logItem"><a href="javascript:void(0);" onclick="javascript:promptDelete('${x[0]}');">Delete</a> | <a href="javascript:void(0);" onclick="javascript:passChange('${x[0]}');">Change Password</a></td>
+         <td valign="top" align="left" id="logItem" width="130">${x[0]}</td>
+         <td valign="top" align="left" id="logItem">${x[1]}</td>
+         <td valign="top" align="left" id="logItem"><a href="javascript:void(0);" onclick="javascript:promptDelete('${x[0]}');">Delete</a> | <a href="javascript:void(0);" onclick="javascript:passChange('${x[0]}');">Change Password</a></td>
       </tr>
     </tbody>
     </table>
