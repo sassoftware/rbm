@@ -94,7 +94,8 @@ class MirrorUsers(rAAWebPlugin):
         return self.callBackend('changePassword', username, password)
 
     @raa.web.expose(allow_json=True)
-    def changePassword(self, username, currentpw, pwd1, pwd2):
+    @raa.web.reauthorize
+    def changePassword(self, username, pwd1, pwd2):
         if not pwd1:
             errors = 'Enter a new password for the repository user "%s":'\
                                                                % username

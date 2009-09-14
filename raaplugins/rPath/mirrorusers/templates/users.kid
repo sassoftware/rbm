@@ -44,7 +44,9 @@ from raa.web import getConfigValue
 
         function passChangeSub(form) {
             d = postFormData(form, 'changePassword', callbackMessage, callbackErrorGeneric, false);
-            d.addCallback(function () { clearPassChangeFields(); pc = document.getElementById('passwordChange'); pc.style.display = 'none'; });
+            d = d.addCallback(callbackCheckError);
+            d = d.addErrback(callbackErrorGeneric);
+            d = d.addCallback(function () { clearPassChangeFields(); pc = document.getElementById('passwordChange'); pc.style.display = 'none'; });
         }   
     ]]>
     </script>
