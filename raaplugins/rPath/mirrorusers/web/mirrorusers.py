@@ -43,30 +43,30 @@ class MirrorUsers(rAAWebPlugin):
 
     @raa.web.expose(template="rPath.mirrorusers.templates.add")
     def add(self, username=None, passwd1=None, passwd2=None, perm='Anonymous'):
+        returnMessage="""Enter the following information, select the 
+                         desired permission, and click on the "Apply" 
+                         button to create a repository user."""
         if not username and not passwd1 and not passwd2:
-            returnMessage="""Enter the following information, select the 
-                             desired permission, and click on the "Apply" 
-                             button to create a repository user."""
             errorState = False
         elif not username:
-            returnMessage = "Please enter a user name."
+            errorMessage = "Please enter a user name."
             errorState = True
         elif passwd1 != passwd2 or not passwd1:
-            returnMessage = "Passwords do not match. Please try again."
+            errorMessage = "Passwords do not match. Please try again."
             errorState = True
         elif username == 'anonymous' and perm != 'Anonymous':
-            returnMessage = 'The user name "anonymous" is reserved.  Please choose a different user name.'
+            errorMessage = 'The user name "anonymous" is reserved.  Please choose a different user name.'
             errorState = True
         else:
             try:
                 self._addUser(username, passwd1, perm)
                 errorState = False
             except errors.UserAlreadyExists:
-                returnMessage = ('User "%s" already exists.  Please choose '
+                errorMessage = ('User "%s" already exists.  Please choose '
                     'a different user name.' % username)
                 errorState = True
             except errors.InvalidName:
-                returnMessage = ('The user name "%s" is invalid.  Please '
+                errorMessage = ('The user name "%s" is invalid.  Please '
                     'choose a different user name.' % username)
                 errorState = True
 
@@ -75,7 +75,7 @@ class MirrorUsers(rAAWebPlugin):
                          (username, perm)
 
         if errorState:
-            return dict(errors=_(returnMessage), error=True)
+            return dict(errors=_(errorMessage), message=_(returnMessage), error=True)
         else:
             return dict(message=_(returnMessage), error=False)
 
