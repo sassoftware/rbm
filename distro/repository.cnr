@@ -21,4 +21,6 @@ forceSSL True
 
 serverName *
 
+baseUri /conary
+
 includeConfigFile /srv/conary/config/*.cnr
