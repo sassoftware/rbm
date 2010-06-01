@@ -5,8 +5,10 @@
 #
 
 SUBDIRS = rPath
+prefix = /usr
+libdir = $(prefix)/lib
 
-override DEST = /usr/lib/raa
+override DEST = $(libdir)/raa
 
 
 all: default-all
