@@ -6,7 +6,8 @@
 
 SUBDIRS = rPath
 prefix = /usr
-libdir = $(prefix)/lib
+export lib = $(shell uname -m | sed -r '/x86_64|ppc64|s390x|sparc64/{s/.*/lib64/;q};s/.*/lib/')
+libdir = $(prefix)/$(lib)
 
 override DEST = $(libdir)/raa
 
