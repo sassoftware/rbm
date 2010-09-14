@@ -1,17 +1,20 @@
 #
-# Copyright (c) 2005-2008 rPath, Inc.
+# Copyright (c) 2010 rPath, Inc.
 #
-# All rights reserved
+# All rights reserved.
 #
 
 SUBDIRS = distro src raaplugins
 
 
-TOP = $(shell pwd)
-PYTHON = $(shell [ -x /usr/bin/python2.4 ] && echo /usr/bin/python2.4 || echo /usr/lib/conary/python/bin/python2.4)
-PYVERSION = $(shell $(PYTHON) -c 'import os, sys; print sys.version[:3]')
-PYDIR = $(shell $(PYTHON) -c 'print [x for x in sys.path if x.endswith('site-packages') ][0]')
-export PYTHON PYVERSION PYDIR TOP
+export TOP = $(shell pwd)
+export VERSION = 5.6
+
+# Callers should change PYTHON to the desired python binary.
+export PYTHON = /usr/bin/python
+export PYVER = $(shell $(PYTHON) -c 'import sys; print(sys.version[0:3])')
+export PYDIR = $(shell $(PYTHON) \
+	-c 'import sys; print [x for x in sys.path if x.endswith("site-packages") ][0]')
 
 
 all: default-all

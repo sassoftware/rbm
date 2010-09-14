@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = ec2 httpd postgresql rapa taghandler
+SUBDIRS = anaconda conary-web ec2 httpd postgresql rapa taghandler
 
 
 all: default-all
@@ -15,6 +15,7 @@ install: default-install
 	install -D -m0755 updateservice.init $(DESTDIR)/etc/init.d/updateservice
 	install -D -m0755 cleanup.sh $(DESTDIR)/etc/cron.daily/mirror
 	install -D -m0644 firewall.upsrv $(DESTDIR)/etc/firewall
+	install -D -m0644 entitlements.xml $(DESTDIR)/etc/conary/entitlements.xml
 
 clean: default-clean
 

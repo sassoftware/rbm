@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<entitlement>
+	<host name="rap.rpath.com">
+		<class name="rpath-DIRECT-rBA-rAP"/>
+	</host>
+	<host name="conary.rpath.com">
+		<class name="rpath-DIRECT-rBA-rAP"/>
+	</host>
+	<host name="products.rpath.com">
+		<class name="rpath-DIRECT-rBA-rAP"/>
+	</host>
+	<host name="rap.rpath.com">
+		<class name="rpath-DIRECT-rMirror"/>
+	</host>
+</entitlement>

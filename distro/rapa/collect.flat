@@ -1,2 +1,4 @@
 /srv/pgsql/*/*.conf
 /srv/pgsql/*/pg_log/*
+/srv/conary/repository.*.cnr
+/var/log/httpd/

@@ -52,7 +52,7 @@ class UpdateServiceAppliance(PackageRecipe):
                     '/srv/conary/.*', '/srv/conary/logs/.*')
 
         r.CompilePython('%(libdir)s/raa')
-        r.CompilePython('%(libdir)s/python2.4/site-packages')
+        r.CompilePython('%(libdir)s/python%(pyver)s/site-packages')
 
         # De-flavor pure python files
         r.Flavor(exceptions='%(libdir)s/(raa|python2.4)/')
@@ -86,27 +86,24 @@ class UpdateServiceAppliance(PackageRecipe):
         r.Requires('logrotate:runtime', '%(sysconfdir)s/cron.daily/mirror')
         r.Requires('chkconfig:runtime', '%(sysconfdir)s/chkconfig.d/httpd')
 
-        # Create media-template -- this should now come from rBuilder
-        # r.Install('LICENSE', '%(disc1)s/EULA.txt')
-        # r.Install('INSTALL', '%(disc1)s/INSTALL')
-        # r.addSource('RELEASE-NOTES', dest='%(disc1)s/', macros=True)
-        # r.PackageSpec('media-template', '%(disc1)s/')
-        # r.Flavor(exceptions='%(disc1)s/')
-
         # Appliance-specific components
-        # rAPA
-        r.PackageSpec('%(name)s-appliance', '%(libdir)s/raa/')
-        r.PackageSpec('%(name)s-appliance', '/etc/raa/')
-        # chkconfig
-        r.PackageSpec('%(name)s-appliance', '/etc/chkconfig.d/ntpd')
-        # rc generator
-        r.PackageSpec('%(name)s-appliance', '%(sysconfdir)s/httpd/conf.d/updateservice.conf')
-        r.PackageSpec('%(name)s-appliance', '%(libdir)s/python2.4/site-packages/rbm_rc\..*')
+        r.PackageSpec('%(name)s-appliance',
+                '/etc/firewall',
+                # rAPA
+                '%(libdir)s/raa/',
+                '/etc/raa/',
+                # chkconfig
+                '/etc/chkconfig.d/ntpd',
+                # rc generator
+                '%(sysconfdir)s/httpd/conf.d/updateservice.conf',
+                '%(libdir)s/python2.4/site-packages/rbm_rc\..*',
+                # PostgreSQL configuration
+                '/etc/cron.d/postgres',
+                '/etc/postgresql.conf.updateservice',
+                '/etc/chkconfig.d/postgresql',
+                '/etc/chkconfig.d/postgresql-updateservice',
+                '/etc/init.d/postgresql-updateservice',
+                '/etc/sysconfig/pgsql/postgresql-updateservice',
+                )
 
-        # PostgreSQL configuration
-        r.PackageSpec('%(name)s-postgresql', '/etc/cron.d/postgres')
-        r.PackageSpec('%(name)s-postgresql', '/etc/postgresql.conf.updateservice')
-        r.PackageSpec('%(name)s-postgresql', '/etc/chkconfig.d/postgresql')
-        r.PackageSpec('%(name)s-postgresql', '/etc/chkconfig.d/postgresql-updateservice')
-        r.PackageSpec('%(name)s-postgresql', '/etc/init.d/postgresql-updateservice')
-        r.PackageSpec('%(name)s-postgresql', '/etc/sysconfig/pgsql/postgresql-updateservice')
+        r.PackageSpec('anaconda-custom-updateservice', '/usr/share/anaconda/')
