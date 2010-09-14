@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2008 rPath, Inc.
+# Copyright (c) 2010 rPath, Inc.
 #
-# All Rights Reserved
+# All rights reserved.
 #
 
 SUBDIRS = ec2 httpd postgresql rapa taghandler
@@ -14,6 +14,7 @@ install: default-install
 	install -D -m0644 ntpd.chkconfig $(DESTDIR)/etc/chkconfig.d/ntpd
 	install -D -m0755 updateservice.init $(DESTDIR)/etc/init.d/updateservice
 	install -D -m0755 cleanup.sh $(DESTDIR)/etc/cron.daily/mirror
+	install -D -m0644 firewall.upsrv $(DESTDIR)/etc/firewall
 
 clean: default-clean
 
