@@ -1,7 +1,13 @@
+#
+# Copyright (c) 2010 rPath, Inc.
+#
+# All rights reserved.
+#
+
+
 from installclass import BaseInstallClass
-from rhpl.translate import *
-from constants import *
-import os
+from rhpl.translate import N_
+from constants import CLEARPART_TYPE_ALL
 import iutil
 
 from autopart import getAutopartitionBoot, autoCreatePartitionRequests
