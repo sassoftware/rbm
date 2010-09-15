@@ -138,7 +138,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.85626212"
      inkscape:cx="533.20988"
-     inkscape:cy="354.51549"
+     inkscape:cy="352.17976"
      inkscape:document-units="px"
      inkscape:current-layer="layer3"
      showgrid="false"
@@ -156,6 +156,34 @@
     <inkscape:grid
        type="xygrid"
        id="grid2909" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="145.98334,329.3384"
+       id="guide2973" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="879.40361,254.59494"
+       id="guide2975" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="620.13721,741.59534"
+       id="guide2977" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="622.47294,693.71281"
+       id="guide2979" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="623.64081,351.52787"
+       id="guide2981" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="279.12014,317.65974"
+       id="guide2983" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="269.7772,298.97387"
+       id="guide2985" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -406,7 +434,7 @@
      style="display:inline"
      transform="translate(0,288)">
     <switch
-       transform="matrix(1.7970593,0,0,1.7970593,127.59748,-86.02262)"
+       transform="matrix(1.7970593,0,0,1.7970593,173.59748,-160.02262)"
        id="switch2914"
        style="filter:url(#filter3203)">
       <foreignObject
