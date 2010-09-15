@@ -15,7 +15,7 @@
 # Allow already-established connections
 -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 # Allow ICMP
--A INPUT -p icmp --icmp-type any -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
 # Allow SSH
 -A INPUT -m tcp -p tcp --dport 22 -j ACCEPT
 # Allow HTTP/S

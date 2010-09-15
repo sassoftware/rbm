@@ -18,6 +18,7 @@ class UpdateServiceAppliance(PackageRecipe):
         'python:devel',
         'python-pgsql:python',
         'rapa:python',
+        'splashy:runtime',
       ]
 
     Flags.ec2 = False

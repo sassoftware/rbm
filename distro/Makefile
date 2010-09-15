@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = anaconda artwork conary-web ec2 httpd postgresql rapa taghandler
+SUBDIRS = anaconda artwork conary-web ec2 httpd postgresql rapa rmake3 taghandler
 
 
 all: default-all

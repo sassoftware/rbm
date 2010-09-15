@@ -1,0 +1,2 @@
+# Don't start until the runtime configuration is in place.
+[ -f /etc/rmake3/node.d/25_runtime.conf ] || exit 0
