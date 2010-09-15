@@ -25,7 +25,7 @@ rasterfy()
 
 # PNGs without transparency (strips out alpha channel)
 rasterfy bootloader_splash.svg bootloader_splash.png 2 -w 640 -h 480
-rasterfy bootloader_splash.svg splashy_background.png 2
+rasterfy splashy_background.svg splashy_background.png 2
 
 # PNGs with transparency
 rasterfy anaconda_splash.svg anaconda_splash.png 6
