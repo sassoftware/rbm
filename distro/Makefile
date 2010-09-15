@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = anaconda conary-web ec2 httpd postgresql rapa taghandler
+SUBDIRS = anaconda artwork conary-web ec2 httpd postgresql rapa taghandler
 
 
 all: default-all
@@ -20,6 +20,10 @@ install: default-install
 		-e 's/-p icmp /-p icmpv6 /g' \
 		-e 's/icmp-host-prohibited/adm-prohibited/g' \
 		firewall > $(DESTDIR)/etc/firewall6
+	# branding
+	install -D -m0644 splashy.xml $(DESTDIR)/usr/share/splashy/themes/upsrv/theme.xml
+	install -D -m0644 FreeSans.ttf $(DESTDIR)/usr/share/splashy/themes/upsrv/FreeSans.ttf
+	install -D -m0644 bootman.conf $(DESTDIR)/etc/bootloader.d/05_upsrv.conf
 
 clean: default-clean
 

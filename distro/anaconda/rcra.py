@@ -4,55 +4,75 @@
 # All rights reserved.
 #
 
+import sys
+sys.path.insert(0, '/usr/lib/anaconda/installclasses')
 
-from installclass import BaseInstallClass
-from rhpl.translate import N_
-from constants import CLEARPART_TYPE_ALL
 import iutil
+import partRequests
+from constants import BL_EXTLINUX
+from fsset import fileSystemTypeGet
+from pykickstart.constants import CLEARPART_TYPE_ALL
+from rhpl.translate import N_
+from rpathapp import InstallClass as BaseInstallClass
 
-from autopart import getAutopartitionBoot, autoCreatePartitionRequests
 
 class InstallClass(BaseInstallClass):
     hidden = 0
-    
+
     id = "rcra"
     name = N_("r_cra")
     pixmap = "rpath-color-graphic-only.png"
-    description = N_("rPath Conary Repository Appliance install type.")
+    description = N_("rPath Update Service install type.")
 
     sortPriority = 100
     showLoginChoice = 1
 
-    def setSteps(self, dispatch):
-        BaseInstallClass.setSteps(self, dispatch);
+    def setSteps(self, anaconda):
+        BaseInstallClass.setSteps(self, anaconda);
+        dispatch = anaconda.dispatch
         dispatch.skipStep("authentication")
-        dispatch.skipStep("bootloader")
+        dispatch.skipStep("bootloader", permanent=1)
         dispatch.skipStep("package-selection")
         dispatch.skipStep("firewall")
         dispatch.skipStep("confirminstall")
+        #dispatch.skipStep("accounts")
+        #dispatch.skipStep("complete")
 
-    def setGroupSelection(self, grpset, intf):
-        BaseInstallClass.__init__(self, grpset)
+    def setInstallData(self, anaconda):
+        BaseInstallClass.setInstallData(self, anaconda)
+        anaconda.id.partitions.autoClearPartType = CLEARPART_TYPE_ALL
+        anaconda.id.bootloader.setBootLoader(BL_EXTLINUX)
 
-        grpset.unselectAll()
-        grpset.selectGroup("everything")
+        #anaconda.id.rootPassword['password'] = ''
+        #anaconda.id.rootPassword['isCrypted'] = True
 
-    def setInstallData(self, id):
-        BaseInstallClass.setInstallData(self, id)
+    def setDefaultPartitioning(self, partitions, clear=CLEARPART_TYPE_ALL,
+            doClear=1):
+        partitions.autoClearPartDrives = None
+        partitions.autoPartitionRequests = requests = []
+        ext3 = fileSystemTypeGet('ext3')
 
-        id.partitions.autoClearPartType = CLEARPART_TYPE_ALL
-        id.partitions.autoClearPartDrives = []
-
-        # (mntpt, fstype, minsize, maxsize, grow, format)
-        autorequests = [ ("/var/log", None, 4096, 4096, 0, 1, 1),
-                         ("/", None, 1, None, 1, 1, 1) ]
-
-        bootreq = getAutopartitionBoot()
-        if bootreq:
-            autorequests.extend(bootreq)
-
-        (minswap, maxswap) = iutil.swapSuggestion()
-        autorequests.append((None, "swap", minswap, maxswap, 1, 1, 1))
-
-        id.partitions.autoPartitionRequests = autoCreatePartitionRequests(autorequests)
-        self.setFirewall(id, ports = ['22:tcp', '80:tcp', '161:tcp', '161:udp', '443:tcp', '8003:tcp'])
+        # /boot - 100 MiB
+        requests.append(partRequests.PartitionSpec(
+            fstype=ext3, size=100, mountpoint='/boot', primary=1, format=1))
+        # LVM
+        requests.append(partRequests.PartitionSpec(
+            fstype=fileSystemTypeGet('physical volume (LVM)'),
+            size=4096, grow=1, format=1, multidrive=1))
+        requests.append(partRequests.VolumeGroupRequestSpec(
+            fstype=fileSystemTypeGet('volume group (LVM)'),
+            vgname='vg00', physvols=[], format=1))
+        # /
+        requests.append(partRequests.LogicalVolumeRequestSpec(
+            fstype=ext3, volgroup='vg00', lvname='root', mountpoint='/',
+            size=4096, format=1, grow=1))
+        # /var/log - 4 GiB
+        requests.append(partRequests.LogicalVolumeRequestSpec(
+            fstype=ext3, volgroup='vg00', lvname='logs', mountpoint='/var/logs',
+            size=4096, format=1))
+        # swap - as recommended
+        minswap, maxswap = iutil.swapSuggestion()
+        requests.append(partRequests.LogicalVolumeRequestSpec(
+            fstype=fileSystemTypeGet('swap'),
+            volgroup='vg00', lvname='swap',
+            size=minswap, maxSizeMB=maxswap, format=1))
