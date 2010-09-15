@@ -105,6 +105,12 @@ class UpdateServiceAppliance(PackageRecipe):
                 '/etc/chkconfig.d/postgresql-updateservice',
                 '/etc/init.d/postgresql-updateservice',
                 '/etc/sysconfig/pgsql/postgresql-updateservice',
+                # rmake
+                '/etc/rmake3/',
+                '/boot/',
+                # branding
+                '/usr/share/splashy/',
+                '/etc/bootloader.d/',
                 )
 
         r.PackageSpec('anaconda-custom-updateservice', '/usr/share/anaconda/')
