@@ -18,7 +18,6 @@ class RusConf(rAASrvPlugin):
     x509_path = '/etc/ssl/certs/localhost.crt'
     pkey_path = '/etc/ssl/private/localhost.key'
     alt_path = '/srv/rbuilder/pki/httpd.pem'
-    outbound_path = '/srv/rbuilder/pki/outbound.pem'
 
     rmake_cfg = '/etc/rmake3/node.d/25_runtime.conf'
     rmake_cred = '/srv/rmake3/worker.ident'
@@ -34,7 +33,6 @@ class RusConf(rAASrvPlugin):
             # Write rpath-repeater certificates
             self._deploy(data['x509_pem'] + data['pkey_pem'], self.alt_path,
                     'root')
-            self._deploy(data['outbound_pem'], self.outbound_path, 'root')
 
             # Configure rmake-node target host for XMPP
             ret.update(self._configureRmake(data))
