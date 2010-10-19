@@ -4,12 +4,11 @@
 # All rights reserved.
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert rusconf
-
-
 all: default-all
 
 install: default-install
+	install -D -m0644 worker.conf $(DESTDIR)/etc/rmake3/node.d/20_rbuilder.conf
+	install -D -m0644 rmake3-node.sysconfig $(DESTDIR)/etc/sysconfig/rmake3-node
 
 clean: default-clean
 

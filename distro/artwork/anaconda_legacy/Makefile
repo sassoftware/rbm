@@ -4,12 +4,14 @@
 # All rights reserved.
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert rusconf
+legacy_files = $(wildcard *.png)
 
 
 all: default-all
 
 install: default-install
+	mkdir -p $(DESTDIR)/usr/share/anaconda/pixmaps
+	install -m0644 $(legacy_files) $(DESTDIR)/usr/share/anaconda/pixmaps/
 
 clean: default-clean
 

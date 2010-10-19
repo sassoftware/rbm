@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2007 rPath, Inc.
+# Copyright (c) 2010 rPath, Inc.
 #
-# All Rights Reserved
+# All rights reserved.
 #
 
-.SILENT:
+#.SILENT:
 
-export PYDIR TOP EC2
+KIDC = $(PYTHON) /usr/bin/kidc
 
 
 ## Default rules
@@ -51,7 +51,7 @@ endif
 kid-build:
 ifdef kid_files
 	printf "%10s    %s\n" KIDC "$(kid_files)"
-	kidc $(kid_files) 2>.kiderror || ( cat .kiderror; exit 1 )
+	$(KIDC) $(kid_files) 2>.kiderror || ( cat .kiderror; exit 1 )
 	rm .kiderror
 endif
 

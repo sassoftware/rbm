@@ -4,7 +4,9 @@
 # All rights reserved.
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert rusconf
+static_files = \
+	__init__.py		\
+	rusconf.py		\
 
 
 all: default-all

@@ -1,0 +1,116 @@
+#
+# Copyright (c) 2008 rPath, Inc.
+# This file is distributed under the terms of the MIT License.
+# A copy is available at http://www.rpath.com/permanent/mit-license.html
+#
+
+class UpdateServiceAppliance(PackageRecipe):
+    name = 'updateservice'
+    version = '5.2.0'
+
+    buildRequires = [
+        'chkconfig:runtime',
+        'conary-repository:python',
+        'kid:python',
+        'kid:runtime',
+        'make:runtime',
+        'mod_python:python',
+        'python:devel',
+        'python-pgsql:python',
+        'rapa:python',
+        'splashy:runtime',
+      ]
+
+    Flags.ec2 = False
+
+    def setup(r):
+        r.macros.disc1 = '/usr/lib/media-template/disc1'
+        r.macros.product = 'rPath Appliance Platform Update Service'
+        r.macros.shortVersion = r.macros.version.strip('.')
+
+        r.addMercurialSnapshot()
+
+        r.Make('libdir=%(libdir)s')
+        r.MakeInstall(Flags.ec2 and 'EC2=1' or '')
+
+        # Repository log and config files
+        r.Transient('/srv/conary/repository.cnr')
+        r.Create('/srv/conary/logs/repository.log')
+        r.InitialContents('/srv/conary/logs/repository.log')
+        r.Create('/srv/conary/config/99_custom.cnr')
+        r.InitialContents('/srv/conary/config/99_custom.cnr')
+
+        # Directories
+        r.MakeDirs('/srv/conary/tmp',
+                   '/srv/conary/contents',
+                   '/srv/conary/cscache')
+        r.ExcludeDirectories(exceptions='/srv/conary')
+        r.ExcludeDirectories(exceptions='/srv/conary/contents')
+        r.ExcludeDirectories(exceptions='/srv/conary/tmp')
+        r.ExcludeDirectories(exceptions='/srv/conary/logs')
+        r.ExcludeDirectories(exceptions='/srv/conary/cscache')
+        r.Ownership('apache', 'apache', '/srv/conary',
+                    '/srv/conary/.*', '/srv/conary/logs/.*')
+
+        r.CompilePython('%(libdir)s/raa')
+        r.CompilePython('%(libdir)s/python%(pyver)s/site-packages')
+
+        # De-flavor pure python files
+        r.Flavor(exceptions='%(libdir)s/(raa|python2.4)/')
+        r.Flavor(exceptions='(/srv/conary|/usr)/bin/')
+        r.Flavor(exceptions='/etc/raa/backup.d/')
+
+        # Strip source files
+        r.RemoveNonPackageFiles('%(libdir)s/(raa|python2.4/site-packages)/.*\.py')
+
+        # Postgres initscript (a symlink)
+        r.Requires('postgresql-server:runtime', '%(initdir)s/postgresql-updateservice')
+        r.DanglingSymlinks(exceptions='%(initdir)s/postgresql-updateservice')
+        r.NormalizeInitscriptContents(exceptions='%(initdir)s/postgresql-updateservice') # CNP-129
+
+        # Migration post-script dependencies
+        migrate_scripts = '/srv/conary/bin/migrate-*.'
+        r.Requires('bash:runtime', migrate_scripts)
+        r.Requires('coreutils:runtime', migrate_scripts)
+        r.Requires('httpd:runtime', migrate_scripts)
+        r.Requires('initscripts:runtime', migrate_scripts)
+        r.Requires('psmisc:runtime', migrate_scripts)
+        r.Requires('sysvinit:runtime', migrate_scripts)
+
+        # Other requirements
+        r.Requires('mod_ssl:runtime', '%(sysconfdir)s/httpd/conf.d/conary.conf')
+        r.Requires('mod_python:python', '%(sysconfdir)s/httpd/conf.d/conary.conf')
+        r.Requires('mod_python:runtime', '%(sysconfdir)s/httpd/conf.d/conary.conf')
+        r.Requires('conary-repository:python', '%(sysconfdir)s/httpd/conf.d/conary.conf')
+
+        r.Requires('tmpwatch:runtime', '%(sysconfdir)s/cron.daily/mirror')
+        r.Requires('logrotate:runtime', '%(sysconfdir)s/cron.daily/mirror')
+        r.Requires('chkconfig:runtime', '%(sysconfdir)s/chkconfig.d/httpd')
+
+        # Appliance-specific components
+        r.PackageSpec('%(name)s-appliance',
+                '/etc/firewall6?',
+                # rAPA
+                '%(libdir)s/raa/',
+                '/etc/raa/',
+                # chkconfig
+                '/etc/chkconfig.d/ntpd',
+                # rc generator
+                '%(sysconfdir)s/httpd/conf.d/updateservice.conf',
+                '%(libdir)s/python2.4/site-packages/rbm_rc\..*',
+                # PostgreSQL configuration
+                '/etc/cron.d/postgres',
+                '/etc/postgresql.conf.updateservice',
+                '/etc/chkconfig.d/postgresql',
+                '/etc/chkconfig.d/postgresql-updateservice',
+                '/etc/init.d/postgresql-updateservice',
+                '/etc/sysconfig/pgsql/postgresql-updateservice',
+                # rmake
+                '/etc/rmake3/',
+                '/boot/',
+                # branding
+                '/usr/share/splashy/',
+                '/etc/bootloader.d/',
+                )
+
+        r.PackageSpec('anaconda-custom-updateservice', '/usr/share/anaconda/')
