@@ -4,7 +4,7 @@
 # All Rights Reserved
 #
 
-SUBDIRS = ec2 httpd postgresql rapa taghandler
+SUBDIRS = anaconda artwork ec2 httpd postgresql rapa taghandler
 
 
 all: default-all
