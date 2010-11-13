@@ -9,8 +9,6 @@
 
 tmpDir /srv/conary/tmp
 
-repositoryDB sqlite /srv/conary/sqldb
-
 changesetCacheDir /srv/conary/cscache
 
 contentsDir /srv/conary/contents
