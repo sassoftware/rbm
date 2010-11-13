@@ -14,7 +14,7 @@ install: default-install
 	install -D -m0644 postgresql.chkconfig $(DESTDIR)/etc/chkconfig.d/postgresql
 	# Turn on postgresql-updateservice
 	mkdir -p $(DESTDIR)/etc/init.d
-	ln -sf /opt/postgresql-8.4/etc/init.d/postgresql $(DESTDIR)/etc/init.d/postgresql-updateservice
+	ln -sf /opt/postgresql-9.0/etc/init.d/postgresql $(DESTDIR)/etc/init.d/postgresql-updateservice
 	install -D -m0644 postgresql-updateservice.chkconfig $(DESTDIR)/etc/chkconfig.d/postgresql-updateservice
 	install -D -m0644 postgresql-updateservice.sysconfig $(DESTDIR)/etc/sysconfig/pgsql/postgresql-updateservice
 	# Configure for EC2 if necessary

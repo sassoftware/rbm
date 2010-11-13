@@ -12,7 +12,7 @@ start)
     mkdir "$base"
     mount /dev/sda2 "$base"
 
-    pgsql_old=/srv/pgsql/8.4-updateservice
+    pgsql_old=/srv/pgsql/9.0-updateservice
     [ -d "$pgsql_old" ] && mv "$pgsql_old" "$base/pgsql-updateservice"
     ln -sfn "$base/pgsql-updateservice" "$pgsql_old"
 
