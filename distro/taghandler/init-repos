@@ -1,0 +1,58 @@
+#!/bin/bash
+# 
+# Copyright (c) 2010 rPath, Inc
+# All rights reserved
+
+pgsql_service=postgresql-updateservice
+
+. /etc/sysconfig/pgsql/$pgsql_service
+export PGDATA PGPORT
+
+function waitForPg()
+{
+  echo "Waiting for postgres startup to complete"
+  ready="false"
+  retries=4
+  while [ "$ready" == "false" ]
+  do
+    psql -U postgres -l >/dev/null
+    rc=$?
+    if [ "$rc" -eq 0 ]
+    then
+      ready="true"
+    elif [[ "$rc" -eq 2 && "$retries" -ne 0 ]]
+    then
+      retries=$(( $retries - 1 ))
+      sleep 4
+    else
+      echo "Failed waiting for Postgres"
+      exit 1
+    fi
+  done
+}
+
+function createPgDb()
+{
+  createlang -U postgres plpgsql template1
+  if [ "$?" -ne 0 -a  "$?" -ne 2 ]
+  then
+    echo "Failed enabling plpgsql"
+    exit 1
+  fi
+  psql -U postgres -d postgres -c "CREATE ROLE updateservice NOSUPERUSER CREATEDB NOCREATEROLE INHERIT LOGIN;"
+  if [ "$?" -ne 0 -a  "$?" -ne 1 ]
+  then
+    echo "Failed creating the updateservice role"
+    exit 1
+  fi
+  psql -U updateservice -d postgres -c "CREATE DATABASE updateservice ENCODING 'UTF8';"
+  if [ "$?" -ne 0  -a  "$?" -ne 1 ]
+  then
+    echo "Failed creating the postgres database"
+    exit 1
+  fi
+}
+
+waitForPg
+createPgDb
+/usr/bin/upsrv_schema.py

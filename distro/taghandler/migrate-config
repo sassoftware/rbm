@@ -4,18 +4,6 @@
 # All Rights Reserved
 #
 
-OLD_GENERATED_FILE=/srv/conary/repository-generated.cnr
-NEW_GENERATED_FILE=/srv/conary/config/00_generated.cnr
-
-OLD_CUSTOM_FILE=/srv/conary/repository-custom.cnr
-NEW_CUSTOM_FILE=/srv/conary/config/99_custom.cnr
-
-# We don't use generated Conary Configs anymore, so delete them all
-for x in $OLD_GENERATED_FILE $NEW_GENERATED_FILE; do
-    [ -f $x ] && rm -f $x
-done
-
-# Move the original custom file to the new custom file location
-[ -f $OLD_CUSTOM_FILE ] && mv $OLD_CUSTOM_FILE $NEW_CUSTOM_FILE
-
+# Reducing this to a stub.  There's nobody using a pre-4.1
+# rUS that would make the old code necessary.
 exit 0

@@ -19,8 +19,19 @@ def handler(req):
     if req.method.upper() != 'GET':
         return apache.HTTP_BAD_REQUEST
 
+    req.content_type = 'text/plain'
+
     cfg = netserver.ServerConfig()
     cfg.read('/srv/conary/repository.cnr')
+
+    # Lack of a repository indicates proxy mode (RBM-273)
+    if cfg.repositoryDB == None:
+        # XXX - Should conary be in the path here or not?
+        req.write('conaryProxy http http://%s/conary/\n' % req.hostname)
+        req.write('conaryProxy https https://%s/conary/\n' % req.hostname)
+        return apache.OK
+
+    # Otherwise, we're in mirror mode
     db = dbstore.connect(cfg.repositoryDB[1], driver = cfg.repositoryDB[0])
     cu = db.cursor()
     cu.execute("""SELECT LABEL FROM Labels WHERE EXISTS
@@ -35,8 +46,6 @@ def handler(req):
             continue
         name = label.split('@', 1)[0]
         serverNames.add(name)
-
-    req.content_type = 'text/plain'
 
     for name in serverNames:
         req.write('repositoryMap %s https://%s/conary/\n' % (name, req.hostname))

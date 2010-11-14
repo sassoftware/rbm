@@ -7,7 +7,7 @@
 all: default-all
 
 install: default-install
-	install -D -m0755 migrate-conaryrc $(DESTDIR)/srv/conary/bin/migrate-conaryrc
+	install -D -m0755 init-repos $(DESTDIR)/srv/conary/bin/init-repos
 	install -D -m0755 migrate-config $(DESTDIR)/srv/conary/bin/migrate-config
 	install -D -m0755 migrate-repos $(DESTDIR)/srv/conary/bin/migrate-repos
 

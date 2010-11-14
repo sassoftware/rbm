@@ -6,7 +6,7 @@
 
 class UpdateServiceAppliance(PackageRecipe):
     name = 'updateservice'
-    version = '5.2.0'
+    version = '5.8.0'
 
     buildRequires = [
         'chkconfig:runtime',
@@ -56,12 +56,13 @@ class UpdateServiceAppliance(PackageRecipe):
         r.CompilePython('%(libdir)s/python%(pyver)s/site-packages')
 
         # De-flavor pure python files
-        r.Flavor(exceptions='%(libdir)s/(raa|python2.4)/')
+        r.Flavor(exceptions='%(libdir)s/(raa|python%(pyver)s)/')
         r.Flavor(exceptions='(/srv/conary|/usr)/bin/')
         r.Flavor(exceptions='/etc/raa/backup.d/')
 
         # Strip source files
-        r.RemoveNonPackageFiles('%(libdir)s/(raa|python2.4/site-packages)/.*\.py')
+        r.PackageSpec('%(name)s-sources',
+                      '%(libdir)s/(raa|python%(pyver)s/site-packages)/.*\.py')
 
         # Postgres initscript (a symlink)
         r.Requires('postgresql-server:runtime', '%(initdir)s/postgresql-updateservice')
@@ -69,13 +70,8 @@ class UpdateServiceAppliance(PackageRecipe):
         r.NormalizeInitscriptContents(exceptions='%(initdir)s/postgresql-updateservice') # CNP-129
 
         # Migration post-script dependencies
-        migrate_scripts = '/srv/conary/bin/migrate-*.'
+        migrate_scripts = '/srv/conary/bin/.*'
         r.Requires('bash:runtime', migrate_scripts)
-        r.Requires('coreutils:runtime', migrate_scripts)
-        r.Requires('httpd:runtime', migrate_scripts)
-        r.Requires('initscripts:runtime', migrate_scripts)
-        r.Requires('psmisc:runtime', migrate_scripts)
-        r.Requires('sysvinit:runtime', migrate_scripts)
 
         # Other requirements
         r.Requires('mod_ssl:runtime', '%(sysconfdir)s/httpd/conf.d/conary.conf')
@@ -97,7 +93,7 @@ class UpdateServiceAppliance(PackageRecipe):
                 '/etc/chkconfig.d/ntpd',
                 # rc generator
                 '%(sysconfdir)s/httpd/conf.d/updateservice.conf',
-                '%(libdir)s/python2.4/site-packages/rbm_rc\..*',
+                '%(libdir)s/python%(pyver)s/site-packages/rbm_rc\..*',
                 # PostgreSQL configuration
                 '/etc/cron.d/postgres',
                 '/etc/postgresql.conf.updateservice',

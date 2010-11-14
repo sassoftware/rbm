@@ -1,10 +1,12 @@
 #
-# Copyright (c) 2010 rPath, Inc.
+# Copyright (c) 2008 rPath, Inc.
 #
-# All rights reserved.
+# All Rights Reserved
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert rusconf rusmode
+static_files = \
+	__init__.py		\
+	rusmode.py
 
 
 all: default-all
