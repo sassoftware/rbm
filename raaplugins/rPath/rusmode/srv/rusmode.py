@@ -3,13 +3,10 @@
 # All rights reserved.
 #
 
-import random
 from raa.modules.raasrvplugin import rAASrvPlugin
-
 from conary.lib import util as cny_util
 import os
 import subprocess
-import sys
 import pwd
 import logging
 log = logging.getLogger("rPath.reaentitlement")
