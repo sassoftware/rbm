@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = srv web
+SUBDIRS = srv web templates
 
 static_files = __init__.py
 

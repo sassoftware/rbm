@@ -48,6 +48,13 @@ class RUSMode(rAASrvPlugin):
                             ' postgresql-updateservice')
             return {'message': 'successfully configured proxy mode'}
         elif mode == "mirror":
+            retcode = subprocess.call(['/sbin/chkconfig',
+                                       'postgresql-updateservice', 'on'])
+
+            # XXX - check errors here
+            retcode = subprocess.call(['/sbin/service',
+                                       'postgresql-updateservice', 'start'])
+
             # Initialize the database -- do this in a shell script,
             # because most of the code was already there...
             retcode = subprocess.call(['/srv/conary/bin/init-repos' ])
