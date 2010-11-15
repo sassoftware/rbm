@@ -21,17 +21,29 @@ from raa.web import makeUrl
 
     rbaHostname.disabled = (proxymode == true) ? false : true;
   }
+
+  function postFormRedirectOnSuccess(form, url) {
+    var d = postFormData(form, url);
+    d = d.addCallback(callbackCheckError);
+    if(${raaInWizard and "true" or "false"}) {
+      d = d.addCallback(createCallbackRedirect("${makeUrl('/')}"));
+    } else {
+      d = d.addCallback(callbackMessageReload);
+    }
+    d = d.addErrback(callbackErrorGeneric);
+  }
+
   </script>
 </head>
 
 <body>
     <div class="plugin-page" id="plugin-page">
-      <form name="page_form" action="javascript:void(0);" method="POST" onsubmit="javascript:postFormWizardRedirectOnSuccess(this, 'setMode');">
+      <form name="page_form" action="javascript:void(0);" method="POST" onsubmit="javascript:postFormRedirectOnSuccess(this, 'setMode');">
       <div class="page-content"> 
         <div py:strip="True" class="page-content-section">
           <div class="form-line-top">Please choose which mode of operation this rPath Update Service should use</div>
           <div class="form-line">
-            <input type="radio" name="mode" id="_mode_mirror" py:attrs="(mode == 'mirror') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="mirror" /><label for="mode"><b>Mirror Mode</b>should be used when ....</label>
+            <input type="radio" name="mode" id="_mode_mirror" py:attrs="(mode == 'mirror') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="mirror" /><label for="mode"><b>Mirror Mode</b> should be used when ....</label>
           </div>
           <div class="form-line">
             <input type="radio" name="mode" id="_mode_proxy" py:attrs="(mode == 'proxy') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="proxy" /><label for="mode"><b>Proxy Mode</b> should be used when ....</label>

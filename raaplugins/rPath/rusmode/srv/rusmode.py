@@ -46,7 +46,7 @@ class RUSMode(rAASrvPlugin):
             if retcode != 0:
                 log.warning('chkconfig failed to disable'
                             ' postgresql-updateservice')
-            return {'message': 'successfully configured proxy mode'}
+            return {'message': 'successfully configured proxy mode.\n\n'}
         elif mode == "mirror":
             retcode = subprocess.call(['/sbin/chkconfig',
                                        'postgresql-updateservice', 'on'])
@@ -71,6 +71,6 @@ class RUSMode(rAASrvPlugin):
             # Restart the webserver to apply the change
             retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
             
-            return {'message': 'successfully configured mirror mode'}
+            return {'message': 'successfully configured mirror mode.\n\n'}
         else:
             return {'errors': [ 'not a valid mode: %s' % mode ]}
