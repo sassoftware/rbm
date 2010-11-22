@@ -41,12 +41,12 @@ from raa.web import makeUrl
       <form name="page_form" action="javascript:void(0);" method="POST" onsubmit="javascript:postFormRedirectOnSuccess(this, 'setMode');">
       <div class="page-content"> 
         <div py:strip="True" class="page-content-section">
-          <div class="form-line-top">Please choose which mode of operation this rPath Update Service should use</div>
+          <div class="form-line-top">This rPath Update Service should:</div>
           <div class="form-line">
-            <input type="radio" name="mode" id="_mode_mirror" py:attrs="(mode == 'mirror') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="mirror" /><label for="mode"><b>Mirror Mode</b> should be used when ....</label>
+            <input type="radio" name="mode" id="_mode_mirror" py:attrs="(mode == 'mirror') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="mirror" /><label for="mode">Maintain a permanent copy of all packages sent to it from rBuilder (Mirror Mode)</label>
           </div>
           <div class="form-line">
-            <input type="radio" name="mode" id="_mode_proxy" py:attrs="(mode == 'proxy') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="proxy" /><label for="mode"><b>Proxy Mode</b> should be used when ....</label>
+            <input type="radio" name="mode" id="_mode_proxy" py:attrs="(mode == 'proxy') and {'checked': 'checked'} or {}" onclick="javascript:configureRBAHostname();" value="proxy" /><label for="mode">Temporarily cache requested packages from rBuilder (Proxy Mode)</label>
           </div>
           <div class="form-line">
             <div class="host-label-div">rBuilder Hostname (for proxy mode):</div><input type="text" id="rbaHostname" name="rbaHostname" value="${rbaHostname}" py:attrs="{'disabled': (mode == 'mirror') and 'disabled' or None}" />
