@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement repoconvert rusconf rusmode
+SUBDIRS = mirrorusers nasmount reaentitlement rusconf rusmode
 
 
 all: default-all
