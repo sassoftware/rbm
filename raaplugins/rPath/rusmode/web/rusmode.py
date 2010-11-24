@@ -45,6 +45,12 @@ class RUSMode(rAAWebPlugin):
             result = self.callBackend('setMode', mode, rbaHostname)
             if not result.has_key('errors'):
                 self.wizardDone()
+            if mode == "proxy":
+                self.plugins['/reaentitlement/rEAEntitlement'].setPropertyValue('raa.hidden', True, data.RDT_BOOL)
+                self.plugins['/mirrorusers/MirrorUsers'].setPropertyValue('raa.hidden', True, data.RDT_BOOL)
+            else:
+                self.plugins['/reaentitlement/rEAEntitlement'].setPropertyValue('raa.hidden', False, data.RDT_BOOL)
+                self.plugins['/mirrorusers/MirrorUsers'].setPropertyValue('raa.hidden', False, data.RDT_BOOL)
             return result
         except Exception, e:
             log.error(traceback.format_exc(sys.exc_info()[2]))
