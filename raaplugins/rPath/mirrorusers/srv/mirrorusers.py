@@ -14,11 +14,15 @@ class MirrorUsers(rAASrvPlugin):
     def _getNetworkRepo(self):
         cfg = ServerConfig()
         cfg.read(self.cnrPath)
+        if not cfg.repositoryDB:
+            return None
         nr = NetworkRepositoryServer(cfg, 'localhost')
         return nr
 
     def getUserList(self, schedId, execId):
         nr = self._getNetworkRepo()
+        if nr is None:
+            return []
         users =  nr.auth.userAuth.getUserList()
         ret = []
         for usr in users:
@@ -49,6 +53,8 @@ class MirrorUsers(rAASrvPlugin):
     
     def addUser(self, schedId, execId, user, password, permission):
         nr = self._getNetworkRepo()
+        if nr is None:
+            return False
         if permission == 'Mirror':
             write = True
             mirror = True
@@ -91,6 +97,8 @@ class MirrorUsers(rAASrvPlugin):
 
     def deleteUser(self, schedId, execId, user):
         nr = self._getNetworkRepo()
+        if nr is None:
+            return False
         try:
             nr.auth.deleteUserByName(user)
         except:

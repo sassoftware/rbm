@@ -119,7 +119,9 @@ class MirrorUsers(rAAWebPlugin):
     def addRandomUser(self, user):
         passwd = self._genString()
         try:
-            self._addUser(user, passwd, 'Mirror')
+            if not self._addUser(user, passwd, 'Mirror'):
+                # Proxy mode
+                return ''
             return passwd
         except errors.UserAlreadyExists:
             # drop down to common case - this happens when
