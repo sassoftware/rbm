@@ -4,6 +4,7 @@
 import sys
 import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
+from raa.db import data
 
 from gettext import gettext as _
 from conary.repository.netrepos.netserver import ServerConfig
