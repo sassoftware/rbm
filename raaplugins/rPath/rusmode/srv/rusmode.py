@@ -35,31 +35,13 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "conaryProxy https https://%s" % rbaHostname
             fobj.commit()
 
-            # Restart apache and shutdown/disable postgresql
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
-            retcode = subprocess.call(['/sbin/service',
-                                       'postgresql-updateservice', 'stop'])
-            # Should we warn on non-zero status here?  It may not
-            # have even been running.
-            retcode = subprocess.call(['/sbin/chkconfig', 
-                                       'postgresql-updateservice', 'off'])
+            # Restart apache
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'graceful'])
             if retcode != 0:
-                log.warning('chkconfig failed to disable'
-                            ' postgresql-updateservice')
+                log.warning("Failed to restart httpd")
             return {'message': 'successfully configured proxy mode.\n\n'}
+
         elif mode == "mirror":
-            retcode = subprocess.call(['/sbin/chkconfig',
-                                       'postgresql-updateservice', 'on'])
-
-            # XXX - check errors here
-            retcode = subprocess.call(['/sbin/service',
-                                       'postgresql-updateservice', 'start'])
-
-            # Initialize the database -- do this in a shell script,
-            # because most of the code was already there...
-            retcode = subprocess.call(['/srv/conary/bin/init-repos' ])
-            # XXX - check errors here
-
             # Write the new webserver config
             fobj = cny_util.AtomicFile(self.cfgFile)
             print >> fobj, "# Do not modify this file! Make a higher-numbered one"
@@ -68,9 +50,16 @@ class RUSMode(rAASrvPlugin):
                 "postgresql updateservice@localhost.localdomain:5439/updateservice"
             fobj.commit()
 
+            # Initialize the database -- do this in a shell script,
+            # because most of the code was already there...
+            retcode = subprocess.call(['/srv/conary/bin/init-repos' ])
+            if retcode != 0:
+                log.error("Failed to initialize repository schema.")
+                return {'errors': ["Failed to initialize repository schema."]}
+
             # Restart the webserver to apply the change
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
-            
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'graceful'])
+
             return {'message': 'successfully configured mirror mode.\n\n'}
         else:
             return {'errors': [ 'not a valid mode: %s' % mode ]}
