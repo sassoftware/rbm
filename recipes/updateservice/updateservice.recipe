@@ -6,7 +6,7 @@
 
 class UpdateServiceAppliance(PackageRecipe):
     name = 'updateservice'
-    version = '5.8.0'
+    version = '5.8.2'
 
     buildRequires = [
         'chkconfig:runtime',
