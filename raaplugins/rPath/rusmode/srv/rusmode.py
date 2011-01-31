@@ -33,8 +33,8 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "proxyContentsDir %s" % self.proxyDir
             print >> fobj, "conaryProxy http http://%s" % rbaHostname
             print >> fobj, "conaryProxy https https://%s" % rbaHostname
-            print >> fobj, "memCached localhost:11211"
-            print >> fobj, "memCachedTimeout 600"
+            print >> fobj, "memCache localhost:11211"
+            print >> fobj, "memCacheTimeout 600"
 
             fobj.commit()
 
