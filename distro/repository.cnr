@@ -21,4 +21,7 @@ serverName *
 
 baseUri /conary
 
+memCache localhost:11211
+memCacheTimeout 3600
+
 includeConfigFile /srv/conary/config/*.cnr
