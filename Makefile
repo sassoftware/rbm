@@ -8,7 +8,7 @@ SUBDIRS = distro src raaplugins
 
 
 export TOP = $(shell pwd)
-export VERSION = 6.1.0
+export VERSION = 6.2.0
 
 # Callers should change PYTHON to the desired python binary.
 export PYTHON = /usr/bin/python
