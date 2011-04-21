@@ -68,7 +68,7 @@ class InstallClass(BaseInstallClass):
             size=4096, format=1, grow=1))
         # /var/log - 4 GiB
         requests.append(partRequests.LogicalVolumeRequestSpec(
-            fstype=ext3, volgroup='vg00', lvname='logs', mountpoint='/var/logs',
+            fstype=ext3, volgroup='vg00', lvname='logs', mountpoint='/var/log',
             size=4096, format=1))
         # swap - as recommended
         minswap, maxswap = iutil.swapSuggestion()
