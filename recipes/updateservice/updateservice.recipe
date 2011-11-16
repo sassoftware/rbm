@@ -26,11 +26,12 @@ class UpdateServiceAppliance(PackageRecipe):
     def setup(r):
         r.macros.disc1 = '/usr/lib/media-template/disc1'
         r.macros.product = 'rPath Appliance Platform Update Service'
-        r.macros.shortVersion = r.macros.version.strip('.')
+        if not r.macros.get('shortVersion'):
+            r.macros.shortVersion = r.version
 
         r.addMercurialSnapshot()
 
-        r.Make('libdir=%(libdir)s')
+        r.Make('libdir=%(libdir)s VERSION=%(shortVersion)s')
         r.MakeInstall(Flags.ec2 and 'EC2=1' or '')
 
         # Repository log and config files
