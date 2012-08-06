@@ -23,6 +23,7 @@ install: default-install
 	install -D -m0644 splashy.xml $(DESTDIR)/usr/share/splashy/themes/upsrv/theme.xml
 	install -D -m0644 FreeSans.ttf $(DESTDIR)/usr/share/splashy/themes/upsrv/FreeSans.ttf
 	install -D -m0644 bootman.conf $(DESTDIR)/etc/bootloader.d/05_upsrv.conf
+	install -D -m0644 conary.logrotate $(DESTDIR)/etc/logrotate.d/conary-repository
 
 clean: default-clean
 
