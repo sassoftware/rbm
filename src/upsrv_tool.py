@@ -32,21 +32,21 @@ class UpsrvTool(object):
         nr = self._getRepos()
         if not nr:
             return []
-        users = self.netRepos.auth.userAuth.getUserList()
+        users = nr.auth.userAuth.getUserList()
         ret = []
         for usr in users:
             perm = 'Other'
-            roles = self.netRepos.auth.userAuth.getRolesByUser(usr)
+            roles = nr.auth.userAuth.getRolesByUser(usr)
             if len(roles) == 1:
                 role = roles[0]
-                for roleperm in self.netRepos.auth.iterPermsByRole(role):
+                for roleperm in nr.auth.iterPermsByRole(role):
                     # admin user
-                    if self.netRepos.auth.roleIsAdmin(role) and \
+                    if nr.auth.roleIsAdmin(role) and \
                             roleperm == ('ALL', 'ALL', 1, 0):
                         perm = 'Admin'
                         break
                     # mirror user
-                    elif self.netRepos.auth.roleCanMirror(role) and \
+                    elif nr.auth.roleCanMirror(role) and \
                             roleperm == ('ALL', 'ALL', 1, 1):
                         perm = 'Mirroring'
                         break
@@ -63,7 +63,7 @@ class UpsrvTool(object):
     def addUser(self, user, password, permission):
         nr = self._getRepos()
         if not nr:
-            return False
+            return dict(error='ProxyMode')
         if permission == 'Mirror':
             write = True
             mirror = True
@@ -83,35 +83,44 @@ class UpsrvTool(object):
         # First create a role for the desired permission
         role = permission.lower()
         try:
-            self.netRepos.auth.addRole(role)
-            self.netRepos.auth.addAcl(role, None, None, write=write, remove=remove)
-            self.netRepos.auth.setAdmin(role, admin)
-            self.netRepos.auth.setMirror(role, mirror)
+            nr.auth.addRole(role)
+            nr.auth.addAcl(role, None, None, write=write, remove=remove)
+            nr.auth.setAdmin(role, admin)
+            nr.auth.setMirror(role, mirror)
         except errors.RoleAlreadyExists:
             # Not an error, but roll back the DB anyway
-            self.netRepos.db.rollback()
+            nr.db.rollback()
+        except errors.InvalidName:
+            nr.db.rollback()
+            return dict(error='InvalidName')
         except:
-            self.netRepos.db.rollback()
+            nr.db.rollback()
             raise
 
         # Now (maybe) create the user and add them to the role
         try:
-            self.netRepos.auth.addUser(user, password)
-            self.netRepos.auth.addRoleMember(role, user)
+            nr.auth.addUser(user, password)
+            nr.auth.addRoleMember(role, user)
+        except errors.UserAlreadyExists:
+            nr.db.rollback()
+            return dict(error='UserAlreadyExists')
+        except errors.InvalidName:
+            nr.db.rollback()
+            return dict(error='InvalidName')
         except:
-            self.netRepos.db.rollback()
+            nr.db.rollback()
             raise
 
-        return True
+        return {}
 
     def deleteUser(self, user):
         nr = self._getRepos()
         if not nr:
             return False
         try:
-            self.netRepos.auth.deleteUserByName(user)
+            nr.auth.deleteUserByName(user)
         except:
-            self.netRepos.db.rollback()
+            nr.db.rollback()
             raise
 
         return True
@@ -121,9 +130,9 @@ class UpsrvTool(object):
         if not nr:
             return dict(errors=["Password change failed"])
         try:
-            self.netRepos.auth.changePassword(user, newPass)
+            nr.auth.changePassword(user, newPass)
         except Exception, e:
-            self.netRepos.db.rollback()
+            nr.db.rollback()
             return dict(errors=["Password change failed: %s" % str(e)])
 
         return dict(message="Password changed for %s" % user)

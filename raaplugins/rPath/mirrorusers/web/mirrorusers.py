@@ -1,14 +1,14 @@
-# Copyright (c) 2006-2008 rPath, Inc
-# All rights reserved
+#
+# Copyright (c) rPath, Inc
+#
 
 import random
-
-from conary.repository import errors
 
 import raa.web
 from raa.modules.raawebplugin import rAAWebPlugin
 import raa.authorization
 from gettext import gettext as _
+
 
 class MirrorUsers(rAAWebPlugin):
     '''
@@ -58,19 +58,19 @@ class MirrorUsers(rAAWebPlugin):
             errorMessage = 'The user name "anonymous" is reserved.  Please choose a different user name.'
             errorState = True
         else:
-            try:
-                self._addUser(username, passwd1, perm)
+            result = self._addUser(username, passwd1, perm)
+            if 'error' in result:
+                errorState = True
+                if result['error'] == 'UserAlreadyExists':
+                    errorMessage = ('User "%s" already exists.  Please choose '
+                        'a different user name.' % username)
+                elif result['error'] == 'InvalidName':
+                    errorMessage = ('The user name "%s" is invalid.  Please '
+                        'choose a different user name.' % username)
+                else:
+                    errorMessage = result['error']
+            else:
                 errorState = False
-            except errors.UserAlreadyExists:
-                errorMessage = ('User "%s" already exists.  Please choose '
-                    'a different user name.' % username)
-                errorState = True
-            except errors.InvalidName:
-                errorMessage = ('The user name "%s" is invalid.  Please '
-                    'choose a different user name.' % username)
-                errorState = True
-
-            if not errorState:
                 returnMessage = 'User "%s" added with %s permission.' % \
                          (username, perm)
 
@@ -119,21 +119,20 @@ class MirrorUsers(rAAWebPlugin):
     def addRandomUser(self, user):
         passwd = self._genString()
         try:
-            if not self._addUser(user, passwd, 'Mirror'):
-                # Proxy mode
-                return ''
+            result = self._addUser(user, passwd, 'Mirror')
+            error = result.get('error')
+            if error != 'UserAlreadyExists':
+                raise RuntimeError(error)
             return passwd
-        except errors.UserAlreadyExists:
-            # drop down to common case - this happens when
-            # in the testsuite it seems
-            pass
         except Exception, e:
             if 'UserAlreadyExists' not in str(e):
                 raise
         # User exists, but the password is gone, so just delete it
         # and recreate (and return the new password as usual).
         self._deleteUser(user)
-        self._addUser(user, passwd, 'Mirror')
+        result = self._addUser(user, passwd, 'Mirror')
+        if 'error' in result:
+            raise RuntimeError(result['error'])
         return passwd
 
     @raa.web.expose(allow_xmlrpc=True)
