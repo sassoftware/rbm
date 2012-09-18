@@ -25,7 +25,7 @@ class UpdateServiceAppliance(PackageRecipe):
 
         r.addMercurialSnapshot()
 
-        r.Make('libdir=%(libdir)s VERSION=%(shortVersion)s')
+        r.Make('VERSION=%(shortVersion)s')
         r.MakeInstall(Flags.ec2 and 'EC2=1' or '')
 
         # Repository log and config files

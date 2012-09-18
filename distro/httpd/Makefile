@@ -7,7 +7,6 @@
 all: default-all
 
 install: default-install
-	install -D -m0644 httpd.chkconfig $(DESTDIR)/etc/chkconfig.d/httpd
 	install -D -m0644 conary.conf $(DESTDIR)/etc/httpd/conf.d/conary.conf
 	install -D -m0644 updateservice.conf $(DESTDIR)/etc/httpd/conf.d/updateservice.conf
 

@@ -48,7 +48,7 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "# Do not modify this file! Make a higher-numbered one"
             print >> fobj, "# and place your customizations there instead."
             print >> fobj, "repositoryDB    ", \
-                "postgresql updateservice@localhost.localdomain:5439/updateservice"
+                "psycopg2 updateservice@localhost.localdomain:5439/updateservice"
             fobj.commit()
 
             # Initialize the database -- do this in a shell script,
