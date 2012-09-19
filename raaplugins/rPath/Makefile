@@ -4,7 +4,7 @@
 # All rights reserved.
 #
 
-SUBDIRS = mirrorusers nasmount reaentitlement rusconf rusmode
+SUBDIRS = mirrorusers nasmount rusconf rusmode
 
 
 all: default-all

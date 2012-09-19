@@ -9,7 +9,7 @@ import os
 import subprocess
 import pwd
 import logging
-log = logging.getLogger("rPath.reaentitlement")
+log = logging.getLogger("rPath.rusmode")
 
 class RUSMode(rAASrvPlugin):
     """
