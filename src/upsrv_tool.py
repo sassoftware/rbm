@@ -125,7 +125,7 @@ class UpsrvTool(object):
 
         return True
 
-    def changePassword(self, schedId, execId, user, newPass):
+    def changePassword(self, user, newPass):
         nr = self._getRepos()
         if not nr:
             return dict(errors=["Password change failed"])

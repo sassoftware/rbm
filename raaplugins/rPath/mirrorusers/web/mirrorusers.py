@@ -118,15 +118,12 @@ class MirrorUsers(rAAWebPlugin):
     @raa.web.require(raa.authorization.PermissionPresent('mirror'))
     def addRandomUser(self, user):
         passwd = self._genString()
-        try:
-            result = self._addUser(user, passwd, 'Mirror')
-            error = result.get('error')
-            if error != 'UserAlreadyExists':
-                raise RuntimeError(error)
+        result = self._addUser(user, passwd, 'Mirror')
+        error = result.get('error')
+        if error and error != 'UserAlreadyExists':
+            raise RuntimeError(error)
+        elif not error:
             return passwd
-        except Exception, e:
-            if 'UserAlreadyExists' not in str(e):
-                raise
         # User exists, but the password is gone, so just delete it
         # and recreate (and return the new password as usual).
         self._deleteUser(user)
