@@ -25,8 +25,11 @@ class UpdateServiceAppliance(PackageRecipe):
 
         r.addMercurialSnapshot()
 
-        r.Make('VERSION=%(shortVersion)s')
-        r.MakeInstall(Flags.ec2 and 'EC2=1' or '')
+        args = 'VERSION=%(shortVersion)s'
+        if Flags.ec2:
+            args += ' EC2=1'
+        r.Make(args)
+        r.MakeInstall(args)
 
         # Repository log and config files
         r.Transient('/srv/conary/repository.cnr')
