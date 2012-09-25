@@ -120,9 +120,14 @@ class MirrorUsers(rAAWebPlugin):
         passwd = self._genString()
         result = self._addUser(user, passwd, 'Mirror')
         error = result.get('error')
-        if error and error != 'UserAlreadyExists':
-            raise RuntimeError(error)
-        elif not error:
+        if error:
+            if error == 'UserAlreadyExists':
+                pass
+            elif error == 'ProxyMode':
+                return ''
+            else:
+                raise RuntimeError(error)
+        else:
             return passwd
         # User exists, but the password is gone, so just delete it
         # and recreate (and return the new password as usual).
