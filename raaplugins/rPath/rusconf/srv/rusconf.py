@@ -7,6 +7,7 @@
 import grp
 import logging
 import os
+import subprocess
 from conary.lib import util as cny_util
 from raa.modules.raasrvplugin import rAASrvPlugin
 
@@ -37,6 +38,8 @@ class RusConf(rAASrvPlugin):
             # Configure rmake-node target host for XMPP
             ret.update(self._configureRmake(data))
 
+            # Restart apache after swapping out SSL certs.
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
 
             return ret
 
