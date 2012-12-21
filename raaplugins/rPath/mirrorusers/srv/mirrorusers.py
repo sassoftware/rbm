@@ -1,118 +1,21 @@
 #
-# Copyright (c) 2005-2008 rPath, Inc.
-#
-# All rights reserved
+# Copyright (c) rPath, Inc.
 #
 
 from raa.modules.raasrvplugin import rAASrvPlugin
-from conary.repository.netrepos.netserver import ServerConfig
-from conary.repository.netrepos.netserver import NetworkRepositoryServer
-from conary.repository import errors
+from ...rusmode import runScript
+
 
 class MirrorUsers(rAASrvPlugin):
-    cnrPath ='/srv/conary/repository.cnr'
-    def _getNetworkRepo(self):
-        cfg = ServerConfig()
-        cfg.read(self.cnrPath)
-        if not cfg.repositoryDB:
-            return None
-        nr = NetworkRepositoryServer(cfg, 'localhost')
-        return nr
 
     def getUserList(self, schedId, execId):
-        nr = self._getNetworkRepo()
-        if nr is None:
-            return []
-        users =  nr.auth.userAuth.getUserList()
-        ret = []
-        for usr in users:
-            perm = 'Other'
-            roles = nr.auth.userAuth.getRolesByUser(usr)
-            if len(roles) == 1:
-                role = roles[0]
-                for roleperm in nr.auth.iterPermsByRole(role):
-                    # admin user
-                    if nr.auth.roleIsAdmin(role) and \
-                            roleperm == ('ALL', 'ALL', 1, 0):
-                        perm = 'Admin'
-                        break
-                    # mirror user
-                    elif nr.auth.roleCanMirror(role) and \
-                            roleperm == ('ALL', 'ALL', 1, 1):
-                        perm = 'Mirroring'
-                        break
-                # anonymous user
-                if role == 'anonymous':
-                    if usr == 'anonymous':
-                        perm = 'Anonymous'
-                    else:
-                        perm = 'Read-Only'
-            # Complex roles (with more than one perm) are "Other"
-            ret.append({'user' : usr, 'permission' : perm})
-        return ret
-    
+        return runScript('getUserList')
+
     def addUser(self, schedId, execId, user, password, permission):
-        nr = self._getNetworkRepo()
-        if nr is None:
-            return False
-        if permission == 'Mirror':
-            write = True
-            mirror = True
-            admin = False
-            remove = True
-        elif permission == 'Anonymous':
-            write = False
-            mirror = False
-            admin = False
-            remove = False
-        elif permission == 'Admin':
-            write = True
-            mirror = False
-            admin = True
-            remove = False
-
-        # First create a role for the desired permission
-        role = permission.lower()
-        try:
-            nr.auth.addRole(role)
-            nr.auth.addAcl(role, None, None, write=write, remove=remove)
-            nr.auth.setAdmin(role, admin)
-            nr.auth.setMirror(role, mirror)
-        except errors.RoleAlreadyExists:
-            # Not an error, but roll back the DB anyway
-            nr.db.rollback()
-        except:
-            nr.db.rollback()
-            raise
-
-        # Now (maybe) create the user and add them to the role
-        try:
-            nr.auth.addUser(user, password)
-            nr.auth.addRoleMember(role, user)
-        except:
-            nr.db.rollback()
-            raise
-
-        return True
+        return runScript('addUser', user, password, permission)
 
     def deleteUser(self, schedId, execId, user):
-        nr = self._getNetworkRepo()
-        if nr is None:
-            return False
-        try:
-            nr.auth.deleteUserByName(user)
-        except:
-            nr.db.rollback()
-            raise
-
-        return True
+        return runScript('deleteUser', user)
 
     def changePassword(self, schedId, execId, user, newPass):
-        nr = self._getNetworkRepo()
-        try:
-            nr.auth.changePassword(user, newPass)
-        except Exception, e:
-            nr.db.rollback()
-            return dict(errors=["Password change failed: %s" % str(e)])
-
-        return dict(message="Password changed for %s" % user)
+        return runScript('changePassword', user, newPass)

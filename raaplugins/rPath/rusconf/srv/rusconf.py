@@ -7,6 +7,7 @@
 import grp
 import logging
 import os
+import subprocess
 from conary.lib import util as cny_util
 from raa.modules.raasrvplugin import rAASrvPlugin
 
@@ -15,8 +16,8 @@ log = logging.getLogger('raa.service')
 
 class RusConf(rAASrvPlugin):
 
-    x509_path = '/etc/ssl/certs/localhost.crt'
-    pkey_path = '/etc/ssl/private/localhost.key'
+    x509_path = '/etc/pki/tls/certs/localhost.crt'
+    pkey_path = '/etc/pki/tls/private/localhost.key'
     alt_path = '/srv/rbuilder/pki/httpd.pem'
 
     rmake_cfg = '/etc/rmake3/node.d/25_runtime.conf'
@@ -37,6 +38,8 @@ class RusConf(rAASrvPlugin):
             # Configure rmake-node target host for XMPP
             ret.update(self._configureRmake(data))
 
+            # Restart apache after swapping out SSL certs.
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
 
             return ret
 

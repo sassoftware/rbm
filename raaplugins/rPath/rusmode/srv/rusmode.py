@@ -9,7 +9,7 @@ import os
 import subprocess
 import pwd
 import logging
-log = logging.getLogger("rPath.reaentitlement")
+log = logging.getLogger("rPath.rusmode")
 
 class RUSMode(rAASrvPlugin):
     """
@@ -37,7 +37,7 @@ class RUSMode(rAASrvPlugin):
             fobj.commit()
 
             # Restart apache
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'graceful'])
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
             if retcode != 0:
                 log.warning("Failed to restart httpd")
             return {'message': 'successfully configured proxy mode.\n\n'}
@@ -48,7 +48,7 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "# Do not modify this file! Make a higher-numbered one"
             print >> fobj, "# and place your customizations there instead."
             print >> fobj, "repositoryDB    ", \
-                "postgresql updateservice@localhost.localdomain:5439/updateservice"
+                "psycopg2 updateservice@localhost.localdomain:5439/updateservice"
             fobj.commit()
 
             # Initialize the database -- do this in a shell script,
@@ -59,7 +59,7 @@ class RUSMode(rAASrvPlugin):
                 return {'errors': ["Failed to initialize repository schema."]}
 
             # Restart the webserver to apply the change
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'graceful'])
+            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
 
             return {'message': 'successfully configured mirror mode.\n\n'}
         else:
