@@ -58,10 +58,6 @@ class UpdateServiceAppliance(PackageRecipe):
         r.Flavor(exceptions='(/srv/conary|/usr)/bin/')
         r.Flavor(exceptions='/etc/raa/backup.d/')
 
-        # Strip source files
-        r.PackageSpec('%(name)s-sources',
-                      '%(libdir)s/(raa|python%(pyver)s/site-packages)/.*\.py')
-
         # Postgres initscript (a symlink)
         r.DanglingSymlinks(exceptions='%(initdir)s/postgresql-updateservice')
 
