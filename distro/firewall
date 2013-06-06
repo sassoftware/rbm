@@ -1,0 +1,40 @@
+## Base firewall configuration
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+## INPUT rules
+# Allow loopback
+-A INPUT -i lo -j ACCEPT
+# Jobslave traffic shouldn't be using IPv4
+-A INPUT -i jm.+ -j DROP
+# Allow already-established connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# Allow ICMP
+-A INPUT -p icmp --icmp-type any -j ACCEPT
+# Allow SSH, SNMP, nagios
+-A INPUT -m tcp -p tcp --dport 22 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 161 -j ACCEPT
+-A INPUT -m state --state NEW -m udp -p udp --dport 161 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 35000 -j ACCEPT
+-A INPUT -m state --state NEW -m udp -p udp --dport 35000 -j ACCEPT
+# HTTP/S for management nodes/repeater
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 8443 -j ACCEPT
+# HTTP/S for rAPA
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 8003 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 8004 -j ACCEPT
+# rMake XMLRPC and messagebus
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 9999 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 50900 -j ACCEPT
+# rMake chroot sessions
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 63000:64000 -j ACCEPT
+# XMPP for Update Service control
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 5222 -j ACCEPT
+# Reject anything that hasn't been allowed yet
+-A INPUT -m tcp -p tcp -j REJECT --reject-with tcp-reset
+-A INPUT -j REJECT
+
+
+COMMIT
+
