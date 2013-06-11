@@ -17,6 +17,8 @@ install: default-install
 	install -D -m0644 conary.logrotate $(DESTDIR)/etc/logrotate.d/conary-repository
 	install -D -m0644 firewall $(DESTDIR)/etc/sysconfig/iptables
 	install -D -m0644 firewall6 $(DESTDIR)/etc/sysconfig/ip6tables
+	install -D -m0644 gunicorn.conf $(DESTDIR)/etc/gunicorn.conf
+	install -D -m0644 gunicorn.sysconfig $(DESTDIR)/etc/sysconfig/gunicorn
 
 clean: default-clean
 
