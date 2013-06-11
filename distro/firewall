@@ -17,6 +17,9 @@
 -A INPUT -m state --state NEW -m udp -p udp --dport 161 -j ACCEPT
 -A INPUT -m state --state NEW -m tcp -p tcp --dport 35000 -j ACCEPT
 -A INPUT -m state --state NEW -m udp -p udp --dport 35000 -j ACCEPT
+# HTTP/S for rBuilder
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 80 -j ACCEPT
+-A INPUT -m state --state NEW -m tcp -p tcp --dport 443 -j ACCEPT
 # HTTP/S for management nodes/repeater
 -A INPUT -m state --state NEW -m tcp -p tcp --dport 8443 -j ACCEPT
 # HTTP/S for rAPA
