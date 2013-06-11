@@ -47,7 +47,9 @@ class UpdateServiceAppliance(PackageRecipe):
             '/srv/conary/.*',
             '/srv/rbuilder/tmp',
             '/var/log/rbuilder',
+            '/var/log/rbuilder/repository.log',
             )
+        r.InitialContents('/var/log/rbuilder/repository.log')
 
         r.CompilePython('%(libdir)s')
 
