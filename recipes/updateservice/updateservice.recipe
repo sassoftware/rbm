@@ -10,9 +10,7 @@ class UpdateServiceAppliance(PackageRecipe):
         'conary-repository',
         'python-kid',
         'make',
-        'mod_python:python',
         'python-devel',
-        #'rapa',
       ]
 
     Flags.ec2 = False
@@ -31,10 +29,8 @@ class UpdateServiceAppliance(PackageRecipe):
         r.Make(args)
         r.MakeInstall(args)
 
-        # Repository log and config files
+        # Repository config files
         r.Transient('/srv/conary/repository.cnr')
-        r.Create('/srv/conary/logs/repository.log')
-        r.InitialContents('/srv/conary/logs/repository.log')
         r.Create('/srv/conary/config/99_custom.cnr')
         r.InitialContents('/srv/conary/config/99_custom.cnr')
 
@@ -45,27 +41,20 @@ class UpdateServiceAppliance(PackageRecipe):
         r.ExcludeDirectories(exceptions='/srv/conary')
         r.ExcludeDirectories(exceptions='/srv/conary/contents')
         r.ExcludeDirectories(exceptions='/srv/conary/tmp')
-        r.ExcludeDirectories(exceptions='/srv/conary/logs')
         r.ExcludeDirectories(exceptions='/srv/conary/cscache')
-        r.Ownership('apache', 'apache', '/srv/conary',
-                    '/srv/conary/.*', '/srv/conary/logs/.*')
+        r.Ownership('apache', 'apache',
+            '/srv/conary',
+            '/srv/conary/.*',
+            '/srv/rbuilder/tmp',
+            '/var/log/rbuilder',
+            )
 
-        r.CompilePython('%(libdir)s/raa')
-        r.CompilePython('%(libdir)s/python%(pyver)s/site-packages')
-
-        # De-flavor pure python files
-        r.Flavor(exceptions='%(libdir)s/(raa|python%(pyver)s)/')
-        r.Flavor(exceptions='(/srv/conary|/usr)/bin/')
-        r.Flavor(exceptions='/etc/raa/backup.d/')
+        r.CompilePython('%(libdir)s')
 
         # Postgres initscript (a symlink)
         r.DanglingSymlinks(exceptions='%(initdir)s/postgresql-updateservice')
 
         # Other requirements
-        r.Requires('mod_ssl:rpm', '%(sysconfdir)s/httpd/conf.d/conary.conf')
-        r.Requires('mod_python:python', '%(sysconfdir)s/httpd/conf.d/conary.conf')
-        r.Requires('mod_python:runtime', '%(sysconfdir)s/httpd/conf.d/conary.conf')
-        r.Requires('conary-repository:python', '%(sysconfdir)s/httpd/conf.d/conary.conf')
         r.Requires('/usr/sbin/tmpwatch', '%(sysconfdir)s/cron.daily/mirror')
         r.Requires('/usr/sbin/logrotate', '%(sysconfdir)s/cron.daily/mirror')
 
@@ -74,9 +63,6 @@ class UpdateServiceAppliance(PackageRecipe):
                 # rAPA
                 '%(libdir)s/raa/',
                 '/etc/raa/',
-                # rc generator
-                '%(sysconfdir)s/httpd/conf.d/updateservice.conf',
-                '%(libdir)s/python%(pyver)s/site-packages/rbm_rc\..*',
                 # PostgreSQL configuration
                 '/etc/cron.d/postgres',
                 '/etc/postgresql.conf.updateservice',

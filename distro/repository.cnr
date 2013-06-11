@@ -7,21 +7,14 @@
 # /srv/conary/config/99_custom.cnr, or place additional files in
 # /srv/conary/config.
 
-tmpDir /srv/conary/tmp
+tmpDir              /srv/conary/tmp
+changesetCacheDir   /srv/conary/cscache
+contentsDir         /srv/conary/contents
+logFile             /var/log/rbuilder/repository.log
 
-changesetCacheDir /srv/conary/cscache
-
-contentsDir /srv/conary/contents
-
-logFile /srv/conary/logs/repository.log
-
-forceSSL True
-
-serverName *
-
-baseUri /conary
-
-memCache localhost:11211
-memCacheTimeout 3600
+forceSSL            True
+serverName          *
+memCache            localhost:11211
+memCacheTimeout     3600
 
 includeConfigFile /srv/conary/config/*.cnr

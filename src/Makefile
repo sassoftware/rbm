@@ -6,10 +6,6 @@
 
 override DEST = $(PYDIR)
 
-static_files = \
-	rbm_rc.py \
-	upsrv_tool.py \
-
 all: default-all
 
 install: default-install

@@ -8,8 +8,6 @@
 ## INPUT rules
 # Allow loopback
 -A INPUT -i lo -j ACCEPT
-# Route jobslave traffic through its own chain.
--A INPUT -i jm.+ -j FROM-SLAVE
 # Allow already-established connections
 -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 # Allow ICMP
@@ -21,24 +19,8 @@
 # HTTP/S for rAPA
 -A INPUT -m state --state NEW -m tcp -p tcp --dport 8003 -j ACCEPT
 -A INPUT -m state --state NEW -m tcp -p tcp --dport 8004 -j ACCEPT
-# rMake XMLRPC and messagebus
--A INPUT -m state --state NEW -m tcp -p tcp --dport 9999 -j ACCEPT
--A INPUT -m state --state NEW -m tcp -p tcp --dport 50900 -j ACCEPT
-# rMake chroot sessions
--A INPUT -m state --state NEW -m tcp -p tcp --dport 63000:64000 -j ACCEPT
 # Reject anything that hasn't been allowed yet
 -A INPUT -j REJECT --reject-with adm-prohibited
 
-## From jobslave to the rBuilder (not the outside world)
-# Allow ICMPv6
--A FROM-SLAVE -p ipv6-icmp -j ACCEPT
-# Allow proxy
--A FROM-SLAVE -m tcp -p tcp --dport 7770 -j ACCEPT
-# XXX: allow http until there is a restricted conary proxy port
--A FROM-SLAVE -m tcp -p tcp --dport 80 -j ACCEPT
-# Reject anything that hasn't been allowed yet
--A FROM-SLAVE -j REJECT --reject-with adm-prohibited
-
-
-COMMIT
+cOMMIT
 

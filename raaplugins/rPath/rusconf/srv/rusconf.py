@@ -39,7 +39,7 @@ class RusConf(rAASrvPlugin):
             ret.update(self._configureRmake(data))
 
             # Restart apache after swapping out SSL certs.
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
+            retcode = subprocess.call(['/sbin/service', 'nginx', 'reload'])
 
             return ret
 

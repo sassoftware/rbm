@@ -37,9 +37,9 @@ class RUSMode(rAASrvPlugin):
             fobj.commit()
 
             # Restart apache
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
+            retcode = subprocess.call(['/sbin/service', 'nginx', 'reload'])
             if retcode != 0:
-                log.warning("Failed to restart httpd")
+                log.warning("Failed to restart nginx")
             return {'message': 'successfully configured proxy mode.\n\n'}
 
         elif mode == "mirror":
@@ -59,7 +59,7 @@ class RUSMode(rAASrvPlugin):
                 return {'errors': ["Failed to initialize repository schema."]}
 
             # Restart the webserver to apply the change
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
+            retcode = subprocess.call(['/sbin/service', 'nginx', 'reload'])
 
             return {'message': 'successfully configured mirror mode.\n\n'}
         else:

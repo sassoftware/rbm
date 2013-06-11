@@ -7,7 +7,7 @@ import subprocess
 
 def runScript(method, *args):
     stdin = json.dumps(dict(method=method, args=args))
-    proc = subprocess.Popen(['/usr/bin/python', '-mupsrv_tool'],
+    proc = subprocess.Popen(['/usr/bin/python', '-mupsrv.tool'],
             stdin=subprocess.PIPE, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, shell=False,
             )
