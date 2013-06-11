@@ -38,8 +38,8 @@ class RusConf(rAASrvPlugin):
             # Configure rmake-node target host for XMPP
             ret.update(self._configureRmake(data))
 
-            # Restart apache after swapping out SSL certs.
-            retcode = subprocess.call(['/sbin/service', 'nginx', 'reload'])
+            # Restart nginx after swapping out SSL certs.
+            retcode = subprocess.call(['/sbin/service', 'nginx', 'restart'])
 
             return ret
 
