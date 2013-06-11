@@ -55,4 +55,4 @@ function createPgDb()
 
 waitForPg
 createPgDb
-/usr/bin/upsrv_schema.py
+python -mupsrv.schema
