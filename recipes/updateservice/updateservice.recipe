@@ -13,6 +13,7 @@ class UpdateServiceAppliance(PackageRecipe):
         'make',
         'python-devel',
         'python-pyramid:python',
+        'python-pyramid_tm:python',
         'python-setuptools',
         'python-webob:python',
         'python-zope-sqlalchemy:python',

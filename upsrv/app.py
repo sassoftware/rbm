@@ -2,6 +2,7 @@
 # Copyright (c) SAS Institute Inc.
 #
 
+import pyramid_tm
 import sqlalchemy
 from conary import conarycfg
 from conary import conaryclient
@@ -38,10 +39,11 @@ def configure():
     # Configuration
     cfg = config.Configurator(settings=settings)
     cfg.add_renderer('json', render.json_render_factory)
+    cfg.include(pyramid_tm)
     # Routes
     cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
-    cfg.add_route('downloads_get',      '/downloads/get/*path')
+    cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg

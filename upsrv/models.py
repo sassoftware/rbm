@@ -22,6 +22,7 @@ class DownloadFile(Base):
     file_type       = Column(Text,      nullable=False)
     file_modified   = Column(DateTime,  nullable=False)
     file_basename   = Column(Text,      nullable=False)
+    file_sha1       = Column(Text,      nullable=False)
     trove_name      = Column(Text,      nullable=False)
     trove_version   = Column(Text,      nullable=False)
     trove_flavor    = Column(Text,      nullable=False)
