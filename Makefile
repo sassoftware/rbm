@@ -2,7 +2,7 @@
 # Copyright (c) SAS Institute Inc.
 #
 
-SUBDIRS = distro raaplugins upsrv
+SUBDIRS = distro raaplugins
 
 
 export TOP = $(shell pwd)

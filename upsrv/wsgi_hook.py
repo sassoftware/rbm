@@ -6,13 +6,15 @@
 import logging
 import os
 import sys
-import webob
 from conary.lib import log as cny_log
 from conary.server import wsgi_hooks as cny_hook
 from conary.repository.netrepos import netserver
-from webob import exc as web_exc
+from pyramid import httpexceptions as web_exc
+from pyramid import response
 
+from . import app
 from . import rbm_rc
+
 
 log = logging.getLogger(__name__)
 
@@ -20,13 +22,14 @@ CFG_PATH = '/srv/conary/repository.cnr'
 
 
 class application(object):
-    requestFactory = webob.Request
-    responseFactory = webob.Response
+    requestFactory = app.Request
+    responseFactory = response.Response
     cfgPath = CFG_PATH
 
     iterable = None
     req = None
     start_response = None
+
     cny_cfg = None
 
     def __init__(self, environ, start_response):
@@ -36,6 +39,7 @@ class application(object):
         oldUmask = os.umask(022)
         if oldUmask != 0:
             os.umask(oldUmask)
+        self.start_response = start_response
         try:
             self.req = self.requestFactory(environ)
         except:
@@ -44,7 +48,6 @@ class application(object):
             self.iterable = response(environ, start_response)
             return
 
-        self.start_response = start_response
         try:
             response = self.handleRequest()
         except web_exc.HTTPException, exc:
@@ -73,13 +76,15 @@ class application(object):
         if 'x-conary-servername' in self.req.headers:
             return self.handleConary()
         elem = self.req.path_info_peek()
-        if elem == 'conary':
+        if elem == '':
+            return web_exc.HTTPFound(location='/conary/browse')
+        elif elem == 'conary':
             self.req.path_info_pop()
             return self.handleConary()
-        elif elem == '':
-            return web_exc.HTTPFound(location='/conary/browse')
         elif elem == 'conaryrc':
             return self.handleRc()
+        elif elem == 'downloads':
+            return app.handle(self.req)
         else:
             return web_exc.HTTPNotFound()
 

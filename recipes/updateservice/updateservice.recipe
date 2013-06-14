@@ -1,16 +1,22 @@
 #
-# Copyright (c) rPath, Inc.
+# Copyright (c) SAS Institute Inc.
 #
+
 
 class UpdateServiceAppliance(PackageRecipe):
     name = 'updateservice'
     version = '7'
 
     buildRequires = [
-        'conary-repository',
+        'conary-repository:python',
         'python-kid',
         'make',
         'python-devel',
+        'python-pyramid:python',
+        'python-setuptools',
+        'python-webob:python',
+        'python-zope-sqlalchemy:python',
+        'SQLAlchemy:python',
       ]
 
     Flags.ec2 = False
@@ -28,6 +34,8 @@ class UpdateServiceAppliance(PackageRecipe):
             args += ' EC2=1'
         r.Make(args)
         r.MakeInstall(args)
+        r.PythonSetup()
+        r.EggRequires(exceptions='.*')
 
         # Repository config files
         r.Transient('/srv/conary/repository.cnr')
