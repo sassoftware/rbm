@@ -7,6 +7,7 @@ all: default-all
 install: default-install
 	install -D -m0644 postgres.cron	$(DESTDIR)/etc/cron.d/postgres
 	install -D -m0644 postgresql.conf $(DESTDIR)/etc/postgresql.conf.updateservice
+	install -D -m0644 pgbouncer.conf ${DESTDIR}/etc/pgbouncer/pgbouncer.ini
 	mkdir -p $(DESTDIR)$(initdir)
 	ln -sf /opt/postgresql-9.2/etc/init.d/postgresql $(DESTDIR)$(initdir)/postgresql-updateservice
 	install -D -m0644 postgresql-updateservice.sysconfig $(DESTDIR)/etc/sysconfig/pgsql/postgresql-updateservice
