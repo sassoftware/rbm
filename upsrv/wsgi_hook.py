@@ -8,23 +8,19 @@ import os
 import sys
 from conary.lib import log as cny_log
 from conary.server import wsgi_hooks as cny_hook
-from conary.repository.netrepos import netserver
 from pyramid import httpexceptions as web_exc
 from pyramid import response
 
 from . import app
-from . import rbm_rc
+from . import config
 
 
 log = logging.getLogger(__name__)
-
-CFG_PATH = '/srv/conary/repository.cnr'
 
 
 class application(object):
     requestFactory = app.Request
     responseFactory = response.Response
-    cfgPath = CFG_PATH
 
     iterable = None
     req = None
@@ -39,6 +35,7 @@ class application(object):
         oldUmask = os.umask(022)
         if oldUmask != 0:
             os.umask(oldUmask)
+
         self.start_response = start_response
         try:
             self.req = self.requestFactory(environ)
@@ -47,6 +44,10 @@ class application(object):
             response = web_exc.HTTPBadRequest()
             self.iterable = response(environ, start_response)
             return
+
+        if self.cny_cfg is None:
+            type(self).cny_cfg = config.UpsrvConfig.load()
+        self.req.cny_cfg = self.cny_cfg
 
         try:
             response = self.handleRequest()
@@ -81,23 +82,10 @@ class application(object):
         elif elem == 'conary':
             self.req.path_info_pop()
             return self.handleConary()
-        elif elem == 'conaryrc':
-            return self.handleRc()
-        elif elem == 'downloads':
-            return app.handle(self.req)
         else:
-            return web_exc.HTTPNotFound()
-
-    def getServerConfig(self):
-        if self.cny_cfg is None:
-            type(self).cny_cfg = netserver.ServerConfig()
-            self.cny_cfg.read(self.cfgPath)
-        return self.cny_cfg
+            return app.handle(self.req)
 
     def handleConary(self):
         self.req.environ['conary.netrepos.mount_point'] = '/'
-        handler = cny_hook.ConaryHandler(self.getServerConfig())
+        handler = cny_hook.ConaryHandler(self.cny_cfg)
         return handler.handleRequest(self.req)
-
-    def handleRc(self):
-        return rbm_rc.rcfile(self.req, self.getServerConfig())

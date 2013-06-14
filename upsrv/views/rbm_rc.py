@@ -2,12 +2,14 @@
 # Copyright (c) SAS Institute Inc.
 #
 
-import webob
 from conary import dbstore
+from pyramid.view import view_config
 
 
-def rcfile(req, cfg):
+@view_config(route_name='conaryrc', request_method='GET')
+def conaryrc(req):
     hostname = req.host
+    cfg = req.cny_cfg
     if hostname.endswith(':80') or hostname.endswith(':443'):
         hostname = hostname.split(':')[0]
 
@@ -35,4 +37,6 @@ def rcfile(req, cfg):
         for name in serverNames:
             body += "repositoryMap %s https://%s/conary/\n" % (name, hostname)
 
-    return webob.Response(body, content_type='text/plain')
+    req.response.content_type = 'text/plain'
+    req.response.body = body
+    return req.response

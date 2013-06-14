@@ -24,7 +24,7 @@ def _one_file(dlfile):
 
 
 def _filter_files(files, request):
-    repos = request.conaryClient.repos
+    repos = request.getConaryClient().repos
     try:
         has_files = repos.hasTroves(x.trove_tup for x in files)
         return [x for x in files if has_files[x.trove_tup]]

@@ -20,11 +20,11 @@ class Request(request.Request):
         maker = self.registry.settings['db.sessionmaker']
         return maker()
 
-    @reify
-    def conaryClient(self):
+    def getConaryClient(self, entitlement=None):
         cfg = conarycfg.ConaryConfiguration(False)
         cfg.configLine('includeConfigFile http://localhost/conaryrc')
-        # FIXME: entitlements
+        if entitlement:
+            cfg.entitlement.addEntitlement('*', entitlement)
         return conaryclient.ConaryClient(cfg)
 
 
@@ -39,6 +39,7 @@ def configure():
     cfg = config.Configurator(settings=settings)
     cfg.add_renderer('json', render.json_render_factory)
     # Routes
+    cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
     cfg.add_route('downloads_get',      '/downloads/get/*path')
     # Views
