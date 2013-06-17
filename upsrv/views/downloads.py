@@ -56,9 +56,7 @@ def downloads_filter(request):
 
 @view_config(route_name='downloads_get', request_method='GET')
 def downloads_get(request):
-    sha1 = request.matchdict['sha1']
-    ok, constraints = url_sign.verify_request(request)
-    if constraints or not ok:
+    if not url_sign.verify_request(request):
         return web_exc.HTTPForbidden("Authorization for this request has "
                 "expired or is not valid")
     request.response.body = repr(sha1) + '\n'
