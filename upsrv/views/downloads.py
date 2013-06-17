@@ -2,14 +2,20 @@
 # Copyright (c) SAS Institute Inc.
 #
 
+import errno
+import logging
+import os
 from conary.repository import errors as cny_errors
 from pyramid import httpexceptions as web_exc
+from pyramid.response import FileResponse
 from pyramid.view import view_config
 from sqlalchemy import desc
 from webob import UTC
 
 from .. import url_sign
 from ..models import DownloadFile
+
+log = logging.getLogger(__name__)
 
 
 def _one_file(request, dlfile):
@@ -59,6 +65,22 @@ def downloads_get(request):
     if not url_sign.verify_request(request):
         return web_exc.HTTPForbidden("Authorization for this request has "
                 "expired or is not valid")
-    request.response.body = repr(sha1) + '\n'
-    request.response.content_type = 'text/plain'
-    return request.response
+    sha1 = request.matchdict['sha1']
+    dlfiles = request.db.query(DownloadFile).filter_by(file_sha1=sha1).all()
+    if not dlfiles:
+        return web_exc.HTTPNotFound()
+    dlfile = dlfiles[0]
+    path = os.path.join(request.cny_cfg.downloadDir, dlfile.file_sha1)
+    try:
+        response = FileResponse(path, request=request,
+                content_type='application/octet-stream')
+    except (OSError, IOError), err:
+        if err.args[0] == errno.ENOENT:
+            log.warning("Download file %s is missing (basename='%s')", path,
+                    dlfile.file_basename)
+            return web_exc.HTTPNotFound()
+        raise
+    response.headers['Content-Sha1'] = sha1
+    response.headers['Content-Disposition'] = ('attachment; filename=' +
+            dlfile.file_basename.encode('utf8'))
+    return response
