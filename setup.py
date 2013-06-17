@@ -15,6 +15,6 @@ requires = [
 
 
 setup(  name='upsrv',
-        packages=find_packages(),#'upsrv'),
+        packages=find_packages(exclude=['upsrv_test*']),
         install_requires=requires,
         )

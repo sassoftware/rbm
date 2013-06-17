@@ -4,3 +4,6 @@
 build/
 dist/
 \.egg-info/
+\.failed
+\.times
+annotate/

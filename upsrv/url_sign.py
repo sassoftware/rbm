@@ -8,10 +8,6 @@ without shared state.
 
 The following query parameters are added to the URL during signing:
 * e - When the URL expires, in seconds since the UNIX epoch
-* c - Comma-seperated list of constraining "tags". For example, such a tag
-      might indicate that the URL is export-restricted and cannot be downloaded
-      from certain countries.  If the tag is not recognized the download should
-      fail.
 * s - The actual signature. Must come last.
 """
 
@@ -38,7 +34,7 @@ def verify_request(request):
     query = request.query_string
     if '&s=' not in query:
         # No signature
-        return False, None
+        return False
     query, sig = query.split('&s=', 1)
     sig = sig.split('&')[0].split(';')[0]
     path = request.path_info + '?' + query
@@ -53,18 +49,14 @@ def verify_request(request):
             break
     if not found:
         # Signature not valid
-        return False, None
+        return False
     # Now look at the query parameters and ensure that all constraints are met.
-    constraints = set()
     for name, value in urlparse.parse_qsl(query):
         if name == 'e':
             # Expiration
             expiry = int(value)
             if time.time() > expiry:
-                return False, None
-        elif name == 'c':
-            # Constraint
-            constraints.update(value.split(','))
+                return False
     # Everything checks out, return the constraints to the caller for
     # verification
-    return True, constraints
+    return True
