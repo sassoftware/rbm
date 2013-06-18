@@ -10,7 +10,7 @@ CFG_PATH = '/srv/conary/repository.cnr'
 
 class UpsrvConfig(netserver.ServerConfig):
 
-    downloadDB                  = (CfgString, 'postgres://updateservice@127.0.0.1:6432/upsrv_app')
+    downloadDB                  = (CfgString, 'postgresql://updateservice@127.0.0.1:6432/upsrv_app')
     downloadDir                 = (CfgPath, '/srv/conary/downloads')
     downloadSignatureKey        = CfgList(CfgString)
     downloadSignatureExpiry     = (CfgInt, 3600)

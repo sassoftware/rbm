@@ -7,13 +7,19 @@ from conary import trovetup
 from conary import versions
 from conary.deps import deps
 from pyramid.decorator import reify
-from sqlalchemy import Column, BigInteger, Text, DateTime
+from sqlalchemy import Column, BigInteger, Integer, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
 
 Base = declarative_base()
+
+
+class DatabaseVersion(Base):
+    __tablename__ = 'databaseversion'
+    version         = Column(Integer,   primary_key=True)
+    minor           = Column(Integer,   primary_key=True)
 
 
 class DownloadFile(Base):

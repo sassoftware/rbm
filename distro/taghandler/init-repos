@@ -55,4 +55,5 @@ function createPgDb()
 
 waitForPg
 createPgDb
-python -mupsrv.schema
+python -mupsrv.conary_schema
+python -mupsrv.db.schema

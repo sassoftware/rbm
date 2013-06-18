@@ -9,7 +9,7 @@ from sqlalchemy import desc
 from webob import UTC
 
 from .. import url_sign
-from ..models import DownloadFile
+from ..db.models import DownloadFile
 
 
 def _one_file(request, dlfile):

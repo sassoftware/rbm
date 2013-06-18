@@ -12,8 +12,9 @@ from pyramid import config
 from pyramid import request
 from pyramid.decorator import reify
 
-from . import models
 from . import render
+from .db import models
+from .db import schema
 
 
 class Request(request.Request):
@@ -29,7 +30,9 @@ class Request(request.Request):
     @reify
     def db(self):
         maker = self.registry.settings['db.sessionmaker']
-        return maker()
+        db = maker()
+        schema.checkVersion(db)
+        return db
 
     def getConaryClient(self):
         cfg = conarycfg.ConaryConfiguration(False)

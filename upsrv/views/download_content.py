@@ -12,7 +12,7 @@ from pyramid.response import FileResponse
 from pyramid.view import view_config
 
 from .. import url_sign
-from ..models import DownloadFile
+from ..db.models import DownloadFile
 
 log = logging.getLogger(__name__)
 
