@@ -44,7 +44,8 @@ def configure(ucfg):
     # Routes
     cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
-    cfg.add_route('downloads_get',      '/downloads/file/{sha1}')
+    cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
+    cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg

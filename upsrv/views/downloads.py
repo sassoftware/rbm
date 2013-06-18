@@ -98,7 +98,7 @@ def downloads_get(request):
     return response
 
 
-@view_config(route_name='downloads_get', request_method='PUT')
+@view_config(route_name='downloads_put', request_method='PUT')
 def downloads_put(request):
     if not _check_auth(request):
         return web_exc.HTTPForbidden()
@@ -106,10 +106,41 @@ def downloads_put(request):
     path = joinPaths(request.cfg.downloadDir, sha1)
     tmppath = path + '.tmp'
     digest = hashlib.sha1()
-    with open(tmppath, 'wb') as fobj:
-        copyfileobj(request.body_file, fobj, digest=digest)
-        fobj.flush()
-        os.fsync(fobj)
+
+    inFile = None
+    if 'x-uploaded-file' in request.headers:
+        # The frontend proxy has already saved the request body to a
+        # temporary location, so first try to rename it into place.
+        try:
+            os.rename(request.headers['x-uploaded-file'], tmppath)
+        except OSError, err:
+            if err.errno != errno.EXDEV:
+                raise
+            # Upload dir is on a different filesystem.
+            inFile = open(request.headers['x-uploaded-file'], 'rb')
+    else:
+        # No offloading was done. Copy from the request body.
+        inFile = request.body_file
+
+    if inFile:
+        # Copy and digest simultaneously
+        with open(tmppath, 'wb') as fobj:
+            try:
+                copied = copyfileobj(request.body_file, fobj, digest=digest)
+                os.fsync(fobj)
+            except IOError, err:
+                log.warning("IOError during upload of %s: %s", path, str(err))
+                raise web_exc.HTTPBadRequest()
+    else:
+        # Just digest
+        with open(tmppath, 'rb+') as fobj:
+            while True:
+                data = fobj.read(1024)
+                if not data:
+                    break
+                digest.update(data)
+            os.fsync(fobj)
+
     if digest.hexdigest() != sha1:
         log.warning("SHA-1 check failed while uploading %s", sha1)
         os.unlink(tmppath)
