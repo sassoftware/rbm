@@ -6,6 +6,8 @@ import pyramid_tm
 import sqlalchemy
 from conary import conarycfg
 from conary import conaryclient
+from conary.web.webauth import parseEntitlement
+from pyramid import authentication
 from pyramid import config
 from pyramid import request
 from pyramid.decorator import reify
@@ -16,16 +18,25 @@ from . import render
 
 class Request(request.Request):
 
+    authz = authentication.BasicAuthAuthenticationPolicy(None)
+
+    def checkWriter(self):
+        if not self.cfg.downloadWriterPassword:
+            return False
+        creds = self.authz._get_credentials(self)
+        return creds == ('dlwriter', self.cfg.downloadWriterPassword)
+
     @reify
     def db(self):
         maker = self.registry.settings['db.sessionmaker']
         return maker()
 
-    def getConaryClient(self, entitlement=None):
+    def getConaryClient(self):
         cfg = conarycfg.ConaryConfiguration(False)
         cfg.configLine('includeConfigFile http://localhost/conaryrc')
-        if entitlement:
-            cfg.entitlement.addEntitlement('*', entitlement)
+        entList = parseEntitlement(self.headers.get('x-conary-entitlement', ''))
+        for _, key in entList:
+            cfg.entitlement.addEntitlement('*', key)
         return conaryclient.ConaryClient(cfg)
 
 
@@ -44,6 +55,7 @@ def configure(ucfg):
     # Routes
     cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
+    cfg.add_route('downloads_add',      '/downloads/add')
     cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
     cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
     # Views

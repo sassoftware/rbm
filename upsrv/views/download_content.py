@@ -7,7 +7,6 @@ import hashlib
 import logging
 import os
 from conary.lib.util import copyfileobj, joinPaths
-from pyramid import authentication
 from pyramid import httpexceptions as web_exc
 from pyramid.response import FileResponse
 from pyramid.view import view_config
@@ -16,14 +15,6 @@ from .. import url_sign
 from ..models import DownloadFile
 
 log = logging.getLogger(__name__)
-
-
-def _check_auth(request):
-    if not request.cfg.downloadWriterPassword:
-        return False
-    authz = authentication.BasicAuthAuthenticationPolicy(None)
-    creds = authz._get_credentials(request)
-    return creds == ('dlwriter', request.cfg.downloadWriterPassword)
 
 
 @view_config(route_name='downloads_get', request_method='GET')
@@ -54,7 +45,7 @@ def downloads_get(request):
 
 @view_config(route_name='downloads_put', request_method='PUT')
 def downloads_put(request):
-    if not _check_auth(request):
+    if not request.checkWriter():
         return web_exc.HTTPForbidden()
     sha1 = request.matchdict['sha1']
     path = joinPaths(request.cfg.downloadDir, sha1)

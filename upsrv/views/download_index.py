@@ -3,6 +3,7 @@
 #
 
 from conary.repository import errors as cny_errors
+from pyramid import httpexceptions as web_exc
 from pyramid.view import view_config
 from sqlalchemy import desc
 from webob import UTC
@@ -12,20 +13,19 @@ from ..models import DownloadFile
 
 
 def _one_file(request, dlfile):
-    tup = dlfile.trove_tup
     path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     url = request.application_url + path_signed
     return {
-        'file_id':          dlfile.file_id,
+        'file_sha1':        dlfile.file_sha1,
         'file_type':        dlfile.file_type,
         'file_modified':    str(dlfile.file_modified.astimezone(UTC)),
         'file_basename':    dlfile.file_basename,
-        'file_sha1':        dlfile.file_sha1,
         'file_size':        dlfile.file_size,
-        'trove_name':       tup.name,
-        'trove_version':    str(tup.version),
-        'trove_flavor':     str(tup.flavor),
+        'trove_name':       dlfile.trove_name,
+        'trove_version':    dlfile.trove_version,
+        'trove_flavor':     dlfile.trove_flavor,
+        'trove_timestamp':  dlfile.trove_timestamp,
         'download_url':     url,
         }
 
@@ -52,3 +52,20 @@ def downloads_index(request):
 @view_config(route_name='downloads_index', request_method='POST', renderer='json')
 def downloads_filter(request):
     return {}
+
+
+@view_config(route_name='downloads_add', request_method='POST', renderer='json')
+def downloads_add(request):
+    if not request.checkWriter():
+        return web_exc.HTTPForbidden()
+    infile = request.json_body
+    dlfile = request.db.query(DownloadFile
+            ).filter_by(file_sha1=infile['file_sha1']
+            ).one()
+    if not dlfile:
+        dlfile = DownloadFile()
+        request.db.add(dlfile)
+    for key, value in infile.iteritems():
+        if key.startswith('file_') or key.startswith('trove_'):
+            setattr(dlfile, key, value)
+    request.db.add(dlfile)
