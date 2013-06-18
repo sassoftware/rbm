@@ -26,7 +26,7 @@ class application(object):
     req = None
     start_response = None
 
-    cny_cfg = None
+    cfg = None
 
     def __init__(self, environ, start_response):
         cny_log.setupLogging(consoleLevel=logging.INFO, consoleFormat='apache')
@@ -45,9 +45,9 @@ class application(object):
             self.iterable = response(environ, start_response)
             return
 
-        if self.cny_cfg is None:
-            type(self).cny_cfg = config.UpsrvConfig.load()
-        self.req.cny_cfg = self.cny_cfg
+        if self.cfg is None:
+            type(self).cfg = config.UpsrvConfig.load()
+        self.req.cfg = self.cfg
 
         try:
             response = self.handleRequest()
@@ -87,5 +87,5 @@ class application(object):
 
     def handleConary(self):
         self.req.environ['conary.netrepos.mount_point'] = '/'
-        handler = cny_hook.ConaryHandler(self.cny_cfg)
+        handler = cny_hook.ConaryHandler(self.cfg)
         return handler.handleRequest(self.req)

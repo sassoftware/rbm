@@ -9,7 +9,7 @@ from pyramid.view import view_config
 @view_config(route_name='conaryrc', request_method='GET')
 def conaryrc(req):
     hostname = req.host
-    cfg = req.cny_cfg
+    cfg = req.cfg
     if hostname.endswith(':80') or hostname.endswith(':443'):
         hostname = hostname.split(':')[0]
 

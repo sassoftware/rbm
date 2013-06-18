@@ -7,7 +7,7 @@ from conary import trovetup
 from conary import versions
 from conary.deps import deps
 from pyramid.decorator import reify
-from sqlalchemy import Column, Integer, Text, DateTime
+from sqlalchemy import Column, BigInteger, Integer, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -23,6 +23,7 @@ class DownloadFile(Base):
     file_modified   = Column(DateTime,  nullable=False)
     file_basename   = Column(Text,      nullable=False)
     file_sha1       = Column(Text,      nullable=False)
+    file_size       = Column(BigInteger, nullable=False)
     trove_name      = Column(Text,      nullable=False)
     trove_version   = Column(Text,      nullable=False)
     trove_flavor    = Column(Text,      nullable=False)

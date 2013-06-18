@@ -15,6 +15,7 @@ import hashlib
 import hmac
 import time
 import urlparse
+from pyramid.util import strings_differ
 
 
 def sign_path(cfg, path):
@@ -27,8 +28,7 @@ def sign_path(cfg, path):
     return path
 
 
-def verify_request(request):
-    cfg = request.cny_cfg
+def verify_request(cfg, request):
     # Reconstruct the original path. Discard any query parameters that come
     # after the signature, because they can't be trusted.
     query = request.query_string
@@ -44,7 +44,8 @@ def verify_request(request):
     found = False
     for key in cfg.downloadSignatureKey:
         sig2 = hmac.new(key, path, hashlib.sha1).hexdigest()
-        if sig == sig2:
+        # Use constant-time comparison to avoid timing attacks.
+        if not strings_differ(sig, sig2):
             found = True
             break
     if not found:

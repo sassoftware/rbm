@@ -29,8 +29,9 @@ class Request(request.Request):
         return conaryclient.ConaryClient(cfg)
 
 
-def configure():
-    engine = sqlalchemy.create_engine('postgresql://updateservice@localhost:6432/upsrv_app')
+def configure(ucfg):
+    dburl = ucfg.downloadDB
+    engine = sqlalchemy.create_engine(dburl)
     maker = models.initialize_sql(engine, use_tm=True)
     settings = {
             'db.sessionmaker': maker,
@@ -43,13 +44,13 @@ def configure():
     # Routes
     cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
-    cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
+    cfg.add_route('downloads_get',      '/downloads/file/{sha1}')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg
 
 
 def handle(request):
-    cfg = configure()
+    cfg = configure(ucfg=request.cfg)
     app = cfg.make_wsgi_app()
     return app.invoke_subrequest(request, use_tweens=True)

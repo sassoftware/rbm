@@ -3,9 +3,12 @@
 #
 
 import errno
+import hashlib
 import logging
 import os
+from conary.lib.util import copyfileobj, joinPaths
 from conary.repository import errors as cny_errors
+from pyramid import authentication
 from pyramid import httpexceptions as web_exc
 from pyramid.response import FileResponse
 from pyramid.view import view_config
@@ -21,7 +24,7 @@ log = logging.getLogger(__name__)
 def _one_file(request, dlfile):
     tup = dlfile.trove_tup
     path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
-    path_signed = url_sign.sign_path(request.cny_cfg, path)
+    path_signed = url_sign.sign_path(request.cfg, path)
     url = request.application_url + path_signed
     return {
         'file_id':          dlfile.file_id,
@@ -29,6 +32,7 @@ def _one_file(request, dlfile):
         'file_modified':    str(dlfile.file_modified.astimezone(UTC)),
         'file_basename':    dlfile.file_basename,
         'file_sha1':        dlfile.file_sha1,
+        'file_size':        dlfile.file_size,
         'trove_name':       tup.name,
         'trove_version':    str(tup.version),
         'trove_flavor':     str(tup.flavor),
@@ -43,6 +47,14 @@ def _filter_files(files, request):
         return [x for x in files if has_files[x.trove_tup]]
     except cny_errors.InsufficientPermission:
         return []
+
+
+def _check_auth(request):
+    if not request.cfg.downloadWriterPassword:
+        return False
+    authz = authentication.BasicAuthAuthenticationPolicy(None)
+    creds = authz._get_credentials(request)
+    return creds == ('dlwriter', request.cfg.downloadWriterPassword)
 
 
 @view_config(route_name='downloads_index', request_method='GET', renderer='json')
@@ -62,7 +74,7 @@ def downloads_filter(request):
 
 @view_config(route_name='downloads_get', request_method='GET')
 def downloads_get(request):
-    if not url_sign.verify_request(request):
+    if not url_sign.verify_request(request.cfg, request):
         return web_exc.HTTPForbidden("Authorization for this request has "
                 "expired or is not valid")
     sha1 = request.matchdict['sha1']
@@ -70,7 +82,7 @@ def downloads_get(request):
     if not dlfiles:
         return web_exc.HTTPNotFound()
     dlfile = dlfiles[0]
-    path = os.path.join(request.cny_cfg.downloadDir, dlfile.file_sha1)
+    path = joinPaths(request.cfg.downloadDir, dlfile.file_sha1)
     try:
         response = FileResponse(path, request=request,
                 content_type='application/octet-stream')
@@ -84,3 +96,23 @@ def downloads_get(request):
     response.headers['Content-Disposition'] = ('attachment; filename=' +
             dlfile.file_basename.encode('utf8'))
     return response
+
+
+@view_config(route_name='downloads_get', request_method='PUT')
+def downloads_put(request):
+    if not _check_auth(request):
+        return web_exc.HTTPForbidden()
+    sha1 = request.matchdict['sha1']
+    path = joinPaths(request.cfg.downloadDir, sha1)
+    tmppath = path + '.tmp'
+    digest = hashlib.sha1()
+    with open(tmppath, 'wb') as fobj:
+        copyfileobj(request.body_file, fobj, digest=digest)
+        fobj.flush()
+        os.fsync(fobj)
+    if digest.hexdigest() != sha1:
+        log.warning("SHA-1 check failed while uploading %s", sha1)
+        os.unlink(tmppath)
+        return web_exc.HTTPBadRequest("SHA-1 check failed")
+    os.rename(tmppath, path)
+    return web_exc.HTTPNoContent()
