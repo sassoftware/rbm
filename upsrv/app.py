@@ -7,7 +7,6 @@ import sqlalchemy
 from conary import conarycfg
 from conary import conaryclient
 from conary.web.webauth import parseEntitlement
-from pyramid import authentication
 from pyramid import config
 from pyramid import request
 from pyramid.decorator import reify
@@ -18,14 +17,6 @@ from .db import schema
 
 
 class Request(request.Request):
-
-    authz = authentication.BasicAuthAuthenticationPolicy(None)
-
-    def checkWriter(self):
-        if not self.cfg.downloadWriterPassword:
-            return False
-        creds = self.authz._get_credentials(self)
-        return creds == ('dlwriter', self.cfg.downloadWriterPassword)
 
     @reify
     def db(self):
