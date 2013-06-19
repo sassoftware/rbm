@@ -36,4 +36,11 @@ def createSchema(db):
         PRIMARY KEY ( file_sha1, meta_key )
     )""")
 
+    db.execute("""
+    CREATE TABLE customer_entitlements (
+        cust_id                 integer         NOT NULL,
+        entitlement             text            NOT NULL,
+        PRIMARY KEY ( cust_id, entitlement )
+    )""")
+
     return Version

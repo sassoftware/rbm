@@ -52,6 +52,7 @@ def configure(ucfg):
     cfg.add_route('downloads_add',      '/downloads/add')
     cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
     cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
+    cfg.add_route('cust_ents',          '/customers/{cust_id}/entitlements')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg

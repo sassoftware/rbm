@@ -72,6 +72,12 @@ class DownloadMetadata(Base):
     value = property(_value_get, _value_set)
 
 
+class CustomerEntitlements(Base):
+    __tablename__ = 'customer_entitlements'
+    cust_id         = Column(Text,      primary_key=True)
+    entitlement     = Column(Text,      primary_key=True)
+
+
 def initialize_sql(engine, use_tm=True):
     Base.metadata.bind = engine
     extension = ZopeTransactionExtension() if use_tm else None
