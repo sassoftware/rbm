@@ -11,7 +11,7 @@ from webob import UTC
 
 from .. import url_sign
 from ..auth import authenticated
-from ..db.models import DownloadFile, DownloadMetadata
+from ..db.models import CustomerEntitlement, DownloadFile, DownloadMetadata
 
 
 def _one_file(request, dlfile):
@@ -31,8 +31,8 @@ def _one_file(request, dlfile):
     return out
 
 
-def _filter_files(files, request):
-    repos = request.getConaryClient().repos
+def _filter_files(files, request, entitlements):
+    repos = request.getConaryClient(entitlements).repos
     try:
         has_files = repos.hasTroves(x.trove_tup for x in files)
         return [x for x in files if has_files[x.trove_tup]]
@@ -41,23 +41,32 @@ def _filter_files(files, request):
 
 
 @view_config(route_name='downloads_index', request_method='GET', renderer='json')
+@authenticated('reader')
 def downloads_index(request):
     files = request.db.query(DownloadFile
             ).options(joinedload(DownloadFile.meta_items)
             ).order_by(desc(DownloadFile.file_modified)
             ).all()
-    filtered = _filter_files(files, request)
-    formatted = [_one_file(request, x) for x in filtered]
-    return formatted
+    return [_one_file(request, x) for x in files]
 
 
-@view_config(route_name='downloads_index', request_method='POST', renderer='json')
-def downloads_filter(request):
-    return {}
+@view_config(route_name='downloads_customer', request_method='GET', renderer='json')
+@authenticated('reader')
+def downloads_customer(request):
+    entitlements = request.db.query(CustomerEntitlement,
+            ).filter_by(cust_id=request.matchdict['cust_id']
+            ).all()
+    entitlements = [x.entitlement.encode('ascii') for x in entitlements]
+    files = request.db.query(DownloadFile
+            ).options(joinedload(DownloadFile.meta_items)
+            ).order_by(desc(DownloadFile.file_modified)
+            ).all()
+    files = _filter_files(files, request, entitlements)
+    return [_one_file(request, x) for x in files]
 
 
 @view_config(route_name='downloads_add', request_method='POST', renderer='json')
-@authenticated
+@authenticated('mirror')
 def downloads_add(request):
     infile = request.json_body
     dlfile = request.db.query(DownloadFile

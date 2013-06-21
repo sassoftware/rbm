@@ -72,7 +72,7 @@ class DownloadMetadata(Base):
     value = property(_value_get, _value_set)
 
 
-class CustomerEntitlements(Base):
+class CustomerEntitlement(Base):
     __tablename__ = 'customer_entitlements'
     cust_id         = Column(Text,      primary_key=True)
     entitlement     = Column(Text,      primary_key=True)
