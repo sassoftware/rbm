@@ -7,9 +7,10 @@ import json
 import sys
 from urlparse import urlparse
 from conary.dbstore import sqlerrors
-from conary.repository.netrepos.netserver import ServerConfig
 from conary.repository.netrepos.netserver import NetworkRepositoryServer
 from conary.repository import errors
+
+from . import config
 
 CFG_PATH = '/srv/conary/repository.cnr'
 
@@ -17,7 +18,7 @@ class UpsrvTool(object):
 
     def __init__(self, cfgPath=CFG_PATH):
         self.cfgPath = cfgPath
-        self.cfg = ServerConfig()
+        self.cfg = config.UpsrvConfig()
         self.cfg.read(cfgPath)
 
     def _getRepos(self):

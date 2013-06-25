@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from webob import UTC
 
 from .. import url_sign
-from ..auth import authenticated
+from ..auth import authenticated, authCheck
 from ..db.models import CustomerEntitlement, DownloadFile, DownloadMetadata
 
 
@@ -41,12 +41,15 @@ def _filter_files(files, request, entitlements):
 
 
 @view_config(route_name='downloads_index', request_method='GET', renderer='json')
-@authenticated('reader')
 def downloads_index(request):
     files = request.db.query(DownloadFile
             ).options(joinedload(DownloadFile.meta_items)
             ).order_by(desc(DownloadFile.file_modified)
             ).all()
+    if not authCheck(request, 'reader') and not authCheck(request, 'mirror'):
+        # Permit authenticated clients to see all files, otherwise show only
+        # public ones
+        files = _filter_files(files, request, [])
     return [_one_file(request, x) for x in files]
 
 

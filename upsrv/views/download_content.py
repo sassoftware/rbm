@@ -12,6 +12,7 @@ from pyramid.response import FileResponse
 from pyramid.view import view_config
 
 from .. import url_sign
+from ..auth import authenticated
 from ..db.models import DownloadFile
 
 log = logging.getLogger(__name__)
@@ -44,9 +45,8 @@ def downloads_get(request):
 
 
 @view_config(route_name='downloads_put', request_method='PUT')
+@authenticated('mirror')
 def downloads_put(request):
-    if not request.checkWriter():
-        return web_exc.HTTPForbidden()
     sha1 = request.matchdict['sha1']
     path = joinPaths(request.cfg.downloadDir, sha1)
     tmppath = path + '.tmp'
