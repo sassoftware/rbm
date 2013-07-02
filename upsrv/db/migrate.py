@@ -38,7 +38,7 @@ def createSchema(db):
 
     db.execute("""
     CREATE TABLE customer_entitlements (
-        cust_id                 integer         NOT NULL,
+        cust_id                 text            NOT NULL,
         entitlement             text            NOT NULL,
         PRIMARY KEY ( cust_id, entitlement )
     )""")

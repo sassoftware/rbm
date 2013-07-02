@@ -9,6 +9,7 @@ from conary import conaryclient
 from pyramid import config
 from pyramid import request
 from pyramid.decorator import reify
+from sqlalchemy.pool import NullPool
 
 from . import render
 from .db import models
@@ -34,7 +35,7 @@ class Request(request.Request):
 
 def configure(ucfg):
     dburl = ucfg.downloadDB
-    engine = sqlalchemy.create_engine(dburl)
+    engine = sqlalchemy.create_engine(dburl, poolclass=NullPool)
     maker = models.initialize_sql(engine, use_tm=True)
     settings = {
             'db.sessionmaker': maker,
@@ -52,6 +53,7 @@ def configure(ucfg):
     cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
     cfg.add_route('downloads_customer', '/customers/{cust_id}/downloads')
     cfg.add_route('cust_ents',          '/customers/{cust_id}/entitlements')
+    cfg.add_route('cust_ent_put',       '/customer_entitlements')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg
