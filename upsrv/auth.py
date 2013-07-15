@@ -11,7 +11,8 @@ authz = authentication.BasicAuthAuthenticationPolicy(None)
 
 def authCheck(request, user):
     creds = authz._get_credentials(request)
-    return creds == (user, request.cfg.password[user])
+    password = request.cfg.password.get(user)
+    return password and creds == (user, password)
 
 
 def authenticated(user):

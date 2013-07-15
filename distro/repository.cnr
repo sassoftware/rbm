@@ -13,6 +13,7 @@ contentsDir         /srv/conary/contents
 logFile             /var/log/rbuilder/repository.log
 
 forceSSL            True
+webEnabled          False
 serverName          *
 memCache            localhost:11211
 memCacheTimeout     3600
