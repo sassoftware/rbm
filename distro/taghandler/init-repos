@@ -51,6 +51,12 @@ function createPgDb()
     echo "Failed creating the postgres database"
     exit 1
   fi
+  psql -U updateservice -d postgres -c "CREATE DATABASE upsrv_app ENCODING 'UTF8';"
+  if [ "$?" -ne 0  -a  "$?" -ne 1 ]
+  then
+    echo "Failed creating the postgres database"
+    exit 1
+  fi
 }
 
 waitForPg
