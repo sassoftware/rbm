@@ -31,7 +31,7 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "# Do not modify this file! Make a higher-numbered one"
             print >> fobj, "# and place your customizations there instead."
             print >> fobj, "proxyContentsDir %s" % self.proxyDir
-            print >> fobj, "conaryProxy http http://%s" % rbaHostname
+            print >> fobj, "conaryProxy http https://%s" % rbaHostname
             print >> fobj, "conaryProxy https https://%s" % rbaHostname
 
             fobj.commit()
