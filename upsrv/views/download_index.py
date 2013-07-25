@@ -74,7 +74,7 @@ def downloads_add(request):
     infile = request.json_body
     dlfile = request.db.query(DownloadFile
             ).filter_by(file_sha1=infile['file_sha1']
-            ).one()
+            ).first()
     if not dlfile:
         dlfile = DownloadFile()
         request.db.add(dlfile)
