@@ -1,39 +1,21 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2008 rPath, Inc.
+# Copyright (c) SAS Institute Inc.
 #
-import os
+
+
 import sys
-
-import testhelp
-from conary_test import resources
-from conary_test import runner
-
-class TestSuiteHandler(testhelp.TestSuiteHandler):
-    def __init__(self, *args, **kw):
-        self.pluginPath = kw.pop('pluginPath')
-        testhelp.TestSuiteHandler.__init__(self, *args, **kw)
-
-    def getCoverageDirs(self, environ):
-        return os.path.join(self.pluginPath)
-
-    def getCoverageExclusions(self, environ):
-        return ['tests/.*']
+from testrunner import suite
 
 
-def main(argv, individual=True):
-    runner.setup()
-    kw = dict(pluginPath=os.getcwd() + '/raaplugins')
-    return runner.main(argv, individual=individual,
-                       handlerClass=TestSuiteHandler, handlerKw=kw)
+class Suite(suite.TestSuite):
+    testsuite_module = sys.modules[__name__]
+    topLevelStrip = 0
 
-
-# These should not be set, they're here to placate the conary testsuite
-from conary_test.runner import TestCase, setup, isIndividual
-archivePath = None
-testPath = None
-conaryDir = None
+    def getCoverageDirs(self, handler, environ):
+        import upsrv
+        return [upsrv]
 
 
 if __name__ == '__main__':
-    main(sys.argv, individual=False)
+    Suite().run()

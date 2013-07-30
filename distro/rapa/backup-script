@@ -10,6 +10,8 @@ import fcntl
 from conary.lib import util
 from conary.repository.netrepos import netserver
 
+from upsrv import config
+
 
 dbPath = os.path.join(os.path.sep, 'srv', 'conary', 'sqldb')
 tmpDbPath = dbPath + '-tmp'
@@ -66,7 +68,7 @@ def backup(out = sys.stdout):
     os.chown(tmpFsPath, apacheUID, apacheGID)
 
     # now back up the sqldb
-    server_cfg = netserver.ServerConfig()
+    server_cfg = config.UpsrvConfig()
     server_cfg.read(cfg_path)
     rep_driver, rep_path = server_cfg.repositoryDB
 

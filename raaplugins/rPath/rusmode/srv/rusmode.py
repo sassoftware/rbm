@@ -31,15 +31,15 @@ class RUSMode(rAASrvPlugin):
             print >> fobj, "# Do not modify this file! Make a higher-numbered one"
             print >> fobj, "# and place your customizations there instead."
             print >> fobj, "proxyContentsDir %s" % self.proxyDir
-            print >> fobj, "conaryProxy http http://%s" % rbaHostname
+            print >> fobj, "conaryProxy http https://%s" % rbaHostname
             print >> fobj, "conaryProxy https https://%s" % rbaHostname
 
             fobj.commit()
 
             # Restart apache
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
+            retcode = subprocess.call(['/sbin/service', 'gunicorn', 'reload'])
             if retcode != 0:
-                log.warning("Failed to restart httpd")
+                log.warning("Failed to restart gunicorn")
             return {'message': 'successfully configured proxy mode.\n\n'}
 
         elif mode == "mirror":
@@ -59,7 +59,7 @@ class RUSMode(rAASrvPlugin):
                 return {'errors': ["Failed to initialize repository schema."]}
 
             # Restart the webserver to apply the change
-            retcode = subprocess.call(['/sbin/service', 'httpd', 'restart'])
+            retcode = subprocess.call(['/sbin/service', 'gunicorn', 'reload'])
 
             return {'message': 'successfully configured mirror mode.\n\n'}
         else:

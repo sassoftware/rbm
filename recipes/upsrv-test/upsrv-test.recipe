@@ -1,0 +1,11 @@
+loadSuperClass('testpackage')
+class UpsrvTest(TestPackageRecipe):
+    name = 'upsrv-test'
+    version = '8.1'
+
+    buildRequires = [
+        'updateservice:python',
+    ]
+
+    def setupSource(r):
+        r.addMercurialSnapshot()

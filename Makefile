@@ -1,10 +1,8 @@
 #
-# Copyright (c) 2010 rPath, Inc.
-#
-# All rights reserved.
+# Copyright (c) SAS Institute Inc.
 #
 
-SUBDIRS = distro src raaplugins
+SUBDIRS = distro raaplugins
 
 
 export TOP = $(shell pwd)
