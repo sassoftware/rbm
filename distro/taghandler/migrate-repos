@@ -1,5 +1,12 @@
 #!/bin/bash
 
-# Reducing this to a stub for now. 
-# Some code for postgres 9.0 migration may go here.
+logfile=/var/log/rbuilder/migration.log
+(
+echo Beginning migration to Conary $(conary --version)
+echo Date: $(date)
+python -mupsrv.conary_schema; rc=$?
+echo Exit code: $rc
+echo
+) 2>&1 |tee -a $logfile
+
 exit 0
