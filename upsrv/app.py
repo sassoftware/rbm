@@ -6,6 +6,8 @@ import pyramid_tm
 import sqlalchemy
 from conary import conarycfg
 from conary import conaryclient
+from conary.repository.netrepos.auth_tokens import AuthToken
+from conary.server.wsgi_hooks import ConaryHandler
 from pyramid import config
 from pyramid import request
 from pyramid.decorator import reify
@@ -30,7 +32,26 @@ class Request(request.Request):
         cfg.configLine('includeConfigFile http://localhost/conaryrc')
         for key in entitlements:
             cfg.entitlement.addEntitlement('*', key)
-        return conaryclient.ConaryClient(cfg)
+        cli = conaryclient.ConaryClient(cfg)
+        self.addHeaders(cli)
+        return cli
+
+    def getForwardedFor(self):
+        authToken = AuthToken()
+        ConaryHandler.setRemoteIp(authToken, request=self)
+        return authToken.forwarded_for + [authToken.remote_ip]
+
+    def addHeaders(self, cli):
+        cache = cli.repos.c
+        forwarded_for = self.getForwardedFor()
+        old_factory = cache.TransportFactory
+        def TransportFactory(*args, **kwargs):
+            transport = old_factory(*args, **kwargs)
+            if forwarded_for:
+                transport.addExtraHeaders({
+                    'x-forwarded-for': ', '.join(forwarded_for)})
+            return transport
+        cache.TransportFactory = TransportFactory
 
 
 def configure(ucfg):
