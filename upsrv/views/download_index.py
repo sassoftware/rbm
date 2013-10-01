@@ -3,7 +3,6 @@
 #
 
 import datetime
-from conary.repository import errors as cny_errors
 from pyramid.view import view_config
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
@@ -11,11 +10,19 @@ from webob import UTC
 
 from .. import url_sign
 from ..auth import authenticated, authCheck
-from ..db.models import CustomerEntitlement, DownloadFile, DownloadMetadata
+from ..db.models import DownloadFile, DownloadMetadata
 
 
-def _one_file(request, dlfile):
-    path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
+def _one_file(request, dlfile, cust_id=None):
+    if cust_id is not None:
+        # Use a path with the cust_id encoded into it so that the entitlements
+        # can be re-checked and the IP of the client that initiates the
+        # download can be checked against the GeoIP filters associated with
+        # those entitlements.
+        path = request.route_path('cust_download_get',
+                cust_id=cust_id, sha1=dlfile.file_sha1)
+    else:
+        path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     out = {}
     for column in DownloadFile.__table__.columns:
@@ -31,15 +38,6 @@ def _one_file(request, dlfile):
     return out
 
 
-def _filter_files(files, request, entitlements):
-    repos = request.getConaryClient(entitlements).repos
-    try:
-        has_files = repos.hasTroves(x.trove_tup for x in files)
-        return [x for x in files if has_files[x.trove_tup]]
-    except cny_errors.InsufficientPermission:
-        return []
-
-
 @view_config(route_name='downloads_index', request_method='GET', renderer='json')
 def downloads_index(request):
     files = request.db.query(DownloadFile
@@ -49,23 +47,21 @@ def downloads_index(request):
     if not authCheck(request, 'reader') and not authCheck(request, 'mirror'):
         # Permit authenticated clients to see all files, otherwise show only
         # public ones
-        files = _filter_files(files, request, [])
+        files = request.filterFiles(files)
     return [_one_file(request, x) for x in files]
 
 
 @view_config(route_name='downloads_customer', request_method='GET', renderer='json')
 @authenticated('reader')
 def downloads_customer(request):
-    entitlements = request.db.query(CustomerEntitlement,
-            ).filter_by(cust_id=request.matchdict['cust_id']
-            ).all()
-    entitlements = [x.entitlement.encode('ascii') for x in entitlements]
+    cust_id = request.matchdict['cust_id']
+    assert cust_id is not None
     files = request.db.query(DownloadFile
             ).options(joinedload(DownloadFile.meta_items)
             ).order_by(desc(DownloadFile.file_modified)
             ).all()
-    files = _filter_files(files, request, entitlements)
-    return [_one_file(request, x) for x in files]
+    files = request.filterFiles(files, cust_id=cust_id)
+    return [_one_file(request, x, cust_id=cust_id) for x in files]
 
 
 @view_config(route_name='downloads_add', request_method='POST', renderer='json')

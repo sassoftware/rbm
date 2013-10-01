@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 
 @view_config(route_name='downloads_get', request_method='GET')
+@view_config(route_name='cust_download_get', request_method='GET')
 def downloads_get(request):
     if not url_sign.verify_request(request.cfg, request):
         return web_exc.HTTPForbidden("Authorization for this request has "
@@ -27,6 +28,14 @@ def downloads_get(request):
     dlfiles = request.db.query(DownloadFile).filter_by(file_sha1=sha1).all()
     if not dlfiles:
         return web_exc.HTTPNotFound()
+    if 'cust_id' in request.matchdict:
+        # URL is bound to a specific customer so re-check the entitlement, both
+        # to make sure it is still valid and to check the client IP against any
+        # GeoIP filters.
+        if not request.filterFiles(dlfiles,
+                cust_id=request.matchdict['cust_id']):
+            log.warning("Rejected download after revalidating entitlement")
+            return web_exc.HTTPForbidden()
     dlfile = dlfiles[0]
     path = joinPaths(request.cfg.downloadDir, dlfile.file_sha1)
     try:

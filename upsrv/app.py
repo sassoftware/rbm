@@ -6,6 +6,7 @@ import pyramid_tm
 import sqlalchemy
 from conary import conarycfg
 from conary import conaryclient
+from conary.repository import errors as cny_errors
 from conary.repository.netrepos.auth_tokens import AuthToken
 from conary.server.wsgi_hooks import ConaryHandler
 from pyramid import config
@@ -53,6 +54,21 @@ class Request(request.Request):
             return transport
         cache.TransportFactory = TransportFactory
 
+    def filterFiles(self, files, cust_id=None):
+        if cust_id is not None:
+            entitlements = self.db.query(models.CustomerEntitlement,
+                    ).filter_by(cust_id=cust_id
+                    ).all()
+            entitlements = [x.entitlement.encode('ascii') for x in entitlements]
+        else:
+            entitlements = []
+        repos = self.getConaryClient(entitlements).repos
+        try:
+            has_files = repos.hasTroves(x.trove_tup for x in files)
+            return [x for x in files if has_files[x.trove_tup]]
+        except cny_errors.InsufficientPermission:
+            return []
+
 
 def configure(ucfg):
     dburl = ucfg.downloadDB
@@ -73,6 +89,7 @@ def configure(ucfg):
     cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
     cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
     cfg.add_route('downloads_customer', '/customers/{cust_id}/downloads')
+    cfg.add_route('cust_download_get',  '/customers/{cust_id}/downloads/get/{sha1}')
     cfg.add_route('cust_ents',          '/customers/{cust_id}/entitlements')
     cfg.add_route('cust_ent_put',       '/customer_entitlements')
     # Views
