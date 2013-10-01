@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# Copyright (c) SAS Institute Inc.
+#
+
+chkconfig nginx on
+chkconfig gunicorn on
+chkconfig pgbouncer on
+chkconfig postgresql-updateservice on
+
+# Pause nginx
+[ -f /var/run/nginx.pid ] && kill -WINCH $(cat /var/run/nginx.pid)
+
+# WORKAROUND rmake3 pidfiles moving in 8.2.0
+old=/srv/rmake3/lock/rmake-node.pid
+new=/var/run/rmake3/rmake-node.pid
+if [ -e $old ] && ! [ -e $new ]
+then
+    mv -f $old $new
+fi
+
+# Stop all ancillary services
+services="gunicorn rmake3-node crond"
+reversed=$(echo "$services" | sed -e 's/ /\n/g' | tac)
+for name in $reversed
+do
+    if [ -e /var/lock/subsys/$name ]
+    then
+        /sbin/service $name stop
+    fi
+done
+
+# Restart the database
+service postgresql-updateservice restart
+service pgbouncer restart
+
+# Migrate data
+/srv/conary/bin/migrate-config
+/srv/conary/bin/migrate-repos
+
+# Start ancillary services
+for name in $services
+do
+    /sbin/service $name start
+done
+
+# Make sure gunicorn is ready, then unpause nginx
+n=0
+while [ $n -lt 50 ]
+do
+    curl -s 127.0.0.1:7720 >& /dev/null && break
+    if [ $n -eq 0 ]
+    then
+        echo -n Waiting for application server to start
+    fi
+    echo -n .
+    sleep 0.2
+    n=$(($n + 1))
+done
+[ $n -ne 0 ] && echo
+service nginx reload
+
+exit 0

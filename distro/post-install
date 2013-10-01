@@ -1,6 +1,4 @@
 #!/bin/bash
-/srv/conary/bin/migrate-config
-/srv/conary/bin/migrate-repos
 chkconfig nginx on
 chkconfig gunicorn on
 chkconfig pgbouncer on
