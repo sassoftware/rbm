@@ -21,6 +21,9 @@ try:
 except cfgtypes.CfgEnvironmentError:
     print "Error reading config file"
     sys.exit(1)
+if not cfg.repositoryDB:
+    print "In proxy mode, no migration required"
+    sys.exit(0)
 
 tracelog.FileLog = SimpleFileLog
 tracelog.initLog(filename='stderr', level=2)
