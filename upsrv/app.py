@@ -86,6 +86,7 @@ def configure(ucfg):
     cfg.add_route('conaryrc',           '/conaryrc')
     cfg.add_route('downloads_index',    '/downloads')
     cfg.add_route('downloads_add',      '/downloads/add')
+    cfg.add_route('downloads_meta',     '/downloads/meta/{sha1}')
     cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
     cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
     cfg.add_route('downloads_customer', '/customers/{cust_id}/downloads')

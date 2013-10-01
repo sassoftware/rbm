@@ -33,7 +33,8 @@ class DownloadFile(Base):
     trove_timestamp = Column(Text,      nullable=False)
     trove_flavor    = Column(Text,      nullable=False)
 
-    meta_items      = relationship('DownloadMetadata', backref='file')
+    meta_items      = relationship('DownloadMetadata', backref='file',
+            cascade='all')
 
     @reify
     def trove_tup(self):

@@ -3,6 +3,7 @@
 #
 
 import datetime
+from pyramid import httpexceptions as web_exc
 from pyramid.view import view_config
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
@@ -25,6 +26,8 @@ def _one_file(request, dlfile, cust_id=None):
         path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     out = {}
+    out['links'] = {'rel': 'self',
+            'href': request.route_url('downloads_meta', sha1=dlfile.file_sha1)}
     for column in DownloadFile.__table__.columns:
         column = column.name
         value = getattr(dlfile, column)
@@ -64,10 +67,32 @@ def downloads_customer(request):
     return [_one_file(request, x, cust_id=cust_id) for x in files]
 
 
+@view_config(route_name='downloads_meta', request_method='GET', renderer='json')
+@authenticated('reader')
+def downloads_meta_get(request):
+    dlfile = request.db.query(DownloadFile).get(request.matchdict['sha1'])
+    if dlfile is None:
+        return web_exc.HTTPNotFound()
+    return _one_file(request, dlfile)
+
+
+@view_config(route_name='downloads_meta', request_method='DELETE', renderer='json')
+@authenticated('mirror')
+def downloads_meta_delete(request):
+    dlfile = request.db.query(DownloadFile).get(request.matchdict['sha1'])
+    if dlfile is None:
+        return web_exc.HTTPNotFound()
+    request.db.delete(dlfile)
+    return {}
+
+
 @view_config(route_name='downloads_add', request_method='POST', renderer='json')
+@view_config(route_name='downloads_meta', request_method='PUT', renderer='json')
 @authenticated('mirror')
 def downloads_add(request):
     infile = request.json_body
+    if 'sha1' in request.matchdict:
+        infile['file_sha1'] = request.matchdict['sha1']
     dlfile = request.db.query(DownloadFile
             ).filter_by(file_sha1=infile['file_sha1']
             ).first()
@@ -85,3 +110,5 @@ def downloads_add(request):
         meta_item.meta_key = key
         meta_item.value = value
         dlfile.meta_items.append(meta_item)
+    dlfile = request.db.query(DownloadFile).get(infile['file_sha1'])
+    return _one_file(request, dlfile)
