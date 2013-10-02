@@ -8,6 +8,7 @@ from conary import conarycfg
 from conary import conaryclient
 from conary.repository import errors as cny_errors
 from conary.repository.netrepos.auth_tokens import AuthToken
+from conary.repository.netrepos import geoip
 from conary.server.wsgi_hooks import ConaryHandler
 from pyramid import config
 from pyramid import request
@@ -20,6 +21,10 @@ from .db import schema
 
 
 class Request(request.Request):
+
+    @reify
+    def geoip(self):
+        return geoip.GeoIPLookup(self.cfg.geoIpFiles)
 
     @reify
     def db(self):

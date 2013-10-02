@@ -5,7 +5,11 @@
 import itertools
 import StringIO
 from conary import dbstore
+from conary.deps import deps
 from pyramid.view import view_config
+
+REAL_IPS = deps.parseFlavor(
+        '!reserved.site-local,!reserved.link-local,!reserved.loopback')
 
 
 @view_config(route_name='conaryrc', request_method='GET')
@@ -46,11 +50,27 @@ def conaryrc(req):
     return req.response
 
 
+def lookupCountry(req):
+    for remote_ip in reversed(req.getForwardedFor()):
+        flags = req.geoip.getFlags(remote_ip)
+        if flags.satisfies(REAL_IPS):
+            break
+    else:
+        return None
+    for flag in list(flags.iterDepsByClass(deps.UseDependency))[0].flags:
+        if flag.startswith('country.'):
+            return flag[8:]
+    return None
+
+
 def managedConaryrc(req):
     body = StringIO.StringIO()
 
+    cc = lookupCountry(req)
+    print >> body, "# Detected country code %s" % cc
+
     # Choose a preferred mirror group
-    groups = None
+    groups = req.cfg.countryUsesGroups.get(cc)
     if not groups:
         groups = req.cfg.defaultMirrorGroups
     if not groups:

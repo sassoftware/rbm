@@ -19,7 +19,7 @@ class UpsrvConfig(netserver.ServerConfig):
     password                    = CfgDict(CfgString)
 
     mirrorsInGroup              = CfgDict(CfgLineList(CfgString))
-    countryUsesGroup            = CfgDict(CfgString)
+    countryUsesGroups           = CfgDict(CfgLineList(CfgString))
     defaultMirrorGroups         = CfgLineList(CfgString)
 
     @classmethod
