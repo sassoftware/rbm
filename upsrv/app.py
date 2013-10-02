@@ -35,7 +35,7 @@ class Request(request.Request):
 
     def getConaryClient(self, entitlements=()):
         cfg = conarycfg.ConaryConfiguration(False)
-        cfg.configLine('includeConfigFile http://localhost/conaryrc')
+        cfg.configLine('proxyMap * conarys://localhost/conary/')
         for key in entitlements:
             cfg.entitlement.addEntitlement('*', key)
         cli = conaryclient.ConaryClient(cfg)
