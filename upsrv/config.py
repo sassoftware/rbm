@@ -2,7 +2,8 @@
 # Copyright (c) SAS Institute Inc.
 #
 
-from conary.lib.cfgtypes import CfgInt, CfgList, CfgPath, CfgString, CfgDict
+from conary.lib.cfgtypes import CfgInt, CfgPath, CfgString
+from conary.lib.cfgtypes import CfgList, CfgDict, CfgLineList
 from conary.repository.netrepos import netserver
 
 CFG_PATH = '/srv/conary/repository.cnr'
@@ -16,6 +17,10 @@ class UpsrvConfig(netserver.ServerConfig):
     downloadSignatureExpiry     = (CfgInt, 3600)
 
     password                    = CfgDict(CfgString)
+
+    mirrorsInGroup              = CfgDict(CfgLineList(CfgString))
+    countryUsesGroup            = CfgDict(CfgString)
+    defaultMirrorGroups         = CfgLineList(CfgString)
 
     @classmethod
     def load(cls):

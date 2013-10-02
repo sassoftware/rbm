@@ -2,6 +2,8 @@
 # Copyright (c) SAS Institute Inc.
 #
 
+import itertools
+import StringIO
 from conary import dbstore
 from pyramid.view import view_config
 
@@ -10,6 +12,8 @@ from pyramid.view import view_config
 def conaryrc(req):
     hostname = req.host
     cfg = req.cfg
+    if cfg.mirrorsInGroup:
+        return managedConaryrc(req)
     if hostname.endswith(':80') or hostname.endswith(':443'):
         hostname = hostname.split(':')[0]
 
@@ -39,4 +43,35 @@ def conaryrc(req):
 
     req.response.content_type = 'text/plain'
     req.response.body = body
+    return req.response
+
+
+def managedConaryrc(req):
+    body = StringIO.StringIO()
+
+    # Choose a preferred mirror group
+    groups = None
+    if not groups:
+        groups = req.cfg.defaultMirrorGroups
+    if not groups:
+        groups = []
+
+    def _emit(mirrors):
+        # Stable sort order is best as the client will shuffle them
+        # automatically.
+        if mirrors:
+            print >> body, "proxyMap *", ' '.join(sorted(mirrors))
+
+    # Emit all mirrors in the preferred groups first.
+    preferredMirrors = set()
+    for group in groups:
+        preferredMirrors.update(req.cfg.mirrorsInGroup.get(group, ()))
+    _emit(preferredMirrors)
+
+    otherMirrors = set(itertools.chain(*req.cfg.mirrorsInGroup.values()))
+    otherMirrors -= preferredMirrors
+    _emit(otherMirrors)
+
+    req.response.content_type = 'text/plain'
+    req.response.body = body.getvalue()
     return req.response
