@@ -9,6 +9,7 @@ from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
 from webob import UTC
 
+from .download_content import purge_file
 from .. import url_sign
 from ..auth import authenticated, authCheck
 from ..db.models import DownloadFile, DownloadMetadata
@@ -85,6 +86,7 @@ def downloads_meta_delete(request):
     if dlfile is None:
         return web_exc.HTTPNotFound()
     request.db.delete(dlfile)
+    purge_file(request, dlfile.file_sha1)
     return {}
 
 

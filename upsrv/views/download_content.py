@@ -101,3 +101,18 @@ def downloads_put(request):
         return web_exc.HTTPBadRequest("SHA-1 check failed")
     os.rename(tmppath, path)
     return web_exc.HTTPNoContent()
+
+
+def purge_file(request, sha1):
+    dlfiles = request.db.query(DownloadFile).filter_by(file_sha1=sha1).all()
+    if dlfiles:
+        # Still in use
+        return
+    path = joinPaths(request.cfg.downloadDir, sha1)
+    try:
+        os.unlink(path)
+    except OSError, err:
+        if err.args[0] != errno.ENOENT:
+            raise
+    else:
+        log.info("Deleted %s", path)
