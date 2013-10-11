@@ -26,8 +26,10 @@ def _one_file(request, dlfile, cust_id=None):
         path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     out = {}
-    out['links'] = {'rel': 'self',
-            'href': request.route_url('downloads_meta', sha1=dlfile.file_sha1)}
+    out['links'] = [{
+        'rel': 'self',
+        'href': request.route_url('downloads_meta', sha1=dlfile.file_sha1),
+        }]
     for column in DownloadFile.__table__.columns:
         column = column.name
         value = getattr(dlfile, column)
