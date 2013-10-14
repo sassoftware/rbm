@@ -27,10 +27,21 @@ def _one_file(request, dlfile, cust_id=None):
         path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     out = {}
-    out['links'] = [{
+    out['links'] = [
+        {
         'rel': 'self',
         'href': request.route_url('downloads_meta', sha1=dlfile.file_sha1),
-        }]
+        },
+        {
+        'rel': 'getContent',
+        'href': request.application_url + path_signed,
+        },
+        {
+        'rel': 'putContent',
+        'method': 'PUT',
+        'href': request.route_url('downloads_put', sha1=dlfile.file_sha1),
+        },
+        ]
     for column in DownloadFile.__table__.columns:
         column = column.name
         value = getattr(dlfile, column)
@@ -40,7 +51,6 @@ def _one_file(request, dlfile, cust_id=None):
     out['metadata'] = meta = {}
     for meta_item in dlfile.meta_items:
         meta[meta_item.meta_key] = meta_item.value
-    out['download_url'] = request.application_url + path_signed
     return out
 
 
