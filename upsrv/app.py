@@ -89,13 +89,11 @@ def configure(ucfg):
     cfg.include(pyramid_tm)
     # Routes
     cfg.add_route('conaryrc',           '/conaryrc')
-    cfg.add_route('downloads_index',    '/downloads')
-    cfg.add_route('downloads_add',      '/downloads/add')
-    cfg.add_route('downloads_meta',     '/downloads/meta/{sha1}')
-    cfg.add_route('downloads_get',      '/downloads/get/{sha1}')
-    cfg.add_route('downloads_put',      '/downloads/put/{sha1}')
-    cfg.add_route('downloads_customer', '/customers/{cust_id}/downloads')
-    cfg.add_route('cust_download_get',  '/customers/{cust_id}/downloads/get/{sha1}')
+    cfg.add_route('images_index',       '/images')
+    cfg.add_route('image',              '/images/by_id/{sha1}')
+    cfg.add_route('image_content',      '/images/by_id/{sha1}/content')
+    cfg.add_route('customer_content',   '/images/by_id/{sha1}/content/{cust_id}')
+    cfg.add_route('customer_images',    '/images/by_customer/{cust_id}')
     cfg.add_route('cust_ents',          '/customers/{cust_id}/entitlements')
     cfg.add_route('cust_ent_put',       '/customer_entitlements')
     # Views

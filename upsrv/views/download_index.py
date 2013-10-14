@@ -21,16 +21,16 @@ def _one_file(request, dlfile, cust_id=None):
         # can be re-checked and the IP of the client that initiates the
         # download can be checked against the GeoIP filters associated with
         # those entitlements.
-        path = request.route_path('cust_download_get',
+        path = request.route_path('customer_content',
                 cust_id=cust_id, sha1=dlfile.file_sha1)
     else:
-        path = request.route_path('downloads_get', sha1=dlfile.file_sha1)
+        path = request.route_path('image_content', sha1=dlfile.file_sha1)
     path_signed = url_sign.sign_path(request.cfg, path)
     out = {}
     out['links'] = [
         {
         'rel': 'self',
-        'href': request.route_url('downloads_meta', sha1=dlfile.file_sha1),
+        'href': request.route_url('image', sha1=dlfile.file_sha1),
         },
         {
         'rel': 'getContent',
@@ -39,7 +39,7 @@ def _one_file(request, dlfile, cust_id=None):
         {
         'rel': 'putContent',
         'method': 'PUT',
-        'href': request.route_url('downloads_put', sha1=dlfile.file_sha1),
+        'href': request.route_url('image_content', sha1=dlfile.file_sha1),
         },
         ]
     for column in DownloadFile.__table__.columns:
@@ -54,7 +54,7 @@ def _one_file(request, dlfile, cust_id=None):
     return out
 
 
-@view_config(route_name='downloads_index', request_method='GET', renderer='json')
+@view_config(route_name='images_index', request_method='GET', renderer='json')
 def downloads_index(request):
     files = request.db.query(DownloadFile
             ).options(joinedload(DownloadFile.meta_items)
@@ -67,7 +67,7 @@ def downloads_index(request):
     return [_one_file(request, x) for x in files]
 
 
-@view_config(route_name='downloads_customer', request_method='GET', renderer='json')
+@view_config(route_name='customer_images', request_method='GET', renderer='json')
 @authenticated('reader')
 def downloads_customer(request):
     cust_id = request.matchdict['cust_id']
@@ -80,7 +80,7 @@ def downloads_customer(request):
     return [_one_file(request, x, cust_id=cust_id) for x in files]
 
 
-@view_config(route_name='downloads_meta', request_method='GET', renderer='json')
+@view_config(route_name='image', request_method='GET', renderer='json')
 @authenticated('reader')
 def downloads_meta_get(request):
     dlfile = request.db.query(DownloadFile).get(request.matchdict['sha1'])
@@ -89,7 +89,7 @@ def downloads_meta_get(request):
     return _one_file(request, dlfile)
 
 
-@view_config(route_name='downloads_meta', request_method='DELETE', renderer='json')
+@view_config(route_name='image', request_method='DELETE', renderer='json')
 @authenticated('mirror')
 def downloads_meta_delete(request):
     dlfile = request.db.query(DownloadFile).get(request.matchdict['sha1'])
@@ -100,8 +100,8 @@ def downloads_meta_delete(request):
     return {}
 
 
-@view_config(route_name='downloads_add', request_method='POST', renderer='json')
-@view_config(route_name='downloads_meta', request_method='PUT', renderer='json')
+@view_config(route_name='images_index', request_method='POST', renderer='json')
+@view_config(route_name='image', request_method='PUT', renderer='json')
 @authenticated('mirror')
 def downloads_add(request):
     infile = request.json_body

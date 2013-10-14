@@ -18,8 +18,8 @@ from ..db.models import DownloadFile
 log = logging.getLogger(__name__)
 
 
-@view_config(route_name='downloads_get', request_method='GET')
-@view_config(route_name='cust_download_get', request_method='GET')
+@view_config(route_name='image_content', request_method='GET')
+@view_config(route_name='customer_content', request_method='GET')
 def downloads_get(request):
     if not url_sign.verify_request(request.cfg, request):
         return web_exc.HTTPForbidden("Authorization for this request has "
@@ -53,7 +53,7 @@ def downloads_get(request):
     return response
 
 
-@view_config(route_name='downloads_put', request_method='PUT')
+@view_config(route_name='image_content', request_method='PUT')
 @authenticated('mirror')
 def downloads_put(request):
     sha1 = request.matchdict['sha1']
