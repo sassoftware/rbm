@@ -60,7 +60,7 @@ class UpdateServiceAppliance(PackageRecipe):
         # Other requirements
         r.Requires('/usr/sbin/tmpwatch', '%(sysconfdir)s/cron.daily/mirror')
         r.Requires('/usr/sbin/logrotate', '%(sysconfdir)s/cron.daily/mirror')
-        r.Requires('/usr/sbin/gencert-rmake', '/usr/share/upsrv/scripts/preconfigure')
+        r.Requires('/opt/rmake3/sbin/gencert-rmake', '/usr/share/upsrv/scripts/preconfigure')
 
         # Appliance-specific components
         r.PackageSpec('%(name)s-appliance',

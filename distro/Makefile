@@ -7,8 +7,7 @@ SUBDIRS = conary-web ec2 postgresql rmake3 nginx
 scripts = \
 	post-install \
 	post-update \
-	preconfigure \
-	generate-certs
+	preconfigure
 
 scripts_dir = /usr/share/upsrv/scripts
 

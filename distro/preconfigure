@@ -16,7 +16,7 @@ cert_file=/etc/pki/tls/certs/localhost.crt
 key_file=/etc/pki/tls/private/localhost.key
 if [ ! -f $cert_file ]
 then
-    /usr/sbin/gencert-rmake -s \
+    /opt/rmake3/sbin/gencert-rmake -s \
         -o $cert_file -O $key_file \
         -e 3653 --CN="$(hostname)" \
         --O='Auto-Generated' --OU='Default Self-sign Certificate' \
