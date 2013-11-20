@@ -1,9 +1,0 @@
-#!/bin/sh
-#
-# Copyright 2008 rPath, Inc.
-# All Rights Reserved
-#
-
-# Reducing this to a stub.  There's nobody using a pre-4.1
-# rUS that would make the old code necessary.
-exit 0

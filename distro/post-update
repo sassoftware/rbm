@@ -8,6 +8,8 @@ chkconfig gunicorn on
 chkconfig pgbouncer on
 chkconfig postgresql-updateservice on
 
+chkconfig rmake off
+
 # Pause nginx
 [ -f /var/run/nginx.pid ] && kill -WINCH $(cat /var/run/nginx.pid)
 
@@ -35,8 +37,14 @@ service postgresql-updateservice restart
 service pgbouncer restart
 
 # Migrate data
-/srv/conary/bin/migrate-config
-/srv/conary/bin/migrate-repos
+logfile=/var/log/rbuilder/migration.log
+(
+echo Beginning migration to Conary $(conary --version)
+echo Date: $(date)
+python -mupsrv.conary_schema; rc=$?
+echo Exit code: $rc
+echo
+) 2>&1 |tee -a $logfile
 
 # Start ancillary services
 for name in $services
