@@ -25,6 +25,7 @@ class UpdateServiceAppliance(PackageRecipe):
     def setup(r):
         r.addMercurialSnapshot()
 
+        args = ''
         if Flags.ec2:
             args += ' EC2=1'
         r.Make(args)
@@ -39,19 +40,12 @@ class UpdateServiceAppliance(PackageRecipe):
         r.InitialContents('/srv/conary/config/99_custom.cnr')
 
         # Directories
-        r.MakeDirs('/srv/conary/tmp',
-                   '/srv/conary/contents',
-                   '/srv/conary/cscache',
-                   '/srv/conary/proxycontents',
-                   )
-        r.ExcludeDirectories(exceptions='/srv/conary')
-        r.ExcludeDirectories(exceptions='/srv/conary/contents')
-        r.ExcludeDirectories(exceptions='/srv/conary/proxycontents')
-        r.ExcludeDirectories(exceptions='/srv/conary/tmp')
-        r.ExcludeDirectories(exceptions='/srv/conary/cscache')
+        for dirname in ['tmp', 'contents', 'cscache', 'proxycontents']:
+            path = '/srv/conary/' + dirname
+            r.MakeDirs(path)
+            r.ExcludeDirectories(exceptions=path)
+            r.Ownership('apache', 'apache', path)
         r.Ownership('apache', 'apache',
-            '/srv/conary',
-            '/srv/conary/.*',
             '/srv/rbuilder/tmp',
             '/var/log/rbuilder',
             '/var/log/rbuilder/repository.log',
@@ -78,9 +72,4 @@ class UpdateServiceAppliance(PackageRecipe):
                 # rmake
                 '/etc/rmake3/',
                 '/boot/',
-                # branding
-                '/usr/share/splashy/',
-                '/etc/bootloader.d/',
                 )
-
-        r.PackageSpec('anaconda-custom-updateservice', '/usr/share/anaconda/')
