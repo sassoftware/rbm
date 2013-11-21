@@ -2,7 +2,7 @@
 # Copyright (c) SAS Institute Inc.
 #
 
-SUBDIRS = distro
+SUBDIRS = distro puppet
 
 
 export TOP = $(shell pwd)
