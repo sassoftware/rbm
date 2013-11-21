@@ -1,7 +1,10 @@
 class { 'appengine_mirror':
     web_enabled => false,
-    # Set to hostname for proxy mode, leave unset for mirror mode
-    # proxy_upstream => 'app.engine.hostname',
+    zone => 'Local rBuilder',
+    # Set if node functionality is desired, leave unset for standalone operation
+    #xmpp_host => 'app.engine.hostname',
+    # Set for proxy mode, leave unset for mirror mode
+    #proxy_upstream => 'app.engine.hostname',
 }
 
 mirror_user { 'anonymous':

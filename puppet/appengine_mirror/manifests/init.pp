@@ -18,6 +18,8 @@
 class appengine_mirror (
     $proxy_upstream                 = 'UNSET',
     $web_enabled                    = 'false',
+    $zone                           = 'Local rBuilder',
+    $xmpp_host                      = 'UNSET',
     ) {
 
     service { 'gunicorn':
@@ -40,5 +42,26 @@ proxyContentsDir /srv/conary/proxycontents
 conaryProxy http https://$proxy_upstream
 conaryProxy https https://$proxy_upstream
 "},
+    }
+
+    if $xmpp_host != 'UNSET' {
+        service { 'rmake3-node':
+            ensure                      => running,
+            enable                      => true,
+        }
+
+        file { '/etc/rmake3/node.d/50_zone.conf':
+            ensure                      => file,
+            notify                      => Service['rmake3-node'],
+            content => "\
+zone $zone
+xmppHost $xmpp_host
+",
+        }
+    } else {
+        service { 'rmake3-node':
+            ensure                      => stopped,
+            enable                      => false,
+        }
     }
 }
