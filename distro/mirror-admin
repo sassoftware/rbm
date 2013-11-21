@@ -1,0 +1,3 @@
+#!/usr/bin/python
+from upsrv import mirror_admin
+mirror_admin.Script().main()

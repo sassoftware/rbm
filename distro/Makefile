@@ -19,6 +19,7 @@ install: default-install
 	install    -m0755 $(scripts) $(DESTDIR)$(scripts_dir)/
 	install -D -m0755 cleanup.sh $(DESTDIR)/etc/cron.daily/mirror
 	install -D -m0755 updateservice.init $(DESTDIR)$(initdir)/updateservice
+	install -D -m0755 mirror-admin $(DESTDIR)/usr/sbin/mirror-admin
 	install -D -m0644 repository.cnr $(DESTDIR)/srv/conary/repository.cnr
 	install -D -m0644 conary.logrotate $(DESTDIR)/etc/logrotate.d/conary-repository
 	install -D -m0644 firewall $(DESTDIR)/etc/sysconfig/iptables
