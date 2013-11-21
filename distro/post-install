@@ -3,4 +3,6 @@ chkconfig nginx on
 chkconfig gunicorn on
 chkconfig pgbouncer on
 chkconfig postgresql-updateservice on
+
+chkconfig rmake off
 exit 0

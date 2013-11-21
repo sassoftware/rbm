@@ -1,0 +1,3 @@
+# Do not modify this file! Make a higher-numbered one and place your
+# customizations there instead.
+repositoryDB    psycopg2 updateservice@localhost.localdomain:5439/updateservice

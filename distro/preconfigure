@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Copyright (c) SAS Institute Inc.
+#
+
+pgsql_service=postgresql-updateservice
+
+. /etc/sysconfig/pgsql/$pgsql_service
+export PGDATA PGPORT
+
+createuser -SDRU postgres updateservice &>/dev/null
+createdb -U postgres -E utf8 -O updateservice updateservice &>/dev/null
+createdb -U postgres -E utf8 -O updateservice upsrv_app &>/dev/null
+
+cert_file=/etc/pki/tls/certs/localhost.crt
+key_file=/etc/pki/tls/private/localhost.key
+alt_file=/srv/rbuilder/pki/httpd.pem
+if [ ! -f $cert_file ]
+then
+    /opt/rmake3/sbin/gencert-rmake -s \
+        -o $cert_file -O $key_file \
+        -e 3653 --CN="$(hostname)" \
+        --O='Auto-Generated' --OU='Default Self-sign Certificate' \
+        || exit 1
+
+    mkdir -p $(dirname $alt_file)
+    tmp_file=$(mktemp --tmpdir=$(dirname $alt_file))
+    cat $cert_file $key_file > $tmp_file
+    mv $tmp_file $alt_file
+fi
+
+python -mupsrv.conary_schema
+python -mupsrv.db.schema

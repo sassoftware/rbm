@@ -5,7 +5,7 @@
 
 class UpdateServiceAppliance(PackageRecipe):
     name = 'updateservice'
-    version = '7'
+    version = '8'
 
     buildRequires = [
         'conary-repository:python',
@@ -23,14 +23,9 @@ class UpdateServiceAppliance(PackageRecipe):
     Flags.ec2 = False
 
     def setup(r):
-        r.macros.disc1 = '/usr/lib/media-template/disc1'
-        r.macros.product = 'rPath Appliance Platform Update Service'
-        if not r.macros.get('shortVersion'):
-            r.macros.shortVersion = r.version
-
         r.addMercurialSnapshot()
 
-        args = 'VERSION=%(shortVersion)s'
+        args = ''
         if Flags.ec2:
             args += ' EC2=1'
         r.Make(args)
@@ -41,19 +36,16 @@ class UpdateServiceAppliance(PackageRecipe):
         # Repository config files
         r.Transient('/srv/conary/repository.cnr')
         r.Create('/srv/conary/config/99_custom.cnr')
+        r.InitialContents('/srv/conary/config/50_repositorydb.cnr')
         r.InitialContents('/srv/conary/config/99_custom.cnr')
 
         # Directories
-        r.MakeDirs('/srv/conary/tmp',
-                   '/srv/conary/contents',
-                   '/srv/conary/cscache')
-        r.ExcludeDirectories(exceptions='/srv/conary')
-        r.ExcludeDirectories(exceptions='/srv/conary/contents')
-        r.ExcludeDirectories(exceptions='/srv/conary/tmp')
-        r.ExcludeDirectories(exceptions='/srv/conary/cscache')
+        for dirname in ['tmp', 'contents', 'cscache', 'proxycontents']:
+            path = '/srv/conary/' + dirname
+            r.MakeDirs(path)
+            r.ExcludeDirectories(exceptions=path)
+            r.Ownership('apache', 'apache', path)
         r.Ownership('apache', 'apache',
-            '/srv/conary',
-            '/srv/conary/.*',
             '/srv/rbuilder/tmp',
             '/var/log/rbuilder',
             '/var/log/rbuilder/repository.log',
@@ -68,12 +60,10 @@ class UpdateServiceAppliance(PackageRecipe):
         # Other requirements
         r.Requires('/usr/sbin/tmpwatch', '%(sysconfdir)s/cron.daily/mirror')
         r.Requires('/usr/sbin/logrotate', '%(sysconfdir)s/cron.daily/mirror')
+        r.Requires('/opt/rmake3/sbin/gencert-rmake', '/usr/share/upsrv/scripts/preconfigure')
 
         # Appliance-specific components
         r.PackageSpec('%(name)s-appliance',
-                # rAPA
-                '%(libdir)s/raa/',
-                '/etc/raa/',
                 # PostgreSQL configuration
                 '/etc/cron.d/postgres',
                 '/etc/postgresql.conf.updateservice',
@@ -82,9 +72,4 @@ class UpdateServiceAppliance(PackageRecipe):
                 # rmake
                 '/etc/rmake3/',
                 '/boot/',
-                # branding
-                '/usr/share/splashy/',
-                '/etc/bootloader.d/',
                 )
-
-        r.PackageSpec('anaconda-custom-updateservice', '/usr/share/anaconda/')

@@ -1,0 +1,38 @@
+#!/bin/bash
+# chkconfig: 345 70 30
+# description: Configure the system on startup
+
+check_postgres() {
+    psql -U postgres -l &>/dev/null
+}
+
+wait_for_postgres() {
+    check_postgres && return 0
+    echo -n "Waiting for PostgreSQL to start "
+    for i in `seq 30`; do
+        if check_postgres; then
+            echo " done"
+            return 0
+        fi
+        echo -n "."
+        sleep 1;
+    done
+    echo " failed!"
+    return 1
+}
+
+
+case "$1" in
+start)
+  . /etc/sysconfig/pgsql/postgresql-updateservice
+  export PGPORT
+  wait_for_postgres || exit 1
+
+  /usr/share/upsrv/scripts/preconfigure
+  ;;
+stop)
+  ;;
+*)
+  echo "Usage $0 {start | stop}"
+  ;;
+esac
