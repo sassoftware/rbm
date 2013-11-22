@@ -7,13 +7,13 @@ class { 'appengine_mirror':
     #proxy_upstream => 'app.engine.hostname',
 }
 
-mirror_user { 'anonymous':
-    ensure => present,
-    permission => 'anonymous',
-    salt => '9a1b3988',
-    digest => '8b4d911930f4616c68d261de89ed3b34',
-}
-
+#mirror_user { 'anonymous':
+#    ensure => present,
+#    permission => 'anonymous',
+#    salt => '9a1b3988',
+#    digest => '8b4d911930f4616c68d261de89ed3b34',
+#}
+#
 #mirror_user { 'admin':
 #    ensure => present,
 #    permission => 'admin',
