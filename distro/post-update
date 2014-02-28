@@ -46,6 +46,15 @@ echo Exit code: $rc
 echo
 ) 2>&1 |tee -a $logfile
 
+# Migrate the updateservice database
+(
+echo Beginning migration
+echo Date: $(date)
+python -mupsrv.db.schema; rc=$?
+echo Exit code: $rc
+echo
+) 2>&1 |tee -a $logfile
+
 # Start ancillary services
 for name in $services
 do
