@@ -96,6 +96,8 @@ def configure(ucfg):
     cfg.add_route('customer_images',    '/images/by_customer/{cust_id}')
     cfg.add_route('cust_ents',          '/customers/{cust_id}/entitlements')
     cfg.add_route('cust_ent_put',       '/customer_entitlements')
+    # Registration
+    cfg.add_route('records',            '/registration/v1/records')
     # Views
     cfg.scan(package='upsrv.views')
     return cfg

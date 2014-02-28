@@ -3,11 +3,12 @@
 #
 
 import base64
+import datetime
 from conary import trovetup
 from conary import versions
 from conary.deps import deps
 from pyramid.decorator import reify
-from sqlalchemy import Column, BigInteger, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import Column, BigInteger, Integer, Text, DateTime, ForeignKey, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -78,6 +79,28 @@ class CustomerEntitlement(Base):
     cust_id         = Column(Text,      primary_key=True)
     entitlement     = Column(Text,      primary_key=True)
 
+class Record(Base):
+    __tablename__ = 'records'
+    uuid = Column(Text, primary_key=True,
+            info=dict(recordCreate=dict(required=True)))
+
+    producers = Column(Text, nullable=False,
+            info=dict(recordCreate=dict(required=True),
+                recordEncoding='json'))
+    system_id = Column(Text, nullable=False,
+            info=dict(recordCreate=dict(required=True)))
+    client_address = Column(Text, nullable=False,
+            info=dict(recordCreate=dict(readOnly=True)))
+    version = Column(Text, nullable=False,
+            info=dict(recordCreate=dict(required=True)))
+    created_time = Column(DateTime, nullable=False,
+            default=datetime.datetime.now)
+    updated_time = Column(DateTime, nullable=False,
+            default=datetime.datetime.now, onupdate=datetime.datetime.now,
+            info=dict(recordCreate=dict(readOnly=True)))
+
+# Not really needed since we're not generating the schema
+Index('records_systemid_idx', Record.system_id)
 
 def initialize_sql(engine, use_tm=True):
     Base.metadata.bind = engine

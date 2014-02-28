@@ -3,8 +3,9 @@
 
 from conary.dbstore import sqllib
 
-Version = sqllib.DBversion(1, 0)
+Version = sqllib.DBversion(2, 0)
 
+from db import models
 
 def createSchema(db):
     db.execute("""
@@ -43,4 +44,38 @@ def createSchema(db):
         PRIMARY KEY ( cust_id, entitlement )
     )""")
 
+    db.execute("""
+    CREATE TABLE records (
+            uuid TEXT NOT NULL,
+            producers TEXT NOT NULL,
+            system_id TEXT NOT NULL,
+            client_address TEXT NOT NULL,
+            version TEXT NOT NULL,
+            created_time TIMESTAMP WITH TIME ZONE NOT NULL,
+            updated_time TIMESTAMP WITH TIME ZONE NOT NULL,
+            PRIMARY KEY (uuid)
+    )""")
+
+    db.execute("""
+    CREATE INDEX records_systemid_idx ON records (system_id)
+    """)
+    return Version
+
+def migrateSchema(db):
+    # XXX Needs to be better for the next migration; for now we're
+    # executing just one
+    db.execute("""
+    CREATE TABLE records (
+            uuid TEXT NOT NULL,
+            producers TEXT NOT NULL,
+            system_id TEXT NOT NULL,
+            client_address TEXT NOT NULL,
+            version TEXT NOT NULL,
+            created_time TIMESTAMP WITH TIME ZONE NOT NULL,
+            updated_time TIMESTAMP WITH TIME ZONE NOT NULL,
+            PRIMARY KEY (uuid)
+    )""")
+
+    query = db.query(models.DatabaseVersion).update(
+        values=dict(version=Version.major, minor=Version.minor))
     return Version
