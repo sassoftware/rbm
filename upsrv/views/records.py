@@ -4,12 +4,16 @@ import json
 import datetime
 
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPUnauthorized
 
 from ..db.models import Record
 
 
 @view_config(route_name='records', request_method='POST', renderer='json')
 def records_add(request):
+    entitlements = request.headers.get('X-Conary-Entitlement')
+    if not entitlements:
+        return HTTPUnauthorized()
     db = request.db
     newRecord = deserialize(request, Record)
     newRecord.client_address = request.client_addr
