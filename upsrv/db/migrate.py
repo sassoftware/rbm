@@ -76,6 +76,6 @@ def migrateSchema(db):
             PRIMARY KEY (uuid)
     )""")
 
-    query = db.query(models.DatabaseVersion).update(
+    db.query(models.DatabaseVersion).update(
         values=dict(version=Version.major, minor=Version.minor))
     return Version

@@ -5,7 +5,7 @@ import datetime
 
 from pyramid.view import view_config
 
-from ..auth import authenticated
+#from ..auth import authenticated
 from ..db.models import Record
 
 
