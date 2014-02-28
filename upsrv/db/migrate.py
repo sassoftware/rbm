@@ -5,7 +5,7 @@ from conary.dbstore import sqllib
 
 Version = sqllib.DBversion(2, 0)
 
-from db import models
+from .db import models
 
 def createSchema(db):
     db.execute("""
