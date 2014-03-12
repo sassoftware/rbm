@@ -32,11 +32,12 @@ def _processProducerData(producerName, producerStruct):
     attributes = producerStruct.get('attributes', {})
     if attributes.get('content-type') == 'application/json':
         producerData = producerStruct.get('data', '')
-        try:
-            producerData = json.loads(producerData)
-        except ValueError:
-            # invalid json
-            attributes.pop('content-type', None)
+        if isinstance(producerData, basestring):
+            try:
+                producerData = json.loads(producerData)
+            except ValueError:
+                # invalid json
+                attributes.pop('content-type', None)
         producerStruct.update(attributes=attributes, data=producerData)
 
 @view_config(route_name='records', request_method='GET', renderer='json')
