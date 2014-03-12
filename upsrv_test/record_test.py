@@ -71,9 +71,6 @@ class RecordTest(testcase.TestCaseWithWorkDir):
         conn.close()
 
         self.app = self.wcfg.make_wsgi_app()
-#        self.now = datetime.datetime(year=2020, month=12, day=24,
-#                hour=15, minute=16, second=17)
-#        mock.mock(datetime.datetime, 'now', self.now)
 
     def tearDown(self):
         mock.unmockAll()
