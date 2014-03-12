@@ -93,10 +93,12 @@ class Record(Base):
             info=dict(recordCreate=dict(readOnly=True)))
     version = Column(Text, nullable=False,
             info=dict(recordCreate=dict(required=True)))
+    # This is set by the record's created_time
     created_time = Column(DateTime, nullable=False,
-            default=datetime.datetime.now)
+            default=datetime.datetime.utcnow)
+    # This is NOT updated from the record, it is set as readOnly
     updated_time = Column(DateTime, nullable=False,
-            default=datetime.datetime.now, onupdate=datetime.datetime.now,
+            default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow,
             info=dict(recordCreate=dict(readOnly=True)))
 
 # Not really needed since we're not generating the schema

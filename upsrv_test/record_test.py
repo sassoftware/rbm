@@ -108,7 +108,7 @@ class RecordTest(testcase.TestCaseWithWorkDir):
         resp = self.app.invoke_subrequest(req, use_tweens=True)
         self.assertEquals(resp.status_code, 200)
 
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
 
         # Decode the json coming back
         record = json.loads(resp.body)
