@@ -3,10 +3,14 @@
 #
 
 
+import base64
 import json
 import datetime
+import logging
 from testrunner import testcase
 from testutils import mock
+
+from conary import conarycfg
 
 from upsrv import config, app, db
 from upsrv.views import records
@@ -15,13 +19,23 @@ class RecordTest(testcase.TestCaseWithWorkDir):
     DefaultCreatedTime = '2013-12-11T10:09:08.080605'
     DefaultUuid = '00000000-0000-0000-0000-000000000000'
     DefaultSystemId = 'systemid0'
+    DefaultEntitlements = [
+            ('a', 'aaa'),
+            ('*', 'bbb'),
+            ]
     DefaultProducers = {
             'conary-system-model' : {
                 'attributes' : {
                     'content-type' : 'text/plain',
                     'version' : '1',
                     },
-                'data' : 'install "group-university-appliance=university.cny.sas.com@sas:university-3p-staging/1-2-3[~!xen is: x86(i486,i586,i686) x86_64]"\n',
+                # The system model has some unversioned artifacts
+                'data' : '''\
+search "foo=cny.tv@ns:1/1-2-3"
+install "group-university-appliance=university.cny.sas.com@sas:university-3p-staging/1-2-3[~!xen is: x86(i486,i586,i686) x86_64]"
+install bar
+update baz=/invalid.version.string@ns:1
+''',
                 },
             'system-information' : {
                 'attributes' : {
@@ -49,6 +63,12 @@ class RecordTest(testcase.TestCaseWithWorkDir):
 
     def setUp(self):
         testcase.TestCaseWithWorkDir.setUp(self)
+        # Delete all root handlers
+        for handler in logging.root.handlers:
+            logging.root.removeHandler(handler)
+        logging.basicConfig(level=logging.DEBUG)
+        self.logHandler = logging.root.handlers[0]
+        mock.mockMethod(self.logHandler.handle)
         self.cfg = config.UpsrvConfig()
         self.cfg.downloadDB = "sqlite:///%s/%s" % (self.workDir, "upsrv.sqlite")
 
@@ -72,16 +92,39 @@ class RecordTest(testcase.TestCaseWithWorkDir):
 
         self.app = self.wcfg.make_wsgi_app()
 
+        # Mock the conary config object
+        self.conaryCfg = conarycfg.ConaryConfiguration(False)
+        self.conaryCfg.root = "%s/%s" % (self.workDir, "__root__")
+        mock.mock(conarycfg, 'ConaryConfiguration', self.conaryCfg)
+
     def tearDown(self):
         mock.unmockAll()
         testcase.TestCaseWithWorkDir.tearDown(self)
+        for handler in logging.root.handlers:
+            logging.root.removeHandler(handler)
+        logging.root.setLevel(logging.WARNING)
 
-    def _req(self, path, method='GET', headers=None, body=None):
+    def _getLoggingCalls(self):
+        logEntries = [ (x[0][0].name, x[0][0].msg, x[0][0].args)
+                for x in self.logHandler.handle._mock.calls ]
+        return logEntries
+
+    def _resetLoggingCalls(self):
+        del self.logHandler.handle._mock.calls[:]
+
+    def _req(self, path, method='GET', entitlements=None, headers=None, body=None):
+        headers = headers or {}
+        if entitlements:
+            ents = " ".join("%s %s" % (x[0], base64.b64encode(x[1]))
+                    for x in entitlements)
+            headers['X-Conary-Entitlement'] = ents
         req = app.Request.blank(path, method=method, headers=headers or {},
                 environ=dict(REMOTE_ADDR='10.11.12.13'))
         req.method = method
         req.headers.update(headers or {})
         req.body = body or ''
+        req._conaryClient = mock.MockObject()
+        mock.mockMethod(req.getConaryClient, returnValue=req._conaryClient)
         return req
 
     @classmethod
@@ -101,9 +144,27 @@ class RecordTest(testcase.TestCaseWithWorkDir):
         req = self._req(url, method='POST')
         resp = self.app.invoke_subrequest(req, use_tweens=True)
         self.assertEquals(resp.status_code, 401)
+        logEntries = self._getLoggingCalls()
+        self.assertEquals(len(logEntries), 3)
+        self.assertEquals(logEntries[1], ('upsrv.views.records', "Missing auth header `%s' from %s", ('X-Conary-Entitlement', '10.11.12.13')))
+        self._resetLoggingCalls()
 
+        # Include an entitlement, but no conary system model
         req = self._req(url, method='POST',
-                headers={'X-Conary-Entitlement' : 'aaa'},
+                entitlements=self.DefaultEntitlements,
+                body=json.dumps(self._R(producers={
+                    'system-information' : self.DefaultProducers['system-information']})))
+        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        self.assertEquals(resp.status_code, 400)
+
+        logEntries = self._getLoggingCalls()
+        self.assertEquals(len(logEntries), 4)
+        self.assertEquals(logEntries[1], ('upsrv.views.records', 'Missing system model from %s', ('10.11.12.13',)))
+        self._resetLoggingCalls()
+
+        # Correct record
+        req = self._req(url, method='POST',
+                entitlements=self.DefaultEntitlements,
                 body=json.dumps(self._R()))
         resp = self.app.invoke_subrequest(req, use_tweens=True)
         self.assertEquals(resp.status_code, 200)
@@ -126,3 +187,42 @@ class RecordTest(testcase.TestCaseWithWorkDir):
         delta = now - rectime
         self.assertLess(0, delta.total_seconds())
         self.assertLess(delta.total_seconds(), 2)
+
+        self.assertEquals(req.getConaryClient._mock.popCall(),
+                ((), (('entitlements', ['aaa', 'bbb']),)))
+        self.assertEquals(req.getConaryClient._mock.calls, [])
+
+        self._resetLoggingCalls()
+
+        # Same deal, but make findTroves raise an exception
+        _calls = []
+        _exc = records.repoerrors.TroveNotFound('blah')
+        def fakeFindTroves(label, troves, *args, **kwargs):
+            _calls.append((label, troves, args, kwargs))
+            raise _exc
+        req._conaryClient.repos._mock.set(findTroves=fakeFindTroves)
+        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        self.assertEquals(resp.status_code, 401)
+
+        logEntries = self._getLoggingCalls()
+        self.assertEquals(len(logEntries), 4)
+        self.assertEquals(logEntries[2],
+                ('upsrv.views.records', '%s: bad entitlements %s for system model %s: %s',
+                    ('10.11.12.13', [('a', 'aaa'), ('*', 'bbb')],
+                        self.DefaultProducers['conary-system-model']['data'],
+                        _exc)))
+
+        self.assertEquals(len(_calls), 1)
+        self.assertEquals([str(x) for x in _calls[0][1]],
+                ['foo=cny.tv@ns:1/1-2-3', 'group-university-appliance=university.cny.sas.com@sas:university-3p-staging/1-2-3[~!xen is: x86(i486,i586,i686) x86_64]'])
+
+    def testDecodeEntitlements(self):
+        tests = [
+                ("", []),
+                ("a", []),
+                ("a YWFh", [('a', 'aaa')]),
+                ("a YWFh *", [('a', 'aaa')]),
+                ("a YWFh * YmJi", [('a', 'aaa'), ('*', 'bbb')]),
+                ]
+        for entString, expected in tests:
+            self.assertEqual(records._decodeEntitlements(entString), expected)
