@@ -39,7 +39,8 @@ def records_add(request):
     if systemModel is None:
         log.warning("Missing system model from %s", request.client_addr)
         return HTTPBadRequest()
-    cmlObj.parse(systemModel.split('\n'))
+    # cml is very unicode unfriendly
+    cmlObj.parse(systemModel.encode("ascii").split('\n'))
     troveTups = []
     for op in cmlObj.modelOps:
         if op.key == 'search':
