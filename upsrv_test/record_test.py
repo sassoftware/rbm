@@ -3,6 +3,7 @@
 #
 
 
+import crypt
 import base64
 import json
 import datetime
@@ -60,6 +61,8 @@ update baz=/invalid.version.string@ns:1
                 'data' : json.dumps(dict(a=1, b=2)),
                 },
             }
+    Username = 'records-reader'
+    Password = 'sikrit'
 
     def setUp(self):
         testcase.TestCaseWithWorkDir.setUp(self)
@@ -71,6 +74,9 @@ update baz=/invalid.version.string@ns:1
         mock.mockMethod(self.logHandler.handle)
         self.cfg = config.UpsrvConfig()
         self.cfg.downloadDB = "sqlite:///%s/%s" % (self.workDir, "upsrv.sqlite")
+        salt = file("/dev/urandom").read(8).encode('hex')
+        self.cfg.configLine('password %s %s' % (
+            self.Username, crypt.crypt(self.Password, '$1$%s$' % salt)))
 
         self.wcfg = app.configure(self.cfg)
 
@@ -123,6 +129,7 @@ update baz=/invalid.version.string@ns:1
         req.method = method
         req.headers.update(headers or {})
         req.body = body or ''
+        req.cfg = self.cfg
         req._conaryClient = mock.MockObject()
         mock.mockMethod(req.getConaryClient, returnValue=req._conaryClient)
         return req
@@ -178,6 +185,28 @@ update baz=/invalid.version.string@ns:1
         self.assertEquals(record['client_address'], '10.11.12.13')
 
         allRecords = records.records_view(req)
+        self.assertEquals(allRecords.status_code, 403)
+
+        # Let's add an auth header, with a bad username
+        req.headers['Authorization'] = 'Basic %s' % base64.b64encode(
+            '{username}:{password}'.format(username='faaaaake',
+                password=self.Password))
+        allRecords = records.records_view(req)
+        self.assertEquals(allRecords.status_code, 403)
+
+        # Let's add an auth header, with a good username and a bad password
+        req.headers['Authorization'] = 'Basic %s' % base64.b64encode(
+            '{username}:{password}'.format(username=self.Username,
+                password='faaaaaaake'))
+        allRecords = records.records_view(req)
+        self.assertEquals(allRecords.status_code, 403)
+
+        # Let's add an auth header, with a good username/password
+        req.headers['Authorization'] = 'Basic %s' % base64.b64encode(
+            '{username}:{password}'.format(username=self.Username,
+                password=self.Password))
+        allRecords = records.records_view(req)
+
         self.assertEquals(allRecords['count'], 1)
         rec = allRecords['records'][0]
         self.assertEquals(rec['uuid'], self.DefaultUuid)

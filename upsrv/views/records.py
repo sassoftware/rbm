@@ -15,6 +15,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPUnauthorized, HTTPBadRequest
 
 from ..db.models import Record
+from ..auth import cryptauth
 
 
 @view_config(route_name='records', request_method='POST', renderer='json')
@@ -103,6 +104,7 @@ def _decodeEntitlements(entString):
         ret.append((entClass, base64.b64decode(b64EntKey)))
     return ret
 
+@cryptauth('records-reader')
 @view_config(route_name='records', request_method='GET', renderer='json')
 def records_view(request):
     queryLimit = int(request.GET.get('limit', 100))
