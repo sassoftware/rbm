@@ -120,7 +120,8 @@ update baz=/invalid.version.string@ns:1
         conn = maker()
         db.schema.updateSchema(conn)
         conn.commit()
-        conn.close()
+
+        self.conn = conn
 
         self.app = self.wcfg.make_wsgi_app()
 
@@ -143,6 +144,10 @@ update baz=/invalid.version.string@ns:1
 
     def _resetLoggingCalls(self):
         del self.logHandler.handle._mock.calls[:]
+
+    def _resetRecords(self):
+        self.conn.execute("delete from records")
+        self.conn.commit()
 
     def _req(self, path, method='GET', entitlements=None, headers=None, body=None):
         headers = headers or {}
@@ -201,6 +206,9 @@ update baz=/invalid.version.string@ns:1
                 body=json.dumps(self._R()))
         resp = self.app.invoke_subrequest(req, use_tweens=True)
         self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json_body['entitlement_valid'], True)
+        self.assertEquals(resp.json_body['entitlements_json'],
+                '[["a", "aaa"], ["*", "bbb"]]')
 
         now = datetime.datetime.utcnow()
 
@@ -231,10 +239,14 @@ update baz=/invalid.version.string@ns:1
         req.headers['Authorization'] = 'Basic %s' % base64.b64encode(
             '{username}:{password}'.format(username=self.Username,
                 password=self.Password))
-        allRecords = records.records_view(req)
+        # Make sure the record got persisted correctly
+        allRecords = records.records_view(req)['records']
+        self.assertEquals([ x['entitlement_valid'] for x in allRecords ],
+                [ True ])
+        self.assertEquals([ x['entitlements_json'] for x in allRecords ],
+                [ '[["a", "aaa"], ["*", "bbb"]]' ])
 
-        self.assertEquals(allRecords['count'], 1)
-        rec = allRecords['records'][0]
+        rec = allRecords[0]
         self.assertEquals(rec['uuid'], self.DefaultUuid)
         # Make sure updated_time got set by the server
         rectime = datetime.datetime.strptime(rec['updated_time'],
@@ -247,7 +259,9 @@ update baz=/invalid.version.string@ns:1
                 ((), (('entitlements', ['aaa', 'bbb']),)))
         self.assertEquals(req.getConaryClient._mock.calls, [])
 
+        # Remove all records
         self._resetLoggingCalls()
+        self._resetRecords()
 
         # Same deal, but make findTroves raise an exception
         _calls = []
@@ -257,10 +271,13 @@ update baz=/invalid.version.string@ns:1
             raise _exc
         req._conaryClient.repos._mock.set(findTroves=fakeFindTroves)
         resp = self.app.invoke_subrequest(req, use_tweens=True)
-        self.assertEquals(resp.status_code, 401)
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json_body['entitlement_valid'], False)
+        self.assertEquals(resp.json_body['entitlements_json'],
+                '[["a", "aaa"], ["*", "bbb"]]')
 
         logEntries = self._getLoggingCalls()
-        self.assertEquals(len(logEntries), 4)
+        self.assertEquals(len(logEntries), 5)
         self.assertEquals(logEntries[2],
                 ('upsrv.views.records', '%s: bad entitlements %s for system model %s: %s',
                     ('10.11.12.13', [('a', 'aaa'), ('*', 'bbb')],
@@ -270,6 +287,30 @@ update baz=/invalid.version.string@ns:1
         self.assertEquals(len(_calls), 1)
         self.assertEquals([str(x) for x in _calls[0][1]],
                 ['foo=cny.tv@ns:1/1-2-3', 'group-university-appliance=university.cny.sas.com@sas:university-3p-staging/1-2-3[~!xen is: x86(i486,i586,i686) x86_64]'])
+
+        # Make sure the record got persisted correctly
+        allRecords = records.records_view(req)['records']
+        self.assertEquals([ x['entitlement_valid'] for x in allRecords ],
+                [ False ])
+        self.assertEquals([ x['entitlements_json'] for x in allRecords ],
+                [ '[["a", "aaa"], ["*", "bbb"]]' ])
+
+        # Remove all records
+        self._resetLoggingCalls()
+        self._resetRecords()
+        # Same deal, but with a 1M provider payload
+        content = '0123456789abcdef' * 64 * 1024
+        req = self._req(url, method='POST',
+                entitlements=self.DefaultEntitlements,
+                body=json.dumps(self._R(producers={
+                    'system-information' : content})))
+        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        self.assertEquals(resp.status_code, 413)
+        logEntries = self._getLoggingCalls()
+        self.assertEquals(len(logEntries), 4)
+        self.assertEquals(logEntries[2],
+                ('upsrv.views.records', 'Request too large from %s: %s bytes',
+                    ('10.11.12.13', 1048797)))
 
     def testDecodeEntitlements(self):
         tests = [

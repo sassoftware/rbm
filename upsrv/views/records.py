@@ -12,7 +12,7 @@ from conary import errors as cnyerrors, versions
 from conary.repository import errors as repoerrors
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPUnauthorized, HTTPBadRequest
+from pyramid.httpexceptions import HTTPUnauthorized, HTTPBadRequest, HTTPRequestEntityTooLarge
 
 from ..db.models import Record
 from ..auth import cryptauth
@@ -20,6 +20,13 @@ from ..auth import cryptauth
 
 @view_config(route_name='records', request_method='POST', renderer='json')
 def records_add(request):
+    # Records should not be larger than 1M
+    maxSize = 1024 * 1024
+    bodyLen = len(request.body)
+    if bodyLen > maxSize:
+        log.warning("Request too large from %s: %s bytes", request.client_addr,
+                bodyLen)
+        return HTTPRequestEntityTooLarge()
     authHeader = 'X-Conary-Entitlement'
     entString = request.headers.get(authHeader)
     if not entString:
@@ -34,6 +41,7 @@ def records_add(request):
     cmlObj = cml.CML(cli.cfg)
     db = request.db
     newRecord = deserialize(request, Record)
+    newRecord.entitlement_valid = True
 
     # Fetch the system model
     systemModel = newRecord.producers.get('conary-system-model', {}).get('data')
@@ -70,8 +78,9 @@ def records_add(request):
     except (repoerrors.InsufficientPermission, repoerrors.TroveNotFound), e:
         log.warning("%s: bad entitlements %s for system model %s: %s",
                 request.client_addr, ents, systemModel, e)
-        return HTTPUnauthorized()
+        newRecord.entitlement_valid = False
 
+    newRecord.entitlements_json = json.dumps(ents)
     newRecord.client_address = request.client_addr
     # Does this record exist?
     record = db.query(Record).filter_by(uuid=newRecord.uuid).first()

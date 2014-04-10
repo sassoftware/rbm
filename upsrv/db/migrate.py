@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 from conary.dbstore import migration, sqllib, sqlerrors
 
-Version = sqllib.DBversion(2, 0)
+Version = sqllib.DBversion(2, 1)
 
 class SchemaMigration(migration.SchemaMigration):
     db = None
@@ -66,6 +66,8 @@ def createSchema(db):
             system_id TEXT NOT NULL,
             client_address TEXT NOT NULL,
             version TEXT NOT NULL,
+            entitlements_json TEXT,
+            entitlement_valid BOOLEAN NOT NULL DEFAULT true,
             created_time TIMESTAMP WITH TIME ZONE NOT NULL,
             updated_time TIMESTAMP WITH TIME ZONE NOT NULL,
             PRIMARY KEY (uuid)
@@ -117,7 +119,7 @@ class MigrateTo_1(SchemaMigration):
         return True
 
 class MigrateTo_2(SchemaMigration):
-    Version = (2, 0)
+    Version = (2, 1)
 
     def migrate(self):
         db = self.db
@@ -135,6 +137,17 @@ class MigrateTo_2(SchemaMigration):
         db.execute("""
         CREATE INDEX records_systemid_idx ON records (system_id)
         """)
+        return True
+
+    def migrate1(self):
+        self.db.execute("""
+            ALTER TABLE records
+             ADD COLUMN entitlements_json TEXT
+             """)
+        self.db.execute("""
+            ALTER TABLE records
+             ADD COLUMN entitlement_valid BOOLEAN NOT NULL DEFAULT true
+             """)
         return True
 
 def migrateSchema(db):
