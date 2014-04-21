@@ -8,7 +8,7 @@ from conary import trovetup
 from conary import versions
 from conary.deps import deps
 from pyramid.decorator import reify
-from sqlalchemy import Column, BigInteger, Integer, Text, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Boolean, BigInteger, Integer, Text, DateTime, ForeignKey, Index
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -93,6 +93,10 @@ class Record(Base):
             info=dict(recordCreate=dict(readOnly=True)))
     version = Column(Text, nullable=False,
             info=dict(recordCreate=dict(required=True)))
+    entitlements_json = Column(Text,
+            info=dict(recordCreate=dict(readOnly=True)))
+    entitlement_valid = Column(Boolean,
+            info=dict(recordCreate=dict(readOnly=True)))
     # This is set by the record's created_time
     created_time = Column(DateTime, nullable=False,
             default=datetime.datetime.utcnow)
