@@ -113,8 +113,8 @@ def _decodeEntitlements(entString):
         ret.append((entClass, base64.b64decode(b64EntKey)))
     return ret
 
-@cryptauth('records-reader')
 @view_config(route_name='records', request_method='GET', renderer='json')
+@cryptauth('records-reader')
 def records_view(request):
     queryLimit = int(request.GET.get('limit', 100))
     queryStart = int(request.GET.get('start', 0))
