@@ -252,8 +252,8 @@ update baz=/invalid.version.string@ns:1
         rectime = datetime.datetime.strptime(rec['updated_time'],
                 "%Y-%m-%dT%H:%M:%S.%f")
         delta = now - rectime
-        totalSeconds = 86400 * delta.days + delta.seconds
-        self.assertTrue(0 <  totalSeconds)
+        totalSeconds = 86400 * delta.days + delta.seconds + delta.microseconds / 1e6
+        self.assertTrue(0 <=  totalSeconds)
         self.assertTrue(totalSeconds < 2)
 
         self.assertEquals(req.getConaryClient._mock.popCall(),
