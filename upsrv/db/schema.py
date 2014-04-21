@@ -7,7 +7,7 @@ import sqlalchemy
 import transaction
 from conary.dbstore import sqlerrors
 from conary.dbstore import sqllib
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, OperationalError
 from sqlalchemy.orm.exc import NoResultFound
 
 from .. import config
@@ -22,7 +22,7 @@ def getVersion(db, allow_missing=False):
         sp = transaction.savepoint()
     try:
         ver = db.query(models.DatabaseVersion).one()
-    except ProgrammingError:
+    except (ProgrammingError, OperationalError), e:
         # Table does not exist
         if allow_missing:
             sp.rollback()
@@ -54,6 +54,11 @@ def checkVersion(db):
 
 
 def updateSchema(db):
+    # Monkey-patch db to make it look like what Conary's dbstore expects
+    db.setVersion = lambda version, skipCommit=False: setVersion(db, version)
+    db.getVersion = lambda raiseOnError=False: getVersion(db,
+            allow_missing=not raiseOnError)
+    db.cursor = lambda: db
     version = getVersion(db, allow_missing=True)
     if version == migrate.Version:
         return version

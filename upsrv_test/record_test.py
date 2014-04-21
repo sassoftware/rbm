@@ -16,6 +16,37 @@ from conary import conarycfg
 from upsrv import config, app, db
 from upsrv.views import records
 
+class DatabaseTest(testcase.TestCaseWithWorkDir):
+    def testMigrate(self):
+        self.cfg = config.UpsrvConfig()
+        self.cfg.downloadDB = "sqlite:///%s/%s" % (self.workDir, "upsrv.sqlite")
+        self.wcfg = app.configure(self.cfg)
+        maker = self.wcfg.registry.settings['db.sessionmaker']
+        # New maker, without extensions, we don't need transaction
+        # management
+        makerArgs = maker.kw.copy()
+        del makerArgs['extension']
+        maker = maker.__class__(**makerArgs)
+        conn = maker()
+        conn.execute("""
+            CREATE TABLE databaseversion (
+                version                 integer         NOT NULL,
+                minor                   integer         NOT NULL,
+                PRIMARY KEY ( version, minor )
+        )""")
+
+        conn.execute("""
+            INSERT INTO databaseversion (version, minor)
+                 VALUES (0, 1)
+            """)
+        db.schema.updateSchema(conn)
+        conn.commit()
+
+        versions = [ x for x in conn.execute("select version, minor from databaseversion") ]
+        self.assertEquals(versions, [ db.migrate.Version ])
+        conn.close()
+
+
 class RecordTest(testcase.TestCaseWithWorkDir):
     DefaultCreatedTime = '2013-12-11T10:09:08.080605'
     DefaultUuid = '00000000-0000-0000-0000-000000000000'
@@ -87,12 +118,7 @@ update baz=/invalid.version.string@ns:1
         del makerArgs['extension']
         maker = maker.__class__(**makerArgs)
         conn = maker()
-        db.migrate.createSchema(conn)
-        conn.execute(app.sqlalchemy.sql.text("""\
-            INSERT INTO databaseversion (version, minor)
-                 VALUES (:version, :minor)
-            """), params=dict(version=db.migrate.Version.major,
-            minor=db.migrate.Version.minor))
+        db.schema.updateSchema(conn)
         conn.commit()
         conn.close()
 
@@ -152,8 +178,8 @@ update baz=/invalid.version.string@ns:1
         resp = self.app.invoke_subrequest(req, use_tweens=True)
         self.assertEquals(resp.status_code, 401)
         logEntries = self._getLoggingCalls()
-        self.assertEquals(len(logEntries), 3)
-        self.assertEquals(logEntries[1], ('upsrv.views.records', "Missing auth header `%s' from %s", ('X-Conary-Entitlement', '10.11.12.13')))
+        self.assertEquals(len(logEntries), 5)
+        self.assertEquals(logEntries[3], ('upsrv.views.records', "Missing auth header `%s' from %s", ('X-Conary-Entitlement', '10.11.12.13')))
         self._resetLoggingCalls()
 
         # Include an entitlement, but no conary system model
