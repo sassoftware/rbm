@@ -16,6 +16,7 @@ from pyramid.httpexceptions import HTTPUnauthorized, HTTPBadRequest, HTTPRequest
 
 from ..db.models import Record
 from ..auth import cryptauth
+from .. import filtering
 
 
 @view_config(route_name='records', request_method='POST', renderer='json')
@@ -116,29 +117,41 @@ def _decodeEntitlements(entString):
 @view_config(route_name='records', request_method='GET', renderer='json')
 @cryptauth('records-reader')
 def records_view(request):
+    _qtempl = '?start={start}&limit={limit}'
     queryLimit = int(request.GET.get('limit', 100))
     queryStart = int(request.GET.get('start', 0))
+    queryFilter = request.GET.get('filter')
+    if queryFilter:
+        _qtempl += '&filter={filter}'
+        lexer = filtering.Lexer()
+        try:
+            qf = lexer.scan(queryFilter)
+            expression = qf.expression(Record)
+        except filtering.InvalidData:
+            return HTTPBadRequest()
     db = request.db
     query = db.query(Record)
+    if queryFilter:
+        query = query.filter(expression)
     count = query.count()
-    records = query.order_by('created_time').offset(queryStart).limit(queryLimit)
+    records = query.order_by('created_time')
+    records = records.offset(queryStart).limit(queryLimit)
     collection = dict(records=[ serialize(request, x) for x in records ])
     _href = request.route_url('records')
-    _qtempl = '?start={start}&limit={limit}'
     links = [
             dict(rel='self', href=_href + _qtempl.format(
-                start=queryStart, limit=queryLimit)),
+                start=queryStart, limit=queryLimit, filter=queryFilter)),
             dict(rel='first', href=_href + _qtempl.format(
-                start=0, limit=queryLimit)),
+                start=0, limit=queryLimit, filter=queryFilter)),
             ]
     if queryStart > 0:
         nstart = max(queryStart - queryLimit, 0)
         links.append(dict(rel='prev', href=_href + _qtempl.format(
-            start=nstart, limit=queryLimit)))
+            start=nstart, limit=queryLimit, filter=queryFilter)))
     if queryStart + queryLimit < count:
         nstart = queryStart + queryLimit
         links.append(dict(rel='next', href=_href + _qtempl.format(
-            start=nstart, limit=queryLimit)))
+            start=nstart, limit=queryLimit, filter=queryFilter)))
 
     collection.update(links=links, count=count)
     return collection

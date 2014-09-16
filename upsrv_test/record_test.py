@@ -8,6 +8,7 @@ import base64
 import json
 import datetime
 import logging
+import uuid
 from testrunner import testcase
 from testutils import mock
 
@@ -178,21 +179,17 @@ update baz=/invalid.version.string@ns:1
                 created_time=created_time, updated_time=updated_time, **kwargs)
 
     def testRecordCreate(self):
-        url = '/registration/v1/records'
-        req = self._req(url, method='POST')
-        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        # No entitlement
+        resp = self._newRecord(entitlements=None)
         self.assertEquals(resp.status_code, 401)
         logEntries = self._getLoggingCalls()
         self.assertEquals(len(logEntries), 5)
         self.assertEquals(logEntries[3], ('upsrv.views.records', "Missing auth header `%s' from %s", ('X-Conary-Entitlement', '10.11.12.13')))
         self._resetLoggingCalls()
 
-        # Include an entitlement, but no conary system model
-        req = self._req(url, method='POST',
-                entitlements=self.DefaultEntitlements,
-                body=json.dumps(self._R(producers={
-                    'system-information' : self.DefaultProducers['system-information']})))
-        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        resp = self._newRecord(
+                producers={
+                    'system-information' : self.DefaultProducers['system-information']})
         self.assertEquals(resp.status_code, 400)
 
         logEntries = self._getLoggingCalls()
@@ -201,10 +198,7 @@ update baz=/invalid.version.string@ns:1
         self._resetLoggingCalls()
 
         # Correct record
-        req = self._req(url, method='POST',
-                entitlements=self.DefaultEntitlements,
-                body=json.dumps(self._R()))
-        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        resp = self._newRecord()
         self.assertEquals(resp.status_code, 200)
         self.assertEquals(resp.json_body['entitlement_valid'], True)
         self.assertEquals(resp.json_body['entitlements_json'],
@@ -218,6 +212,7 @@ update baz=/invalid.version.string@ns:1
         self.assertEquals(record['created_time'], self.DefaultCreatedTime)
         self.assertEquals(record['client_address'], '10.11.12.13')
 
+        req = resp.request
         allRecords = records.records_view(req)
         self.assertEquals(allRecords.status_code, 403)
 
@@ -301,11 +296,9 @@ update baz=/invalid.version.string@ns:1
         self._resetRecords()
         # Same deal, but with a 1M provider payload
         content = '0123456789abcdef' * 64 * 1024
-        req = self._req(url, method='POST',
-                entitlements=self.DefaultEntitlements,
-                body=json.dumps(self._R(producers={
-                    'system-information' : content})))
-        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        resp = self._newRecord(
+                producers={
+                    'system-information' : content})
         self.assertEquals(resp.status_code, 413)
         logEntries = self._getLoggingCalls()
         self.assertEquals(len(logEntries), 4)
@@ -323,3 +316,56 @@ update baz=/invalid.version.string@ns:1
                 ]
         for entString, expected in tests:
             self.assertEqual(records._decodeEntitlements(entString), expected)
+
+    def _newRecord(self, **kwargs):
+        url = '/registration/v1/records'
+        entitlements = kwargs.pop('entitlements', self.DefaultEntitlements)
+        # Correct record
+        req = self._req(url, method='POST',
+                entitlements=entitlements,
+                body=json.dumps(self._R(**kwargs)))
+        resp = self.app.invoke_subrequest(req, use_tweens=True)
+        resp.request = req
+        return resp
+
+    def testRecordFiltering(self):
+        now = datetime.datetime.utcnow()
+        recordsData = [ (str(uuid.uuid4()), now - datetime.timedelta(days=10-i)) for i in range(10) ]
+        Record = db.models.Record
+        for recUuid, createdTime in recordsData:
+            resp = self._newRecord(uuid=recUuid,
+                    created_time=createdTime.isoformat())
+            self.assertEqual(resp.status_code, 200)
+            self.assertEquals(resp.json['uuid'], recUuid)
+            rec = self.conn.query(Record).filter_by(uuid=recUuid).one()
+            self.assertEquals(rec.created_time, createdTime)
+            # Set updated_time
+            rec.updated_time = rec.created_time + datetime.timedelta(minutes=5)
+            self.conn.add(rec)
+            self.conn.commit()
+        req = resp.request
+        req.headers['Authorization'] = 'Basic %s' % base64.b64encode(
+            '{username}:{password}'.format(username=self.Username,
+                password=self.Password))
+        # Make sure the record got persisted correctly
+        allRecordsResp = records.records_view(req)
+        self.assertEquals(allRecordsResp['count'], 10)
+        allRecords = allRecordsResp['records']
+        self.assertEqual(
+                [(x['uuid'], x['created_time'], x['updated_time']) for x in allRecords],
+                [(x[0], x[1].isoformat(), (x[1] + datetime.timedelta(minutes=5)).isoformat()) for x in recordsData])
+        # Now build query
+        uTimeStamp = (now - datetime.timedelta(days=1)).isoformat()
+        nreq = self._req(req.url + '?filter=ge(updated_time,"%s")' % uTimeStamp,
+                headers=req.headers)
+        resp = self.app.invoke_subrequest(nreq, use_tweens=True)
+        self.assertEquals(resp.status_code, 200)
+        self.assertEquals(resp.json['count'], 1)
+        url = 'http://localhost/registration/v1/records?start=0&limit=100&filter=ge(updated_time,"{updatedTime}")'.format(updatedTime=uTimeStamp)
+        expectedLinks = [
+                ('self', url),
+                ('first', url),
+                ]
+        self.assertEquals(
+                [ (x['rel'], x['href']) for x in resp.json['links'] ],
+                expectedLinks)
