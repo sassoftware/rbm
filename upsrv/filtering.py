@@ -6,6 +6,7 @@
 #
 
 import datetime
+import dateutil.parser
 import re
 import sys
 
@@ -80,7 +81,7 @@ class Operator(object):
             raise InvalidData(msg="Invalid column %s" % field)
         columnInstr = getattr(model, field)
         if column.type.__class__.__name__ == 'DateTime':
-            value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+            value = dateutil.parser.parse(value)
         func = getattr(columnInstr, self.operator)
         return func(value)
 

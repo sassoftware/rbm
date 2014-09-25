@@ -355,7 +355,8 @@ update baz=/invalid.version.string@ns:1
                 [(x['uuid'], x['created_time'], x['updated_time']) for x in allRecords],
                 [(x[0], x[1].isoformat(), (x[1] + datetime.timedelta(minutes=5)).isoformat()) for x in recordsData])
         # Now build query
-        uTimeStamp = (now - datetime.timedelta(days=1)).isoformat()
+        # Make sure we accept timezone specs too
+        uTimeStamp = (now - datetime.timedelta(days=1)).isoformat() + "%2B00:00"
         nreq = self._req(req.url + '?filter=ge(updated_time,"%s")' % uTimeStamp,
                 headers=req.headers)
         resp = self.app.invoke_subrequest(nreq, use_tweens=True)

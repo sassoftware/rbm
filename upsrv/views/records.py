@@ -5,7 +5,9 @@ log = logging.getLogger(__name__)
 
 import base64
 import json
+import dateutil.parser
 import datetime
+import urllib
 
 from conary.conaryclient import cml
 from conary import errors as cnyerrors, versions
@@ -133,6 +135,7 @@ def records_view(request):
     query = db.query(Record)
     if queryFilter:
         query = query.filter(expression)
+        queryFilter = urllib.quote(queryFilter, safe='():=,\'"')
     count = query.count()
     records = query.order_by('created_time')
     records = records.offset(queryStart).limit(queryLimit)
@@ -171,7 +174,7 @@ def deserialize(request, modelClass):
 #        if column.info.get('recordEncoding') == 'json':
 #            value = json.dumps(value)
         if column.type.__class__.__name__ == 'DateTime':
-            value = datetime.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+            value = dateutil.parser.parse(value)
         setattr(record, column.name, value)
     if missingFields:
         raise Exception(missingFields)
