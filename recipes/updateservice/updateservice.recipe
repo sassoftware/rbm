@@ -11,6 +11,7 @@ class UpdateServiceAppliance(PackageRecipe):
         'conary-repository:python',
         'python-kid',
         'make',
+        'python-dateutil',
         'python-devel',
         'python-pyramid:python',
         'python-pyramid_tm:python',
