@@ -370,3 +370,8 @@ update baz=/invalid.version.string@ns:1
         self.assertEquals(
                 [ (x['rel'], x['href']) for x in resp.json['links'] ],
                 expectedLinks)
+        # Make sure we don't explode on a bad time spec
+        nreq = self._req(req.url + '?filter=ge(updated_time,"AAAA")',
+                headers=req.headers)
+        resp = self.app.invoke_subrequest(nreq, use_tweens=True)
+        self.assertEquals(resp.status_code, 400)

@@ -81,7 +81,11 @@ class Operator(object):
             raise InvalidData(msg="Invalid column %s" % field)
         columnInstr = getattr(model, field)
         if column.type.__class__.__name__ == 'DateTime':
-            value = dateutil.parser.parse(value)
+            try:
+                value = dateutil.parser.parse(value)
+            except (TypeError, ValueError), e:
+                raise InvalidData(msg="Invalid time specification '%s'" %
+                    value)
         func = getattr(columnInstr, self.operator)
         return func(value)
 
