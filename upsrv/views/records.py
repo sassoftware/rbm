@@ -5,7 +5,6 @@ log = logging.getLogger(__name__)
 
 import base64
 import json
-import dateutil.parser
 import datetime
 import urllib
 
@@ -174,7 +173,7 @@ def deserialize(request, modelClass):
 #        if column.info.get('recordEncoding') == 'json':
 #            value = json.dumps(value)
         if column.type.__class__.__name__ == 'DateTime':
-            value = dateutil.parser.parse(value)
+            value = filtering.parseDate(value)
         setattr(record, column.name, value)
     if missingFields:
         raise Exception(missingFields)

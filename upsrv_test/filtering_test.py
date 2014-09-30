@@ -1,10 +1,14 @@
+
 from testrunner import testcase
 from testutils import mock
+
+import dateutil.tz
 
 from conary import conarycfg
 
 from upsrv import config, app, db
 from upsrv import filtering as F
+from upsrv.db.models import Record
 
 class CollectionTest(testcase.TestCaseWithWorkDir):
     def testQueryTree(self):
@@ -87,3 +91,20 @@ class CollectionTest(testcase.TestCaseWithWorkDir):
         for strrepr, err in tests:
             e = self.assertRaises(InvalidData, lexer.scan, strrepr)
             self.assertEquals(e.msg, err)
+
+    def testFilterDateParser(self):
+        queryFilter = 'GE(updated_time,"2014")'
+        lexer = F.Lexer()
+        qf = lexer.scan(queryFilter)
+        expression = qf.expression(Record)
+        self.assertEquals(str(expression.left.expression),
+            "records.updated_time")
+        self.assertEquals(expression.right.value.year, 2014)
+        self.assertEquals(expression.right.value.month, 1)
+        self.assertEquals(expression.right.value.day, 1)
+        self.assertEquals(expression.right.value.hour, 0)
+        self.assertEquals(expression.right.value.minute, 0)
+        self.assertEquals(expression.right.value.second, 0)
+        self.assertEquals(expression.right.value.microsecond, 0)
+        self.assertTrue(isinstance(expression.right.value.tzinfo,
+            dateutil.tz.tzutc))

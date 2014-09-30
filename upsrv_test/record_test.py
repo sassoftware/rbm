@@ -209,7 +209,8 @@ update baz=/invalid.version.string@ns:1
         # Decode the json coming back
         record = json.loads(resp.body)
         self.assertEquals(record['uuid'], self.DefaultUuid)
-        self.assertEquals(record['created_time'], self.DefaultCreatedTime)
+        self.assertEquals(record['created_time'],
+                self.DefaultCreatedTime + "+00:00")
         self.assertEquals(record['client_address'], '10.11.12.13')
 
         req = resp.request

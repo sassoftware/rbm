@@ -7,11 +7,18 @@
 
 import datetime
 import dateutil.parser
+import dateutil.tz
 import re
 import sys
 
 import logging
 log = logging.getLogger(__name__)
+
+_tzutc = dateutil.tz.tzutc()
+def parseDate(value):
+    return dateutil.parser.parse(value, default=datetime.datetime.now().replace(
+        month=1, day=1, hour=0, minute=0, second=0, microsecond=0,
+        tzinfo=_tzutc))
 
 class InvalidData(Exception):
     def __init__(self, *args, **kwargs):
@@ -82,7 +89,7 @@ class Operator(object):
         columnInstr = getattr(model, field)
         if column.type.__class__.__name__ == 'DateTime':
             try:
-                value = dateutil.parser.parse(value)
+                value = parseDate(value)
             except (TypeError, ValueError), e:
                 raise InvalidData(msg="Invalid time specification '%s'" %
                     value)
