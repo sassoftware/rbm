@@ -375,3 +375,18 @@ update baz=/invalid.version.string@ns:1
                 headers=req.headers)
         resp = self.app.invoke_subrequest(nreq, use_tweens=True)
         self.assertEquals(resp.status_code, 400)
+
+        # APPENG-3387
+        t0 = (now - datetime.timedelta(days=2)).isoformat() + "%2B00:00"
+        t1 = (now - datetime.timedelta(minutes=3)).isoformat() + "%2B00:00"
+        url = 'http://localhost/registration/v1/records?start=0&limit=100&filter=and(ge(updated_time,"{0}"),le(updated_time,"{1}"))'.format(t0, t1)
+        nreq = self._req(url, headers=req.headers)
+        resp = self.app.invoke_subrequest(nreq, use_tweens=True)
+        expectedLinks = [
+                ('self', url),
+                ('first', url),
+                ]
+        self.assertEquals(
+                [ (x['rel'], x['href']) for x in resp.json['links'] ],
+                expectedLinks)
+        self.assertEquals(resp.json['count'], 2)
