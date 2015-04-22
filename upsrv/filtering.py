@@ -32,6 +32,7 @@ class Operator(object):
     description = None
     arity = 2
     # Variable length arguments
+    ARITY_VAROP = object()
     ARITY_VAR = object()
     # This may look weird, but we need two backslashes when trying to
     # match a single one, for escaping reasons
@@ -77,10 +78,22 @@ class Operator(object):
         return value
 
     def expression(self, model):
+        field = None
         if self.arity == 2:
             (field, value) = self.operands
-        elif self.arity == self.ARITY_VAR:
+        elif self.arity is self.ARITY_VAROP:
             (field, value) = self.operands[0], self.operands[1:]
+        elif self.arity is self.ARITY_VAR:
+            if not self.operands:
+                raise Exception("Operator expected at least one argument")
+            exprs = [ x.expression(model) for x in self.operands ]
+            value = None
+            for v in exprs:
+                if value is None:
+                    value = v
+                else:
+                    value = getattr(value, self.operator)(v)
+            return value
         else:
             raise Exception("Unsupported arity %s" % self.arity)
         column = model.__table__.columns.get(field, None)
@@ -106,7 +119,7 @@ class InOperator(Operator):
     filterTerm = 'IN'
     operator = 'in_'
     description = 'In list'
-    arity = Operator.ARITY_VAR
+    arity = Operator.ARITY_VAROP
 
 class NotInOperator(InOperator):
     filterTerm = 'notin_'
@@ -161,7 +174,7 @@ class ContainsOperator(Operator):
     filterTerm = 'CONTAINS'
     operator = None
     description = "Contains"
-    arity = Operator.ARITY_VAR
+    arity = Operator.ARITY_VAROP
 
 class AndOperator(Operator):
     filterTerm = 'AND'

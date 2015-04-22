@@ -376,3 +376,24 @@ update baz=/invalid.version.string@ns:1
                 headers=req.headers)
         resp = self.app.invoke_subrequest(nreq, use_tweens=True)
         self.assertEquals(resp.status_code, 400)
+
+        # APPENG-3387
+        # update_time is 5 minutes after create_time, and we want to bracket
+        # one minute before and after, so 4 and 6.
+        t0 = (recordsData[6][1] + datetime.timedelta(minutes=4)).isoformat() + "%2B00:00"
+        t1 = (recordsData[8][1] + datetime.timedelta(minutes=6)).isoformat() + "%2B00:00"
+        url = 'http://localhost/registration/v1/records?start=0&limit=100&filter=and(ge(updated_time,"{0}"),le(updated_time,"{1}"))'.format(t0, t1)
+        nreq = self._req(url, headers=req.headers)
+        resp = self.app.invoke_subrequest(nreq, use_tweens=True)
+        expectedLinks = [
+                ('self', url),
+                ('first', url),
+                ]
+        self.assertEquals(
+                [ (x['rel'], x['href']) for x in resp.json['links'] ],
+                expectedLinks)
+        self.assertEquals(resp.json['count'], 3)
+        self.assertEqual(
+                [x['uuid'] for x in resp.json['records']],
+                [recordsData[6][0], recordsData[7][0], recordsData[8][0]])
+
