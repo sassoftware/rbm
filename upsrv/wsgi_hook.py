@@ -29,7 +29,8 @@ class application(object):
     cfg = None
 
     def __init__(self, environ, start_response):
-        cny_log.setupLogging(consoleLevel=logging.INFO, consoleFormat='apache')
+        cny_log.setupLogging(consoleLevel=logging.INFO, consoleFormat='apache',
+                consoleStream=environ['wsgi.errors'])
         # gunicorn likes to umask(0) when daemonizing, so put back something
         # reasonable if that's the case.
         oldUmask = os.umask(022)
