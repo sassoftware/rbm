@@ -157,7 +157,7 @@ class UserAdd(Command):
             remove = False
         elif permission == 'admin':
             write = True
-            mirror = False
+            mirror = True
             admin = True
             remove = False
         else:
