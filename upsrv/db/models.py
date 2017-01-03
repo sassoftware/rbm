@@ -120,6 +120,7 @@ class Record(Base):
 
 # Not really needed since we're not generating the schema
 Index('records_systemid_idx', Record.system_id)
+Index('idx_records_updated_time', Record.created_time)
 
 def initialize_sql(engine, use_tm=True):
     Base.metadata.bind = engine

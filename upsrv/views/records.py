@@ -153,7 +153,9 @@ def records_view(request):
         query = query.filter(expression)
         queryFilter = urllib.quote(queryFilter, safe='():=,\'"')
     count = query.count()
-    records = query.order_by('created_time')
+    # created_time is coming straight from the record, so we should not assume
+    # it's chronologically correct.
+    records = query.order_by('updated_time')
     records = records.offset(queryStart).limit(queryLimit)
     collection = dict(records=[ serialize(request, x) for x in records ])
     _href = request.route_url('records')
